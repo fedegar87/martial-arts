@@ -1,42 +1,30 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listSkillsForExam } from "@/lib/queries/skills";
-import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
+import { listAccessibleSkills } from "@/lib/queries/skills";
 import { SkillListItem } from "@/components/library/SkillListItem";
 import { LibraryNav } from "@/components/library/LibraryNav";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { Button } from "@/components/ui/button";
-import { SKILL_CATEGORY_LABELS } from "@/lib/types";
-import type { Skill, SkillCategory } from "@/lib/types";
+import { DisciplineToggle } from "@/components/library/DisciplineToggle";
+import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
+import { gradeLabelForDiscipline } from "@/lib/grades";
+import type { Discipline, Skill, SkillCategory } from "@/lib/types";
 
-export default async function LibraryPage() {
+type Props = { searchParams: Promise<{ d?: string }> };
+
+export default async function LibraryPage({ searchParams }: Props) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  if (!profile.preparing_exam_id) {
-    return (
-      <div className="space-y-6">
-        <header>
-          <h1 className="text-2xl font-semibold">Libreria</h1>
-        </header>
-        <LibraryNav />
-        <EmptyState
-          title="Nessun esame selezionato"
-          description="Scegli un esame per vedere le skill richieste."
-          action={
-            <Button asChild>
-              <Link href="/library/exam">Scegli un esame</Link>
-            </Button>
-          }
-        />
-      </div>
-    );
-  }
+  const { d } = await searchParams;
+  const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const userGradeValue =
+    discipline === "shaolin"
+      ? profile.assigned_level_shaolin
+      : profile.assigned_level_taichi;
 
-  const exams = await listExamProgramsForSchool(profile.school_id);
-  const preparingExam = exams.find((e) => e.id === profile.preparing_exam_id);
-  const skills = await listSkillsForExam(profile.preparing_exam_id);
+  const skills =
+    userGradeValue === 0
+      ? []
+      : await listAccessibleSkills(discipline, userGradeValue);
 
   const grouped = skills.reduce<Record<SkillCategory, Skill[]>>(
     (acc, skill) => {
@@ -51,10 +39,18 @@ export default async function LibraryPage() {
       <header>
         <h1 className="text-2xl font-semibold">Libreria</h1>
         <p className="text-muted-foreground text-sm">
-          {preparingExam?.level_name ?? "Mio livello"}
+          {DISCIPLINE_LABELS[discipline]} —{" "}
+          {userGradeValue === 0
+            ? "non praticato"
+            : gradeLabelForDiscipline(discipline, userGradeValue)}
         </p>
       </header>
 
+      <DisciplineToggle
+        current={discipline}
+        basePath="/library"
+        hiddenTaichi={profile.assigned_level_taichi === 0}
+      />
       <LibraryNav />
 
       <div className="space-y-6">

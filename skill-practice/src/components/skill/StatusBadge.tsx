@@ -9,17 +9,17 @@ const STATUS_CONFIG: Record<
   focus: {
     label: "Focus",
     Icon: Flame,
-    className: "bg-primary text-primary-foreground border-transparent",
+    className: "border-primary bg-transparent text-primary",
   },
   review: {
     label: "Ripasso",
     Icon: Repeat,
-    className: "bg-amber-600 text-white border-transparent",
+    className: "border-muted-foreground bg-transparent text-muted-foreground",
   },
   maintenance: {
     label: "Mantenimento",
     Icon: Wrench,
-    className: "bg-muted text-foreground border-transparent",
+    className: "border-green-700 bg-transparent text-green-500",
   },
 };
 

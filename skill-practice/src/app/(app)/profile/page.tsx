@@ -3,9 +3,13 @@ import { Calendar, Trophy } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
 import { getRecentLogsForUser } from "@/lib/queries/practice-log";
+import { getUserPlanCount } from "@/lib/queries/plan";
 import { LevelBadge } from "@/components/skill/LevelBadge";
 import { SignOutButton } from "@/components/profile/SignOutButton";
+import { GradeEditor } from "@/components/profile/GradeEditor";
+import { PlanModeSection } from "@/components/profile/PlanModeSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { gradeLabel } from "@/lib/grades";
 
 export default async function ProfilePage() {
   const profile = await getCurrentProfile();
@@ -13,19 +17,45 @@ export default async function ProfilePage() {
 
   const exams = await listExamProgramsForSchool(profile.school_id);
   const preparingExam = exams.find((e) => e.id === profile.preparing_exam_id);
+  const preparingExamTaichi = exams.find(
+    (e) => e.id === profile.preparing_exam_taichi_id,
+  );
   const logs = await getRecentLogsForUser(profile.id, 30);
+  const planCount = await getUserPlanCount(profile.id);
   const uniqueDays = new Set(
     logs.filter((l) => l.completed).map((l) => l.date),
   ).size;
+
+  const taichiLabel =
+    profile.assigned_level_taichi === 0
+      ? "Non praticato"
+      : gradeLabel(profile.assigned_level_taichi);
 
   return (
     <div className="space-y-6">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold">{profile.display_name}</h1>
-        <div className="flex items-center gap-2">
-          <LevelBadge level={profile.assigned_level} />
-        </div>
       </header>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">I tuoi gradi</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground text-sm">Shaolin</span>
+            <LevelBadge level={profile.assigned_level_shaolin} />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground text-sm">T&apos;ai Chi</span>
+            <span className="text-sm font-medium">{taichiLabel}</span>
+          </div>
+          <GradeEditor
+            assignedLevelShaolin={profile.assigned_level_shaolin}
+            assignedLevelTaichi={profile.assigned_level_taichi}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -49,6 +79,20 @@ export default async function ProfilePage() {
               Nessun esame selezionato
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Piano di pratica</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PlanModeSection
+            planMode={profile.plan_mode ?? "exam"}
+            examShaolin={preparingExam}
+            examTaichi={preparingExamTaichi}
+            planCount={planCount}
+          />
         </CardContent>
       </Card>
 

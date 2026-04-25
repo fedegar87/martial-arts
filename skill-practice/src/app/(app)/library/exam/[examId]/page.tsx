@@ -4,7 +4,8 @@ import { listSkillsForExam } from "@/lib/queries/skills";
 import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
 import { SkillListItem } from "@/components/library/SkillListItem";
 import { LibraryNav } from "@/components/library/LibraryNav";
-import { SKILL_CATEGORY_LABELS } from "@/lib/types";
+import { DisciplineToggle } from "@/components/library/DisciplineToggle";
+import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import type { Skill, SkillCategory } from "@/lib/types";
 
 type Props = { params: Promise<{ examId: string }> };
@@ -37,6 +38,11 @@ export default async function ExamSkillsPage({ params }: Props) {
         )}
       </header>
 
+      <DisciplineToggle
+        current={exam.discipline}
+        basePath="/library/exam"
+        hiddenTaichi={profile.assigned_level_taichi === 0}
+      />
       <LibraryNav />
 
       <div className="space-y-6">

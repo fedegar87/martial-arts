@@ -1,4 +1,4 @@
-import type { UserPlanItem } from "./types";
+import type { Discipline, UserPlanItem } from "./types";
 
 export type DailyPractice<T extends UserPlanItem = UserPlanItem> = {
   focus: T[];
@@ -18,10 +18,15 @@ const MAINTENANCE_PER_DAY = 1;
  * Generic su T per preservare campi joinati (es. UserPlanItemWithSkill).
  * Sprint 3 (D5): sostituire con SRS reale (intervalli crescenti).
  */
-export function getTodayPractice<T extends UserPlanItem>(
+export function getTodayPractice<T extends UserPlanItem & { skill?: { discipline?: Discipline } }>(
   items: T[],
+  discipline?: Discipline,
 ): DailyPractice<T> {
-  const visible = items.filter((item) => !item.is_hidden);
+  const visible = items.filter((item) => {
+    if (item.is_hidden) return false;
+    if (!discipline) return true;
+    return item.skill?.discipline === discipline;
+  });
 
   const focus = visible.filter((item) => item.status === "focus");
 

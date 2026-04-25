@@ -1,19 +1,28 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Flame, Library, Repeat, Wrench } from "lucide-react";
+import { Flame, Repeat, Wrench } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { getThisWeekLogs } from "@/lib/queries/practice-log";
 import { getTodayPractice } from "@/lib/practice-logic";
 import { TodaySkillCard } from "@/components/today/TodaySkillCard";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { Button } from "@/components/ui/button";
+import { DisciplineFilter } from "@/components/today/DisciplineFilter";
+import { TodayEmptyState } from "@/components/today/TodayEmptyState";
+import { DISCIPLINE_LABELS } from "@/lib/labels";
+import { gradeLabelForDiscipline } from "@/lib/grades";
+import type { Discipline } from "@/lib/types";
 
-export default async function TodayPage() {
+type Props = { searchParams: Promise<{ d?: string }> };
+
+export default async function TodayPage({ searchParams }: Props) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  const items = await getUserPlanItems(profile.id);
+  const { d } = await searchParams;
+  const filter: Discipline | undefined =
+    d === "shaolin" || d === "taichi" ? d : undefined;
+  const practicesBoth = profile.assigned_level_taichi > 0;
+
+  const items = await getUserPlanItems(profile.id, filter);
   const logs = await getThisWeekLogs(profile.id);
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -24,21 +33,10 @@ export default async function TodayPage() {
   );
 
   if (items.length === 0) {
-    return (
-      <EmptyState
-        icon={<Library className="h-10 w-10" />}
-        title="Nessuna skill nel tuo piano"
-        description="Vai in libreria e aggiungi le skill che vuoi praticare."
-        action={
-          <Button asChild>
-            <Link href="/library">Vai alla libreria</Link>
-          </Button>
-        }
-      />
-    );
+    return <TodayEmptyState customMode={profile.plan_mode === "custom"} />;
   }
 
-  const daily = getTodayPractice(items);
+  const daily = getTodayPractice(items, filter);
 
   const dayName = new Date().toLocaleDateString("it-IT", { weekday: "long" });
   const weekDoneCount = new Set(
@@ -52,7 +50,18 @@ export default async function TodayPage() {
           Ciao {profile.display_name}
         </p>
         <h1 className="text-2xl font-semibold capitalize">Oggi — {dayName}</h1>
+        <p className="text-muted-foreground text-sm">
+          {DISCIPLINE_LABELS.shaolin}{" "}
+          {gradeLabelForDiscipline("shaolin", profile.assigned_level_shaolin)}
+          {profile.assigned_level_taichi > 0 &&
+            ` · ${DISCIPLINE_LABELS.taichi} ${gradeLabelForDiscipline(
+              "taichi",
+              profile.assigned_level_taichi,
+            )}`}
+        </p>
       </header>
+
+      {practicesBoth && <DisciplineFilter current={filter ?? "all"} />}
 
       {daily.focus.length > 0 && (
         <section className="space-y-3">

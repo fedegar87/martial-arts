@@ -3,14 +3,35 @@ import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { listAccessibleSkills } from "@/lib/queries/skills";
 import { SkillListItem } from "@/components/library/SkillListItem";
 import { LibraryNav } from "@/components/library/LibraryNav";
-import { SKILL_CATEGORY_LABELS } from "@/lib/types";
-import type { Skill, SkillCategory } from "@/lib/types";
+import { DisciplineToggle } from "@/components/library/DisciplineToggle";
+import { CategoryFilter } from "@/components/library/CategoryFilter";
+import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
+import type { Discipline, Skill, SkillCategory } from "@/lib/types";
 
-export default async function AllSkillsPage() {
+type Props = { searchParams: Promise<{ d?: string; category?: string }> };
+
+export default async function AllSkillsPage({ searchParams }: Props) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  const skills = await listAccessibleSkills(profile.assigned_level);
+  const { d, category } = await searchParams;
+  const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const selectedCategory = isSkillCategory(category) ? category : undefined;
+
+  const userGradeValue =
+    discipline === "shaolin"
+      ? profile.assigned_level_shaolin
+      : profile.assigned_level_taichi;
+
+  const skills =
+    userGradeValue === 0
+      ? []
+      : await listAccessibleSkills(
+          discipline,
+          userGradeValue,
+          selectedCategory,
+        );
+
   const grouped = skills.reduce<Record<SkillCategory, Skill[]>>(
     (acc, skill) => {
       (acc[skill.category] ??= []).push(skill);
@@ -24,11 +45,22 @@ export default async function AllSkillsPage() {
       <header>
         <h1 className="text-2xl font-semibold">Libreria</h1>
         <p className="text-muted-foreground text-sm">
-          Tutte le skill accessibili
+          {DISCIPLINE_LABELS[discipline]} — tutte le skill accessibili
         </p>
       </header>
 
+      <DisciplineToggle
+        current={discipline}
+        basePath="/library/all"
+        hiddenTaichi={profile.assigned_level_taichi === 0}
+      />
       <LibraryNav />
+      <CategoryFilter
+        basePath="/library/all"
+        discipline={discipline}
+        current={selectedCategory}
+        categories={Object.keys(SKILL_CATEGORY_LABELS) as SkillCategory[]}
+      />
 
       <div className="space-y-6">
         {(Object.keys(grouped) as SkillCategory[]).map((category) => (
@@ -45,5 +77,11 @@ export default async function AllSkillsPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+function isSkillCategory(value?: string): value is SkillCategory {
+  return Boolean(
+    value && Object.prototype.hasOwnProperty.call(SKILL_CATEGORY_LABELS, value),
   );
 }

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#0f0f0f",
+  themeColor: "#080808",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -42,6 +42,7 @@ export default function RootLayout({
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground min-h-full flex flex-col">
+        <div className="grain-overlay" aria-hidden="true" />
         {children}
       </body>
     </html>

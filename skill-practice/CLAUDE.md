@@ -96,6 +96,14 @@ Regole d'oro:
 
 ## Stato attuale
 
+Aggiornamento 2026-04-25:
+
+- Sprint base completato; sprint operativi 1.5-1.8 sono in corso nei file dedicati sotto `../plan/`.
+- Schema locale previsto: `0001` base, `0003` FESK, `0004` seed FESK generato da `scripts/generate-fesk-seed.mjs`, `0005` plan mode.
+- UI implementata: lazy `VideoPlayer`, libreria con disciplina/program view, profilo con editor gradi e modalità, plan routes `/plan/exam` e `/plan/custom`, tab `/progress`.
+- Verifica automatica corrente: `npm run lint` e `npm run build` passano. La verifica Supabase (`supabase db reset`) non è stata eseguita perché la CLI non è disponibile nel PATH.
+- Visual identity: dark/gold FESK theme applicato via `globals.css`; non usare UI chiare o palette fuori tema senza aggiornare `plan/visual-identity-plan.md`.
+
 Quando questo file viene letto per la prima volta dopo lo scaffolding, aggiornare questa sezione con:
 
 - Sprint in corso (1, 2 o 3)

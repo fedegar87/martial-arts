@@ -1,17 +1,28 @@
 // Mirror del DB Postgres in snake_case.
-// Sprint 1: un solo livello di tipi. Domain types camelCase aggiungibili in futuro.
+// Sprint 1.5: due discipline (Shaolin + T'ai Chi), gradi negativi (Chieh, Mezza Luna),
+// modalità pratica (solo / paired / both), nome cinese + traduzione italiana.
+
+export type Discipline = "shaolin" | "taichi";
+
+export type PracticeMode = "solo" | "paired" | "both";
 
 export type SkillCategory =
   | "forme"
-  | "tecniche_base"
-  | "combinazioni"
-  | "preparatori"
-  | "condizionamento"
-  | "altro";
+  | "tui_fa"
+  | "po_chi"
+  | "chin_na"
+  | "armi_forma"
+  | "armi_combattimento"
+  | "tue_shou"
+  | "ta_lu"
+  | "chi_kung"
+  | "preparatori";
 
 export type PlanStatus = "focus" | "review" | "maintenance";
 
 export type PlanItemSource = "exam_program" | "manual";
+
+export type PlanMode = "exam" | "custom";
 
 export type UserRole = "student" | "instructor" | "admin";
 
@@ -26,14 +37,17 @@ export type School = {
 export type Skill = {
   id: string;
   school_id: string;
-  name: string;
+  name: string; // nome cinese traslitterato
+  name_italian: string | null;
   category: SkillCategory;
+  discipline: Discipline;
+  practice_mode: PracticeMode;
   description: string | null;
   video_url: string;
   thumbnail_url: string | null;
   teacher_notes: string | null;
   estimated_duration_seconds: number | null;
-  minimum_level: number;
+  minimum_grade_value: number;
   display_order: number;
   created_at: string;
 };
@@ -41,9 +55,12 @@ export type Skill = {
 export type ExamProgram = {
   id: string;
   school_id: string;
-  level_number: number;
+  discipline: Discipline;
+  grade_value: number;
   level_name: string;
   description: string | null;
+  grade_from: string | null;
+  grade_to: string | null;
 };
 
 export type ExamSkillRequirement = {
@@ -56,8 +73,11 @@ export type UserProfile = {
   id: string;
   school_id: string;
   display_name: string;
-  assigned_level: number;
+  assigned_level_shaolin: number;
+  assigned_level_taichi: number; // 0 = non praticato
   preparing_exam_id: string | null;
+  preparing_exam_taichi_id: string | null;
+  plan_mode: PlanMode;
   role: UserRole;
   created_at: string;
 };
@@ -93,13 +113,4 @@ export type NewsItem = {
   event_date: string | null;
   event_location: string | null;
   pinned: boolean;
-};
-
-export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
-  forme: "Forme",
-  tecniche_base: "Tecniche base",
-  combinazioni: "Combinazioni",
-  preparatori: "Preparatori",
-  condizionamento: "Condizionamento",
-  altro: "Altro",
 };

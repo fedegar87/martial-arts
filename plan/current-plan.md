@@ -233,7 +233,7 @@ skill-practice/
 │   │   │   ├── SkillListItem.tsx
 │   │   │   └── AddToPlanSheet.tsx
 │   │   ├── skill/
-│   │   │   ├── YouTubeEmbed.tsx
+│   │   │   ├── VideoPlayer.tsx
 │   │   │   ├── LevelBadge.tsx
 │   │   │   └── StatusBadge.tsx
 │   │   ├── profile/
@@ -399,12 +399,22 @@ PIANO LIBERO
 
 ### Sprint 1 — MUST HAVE
 
+> Stato aprile 2026: Sprint 1 base completato; sono stati aggiunti sprint operativi 1.5-1.8 nei file dedicati in `plan/`.
+
+#### Sprint 1.x operativo
+
+- **1.5 — Curriculum FESK:** schema/tipi/UI/seed implementati; `0004_seed_fesk.sql` generato da `skill-practice/scripts/generate-fesk-seed.mjs` usando `plan/curriculum-mapping-fesk.md`.
+- **1.6 — VideoPlayer custom:** implementato in `src/components/skill/VideoPlayer.tsx`; sostituisce `YouTubeEmbed` e carica YouTube solo dopo tap.
+- **1.7 — UX Programma + Modalità di studio:** schema `0005_plan_mode.sql`, `/library/program`, `/plan/exam`, `/plan/custom` e azioni RPC atomiche implementate; richiede migrations applicate per walkthrough reale.
+- **1.8 — Tab Progresso:** `/progress` e BottomNav a 4 tab implementati con SVG/Tailwind, senza dipendenze chart.
+- **Visual identity FESK:** tema dark/gold applicato in `globals.css`, con overlay grain e componenti core meno arrotondati.
+
 1. Setup: Next.js + Tailwind + shadcn/ui + PWA + Supabase
 2. Schema database + seed data (skill, esami, scuola)
 3. Login (Supabase Auth)
 4. Onboarding (conferma livello + selezione esame)
 5. Tab "Oggi": pratica guidata con focus/review/maintenance
-6. YouTubeEmbed responsive
+6. VideoPlayer responsive lazy YouTube
 7. Bottone "Fatto" → log su database
 8. Tab "Libreria" con tre modi: mio livello / per esame / tutto
 9. Dettaglio skill: video + note + "Aggiungi al piano"
@@ -415,7 +425,7 @@ PIANO LIBERO
 
 12. Piano libero: aggiungi/rimuovi/nascondi skill
 13. **⚠️ D6:** note personali post-pratica
-14. Progresso settimanale + countdown esame
+14. Progresso settimanale + countdown esame — sostituito da Sprint 1.8 per le visualizzazioni progresso; countdown resta futuro perché manca una data esame nel modello dati
 15. Bacheca news (eventi + comunicazioni federazione)
 
 ### Sprint 3

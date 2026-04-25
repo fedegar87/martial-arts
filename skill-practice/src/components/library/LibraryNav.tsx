@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const TABS = [
   { href: "/library", label: "Mio livello", exact: true },
   { href: "/library/exam", label: "Per esame", exact: false },
   { href: "/library/all", label: "Tutto", exact: false },
+  { href: "/library/program", label: "Programma", exact: false },
 ];
 
 export function LibraryNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const discipline = searchParams.get("d");
 
   function isActive(tab: (typeof TABS)[number]) {
     return tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
@@ -23,7 +26,7 @@ export function LibraryNav() {
         return (
           <Link
             key={tab.href}
-            href={tab.href}
+            href={discipline ? `${tab.href}?d=${discipline}` : tab.href}
             className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
               active
                 ? "border-primary text-foreground"
