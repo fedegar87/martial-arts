@@ -1,5 +1,6 @@
 -- Seed iniziale: 1 federazione, 11 skill Wing Chun, 3 programmi d'esame.
 -- UUID deterministici per leggibilità e debug.
+-- Idempotente: re-eseguibile in sicurezza grazie agli ON CONFLICT DO UPDATE.
 
 -- ============================================================
 -- SCHOOL
@@ -8,7 +9,10 @@
 INSERT INTO schools (id, name, description) VALUES
   ('00000000-0000-0000-0001-000000000001',
    'Federazione Kung Fu',
-   'Federazione di riferimento per Wing Chun tradizionale');
+   'Federazione di riferimento per Wing Chun tradizionale')
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description;
 
 -- ============================================================
 -- SKILLS (11 totali)
@@ -107,7 +111,16 @@ INSERT INTO skills (id, school_id, name, category, video_url, teacher_notes, est
    'condizionamento',
    'https://www.youtube.com/watch?v=PLACEHOLDER_11',
    '2 minuti minimo. Schiena dritta. Ginocchia verso l''interno.',
-   180, 1, 1);
+   180, 1, 1)
+ON CONFLICT (id) DO UPDATE SET
+  school_id = EXCLUDED.school_id,
+  name = EXCLUDED.name,
+  category = EXCLUDED.category,
+  video_url = EXCLUDED.video_url,
+  teacher_notes = EXCLUDED.teacher_notes,
+  estimated_duration_seconds = EXCLUDED.estimated_duration_seconds,
+  minimum_level = EXCLUDED.minimum_level,
+  display_order = EXCLUDED.display_order;
 
 -- ============================================================
 -- EXAM PROGRAMS
@@ -128,7 +141,12 @@ INSERT INTO exam_programs (id, school_id, level_number, level_name, description)
   ('00000000-0000-0000-0003-000000000003',
    '00000000-0000-0000-0001-000000000001',
    3, '3° Livello',
-   'Chum Kiu, applicazioni avanzate');
+   'Chum Kiu, applicazioni avanzate')
+ON CONFLICT (id) DO UPDATE SET
+  school_id = EXCLUDED.school_id,
+  level_number = EXCLUDED.level_number,
+  level_name = EXCLUDED.level_name,
+  description = EXCLUDED.description;
 
 -- ============================================================
 -- EXAM SKILL REQUIREMENTS (junction)
@@ -143,7 +161,9 @@ INSERT INTO exam_skill_requirements (exam_id, skill_id, default_status) VALUES
   ('00000000-0000-0000-0003-000000000001', '00000000-0000-0000-0002-000000000007', 'focus'),       -- Fook Sao
   ('00000000-0000-0000-0003-000000000001', '00000000-0000-0000-0002-000000000008', 'focus'),       -- Pak Sao
   ('00000000-0000-0000-0003-000000000001', '00000000-0000-0000-0002-000000000009', 'review'),      -- Tan+Bong drill
-  ('00000000-0000-0000-0003-000000000001', '00000000-0000-0000-0002-000000000011', 'review');      -- Stance
+  ('00000000-0000-0000-0003-000000000001', '00000000-0000-0000-0002-000000000011', 'review')       -- Stance
+ON CONFLICT (exam_id, skill_id) DO UPDATE SET
+  default_status = EXCLUDED.default_status;
 
 -- 2° Livello
 INSERT INTO exam_skill_requirements (exam_id, skill_id, default_status) VALUES
@@ -153,7 +173,9 @@ INSERT INTO exam_skill_requirements (exam_id, skill_id, default_status) VALUES
   ('00000000-0000-0000-0003-000000000002', '00000000-0000-0000-0002-000000000002', 'maintenance'), -- SNT s2
   ('00000000-0000-0000-0003-000000000002', '00000000-0000-0000-0002-000000000005', 'review'),      -- Tan Sao
   ('00000000-0000-0000-0003-000000000002', '00000000-0000-0000-0002-000000000006', 'review'),      -- Bong Sao
-  ('00000000-0000-0000-0003-000000000002', '00000000-0000-0000-0002-000000000009', 'review');      -- Tan+Bong drill
+  ('00000000-0000-0000-0003-000000000002', '00000000-0000-0000-0002-000000000009', 'review')       -- Tan+Bong drill
+ON CONFLICT (exam_id, skill_id) DO UPDATE SET
+  default_status = EXCLUDED.default_status;
 
 -- 3° Livello
 INSERT INTO exam_skill_requirements (exam_id, skill_id, default_status) VALUES
@@ -161,4 +183,6 @@ INSERT INTO exam_skill_requirements (exam_id, skill_id, default_status) VALUES
   ('00000000-0000-0000-0003-000000000003', '00000000-0000-0000-0002-000000000003', 'review'),      -- SNT s3
   ('00000000-0000-0000-0003-000000000003', '00000000-0000-0000-0002-000000000010', 'review'),      -- Lap+contropugno
   ('00000000-0000-0000-0003-000000000003', '00000000-0000-0000-0002-000000000001', 'maintenance'), -- SNT s1
-  ('00000000-0000-0000-0003-000000000003', '00000000-0000-0000-0002-000000000002', 'maintenance'); -- SNT s2
+  ('00000000-0000-0000-0003-000000000003', '00000000-0000-0000-0002-000000000002', 'maintenance')  -- SNT s2
+ON CONFLICT (exam_id, skill_id) DO UPDATE SET
+  default_status = EXCLUDED.default_status;
