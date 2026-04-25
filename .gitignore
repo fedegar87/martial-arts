@@ -1,0 +1,29 @@
+# Env files (skill-practice/.gitignore covers .env*, this is extra safety at workspace root)
+.env
+.env.local
+.env.*.local
+**/.env.local
+**/.env.*.local
+
+# Node / Next
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+*.pem
+.turbo
