@@ -78,6 +78,14 @@ Per il razionale completo vedi `archive/`:
 
 **Esplicitamente escluso:** Supabase Storage video, signed URL, API route video, compressione/upload, CDN proprio.
 
+**Note Next 16 (versione installata: 16.2.4 con Turbopack):**
+- `middleware` rinominato in `proxy` (file `src/proxy.ts`, era `src/middleware.ts`)
+- `cookies()`, `headers()`, dynamic route `params` sono ora `Promise` (da `await`are)
+- Tailwind v4 (config via `globals.css` `@theme`, niente `tailwind.config.ts` per shadcn)
+- shadcn preset usato: **Nova** (Lucide + Geist), base color: **neutral**
+- `next-pwa@5.6` installato ma **non wirato**: incompatibile con Next 16, da sostituire con `@serwist/next` in Sprint 2
+- Per breaking changes complete vedi `skill-practice/node_modules/next/dist/docs/01-app/`
+
 ---
 
 ## 4. MODELLO DATI
@@ -194,7 +202,7 @@ skill-practice/
 │   ├── icons/                          # 192, 512, maskable
 │   └── favicon.ico
 ├── src/
-│   ├── middleware.ts                   # Auth gate + refresh sessione Supabase
+│   ├── proxy.ts                        # Auth gate + refresh sessione Supabase (Next 16: ex middleware.ts)
 │   ├── app/
 │   │   ├── layout.tsx                  # Shell HTML + provider
 │   │   ├── page.tsx                    # Redirect → /today o /onboarding
@@ -802,7 +810,7 @@ Stop e consultare un avvocato data protection prima di shippare. Required:
 
 ### 15.5 Hosting e data residency
 
-- **Supabase region: Frankfurt EU** (NON US). Configurare alla creazione progetto, non modificabile dopo
+- **Supabase region: una EU** (NON US). Configurare alla creazione progetto, non modificabile dopo. Validi: `Frankfurt EU`, `London eu-west-2`. Il progetto attuale (`nano`) è su `London eu-west-2` — UK ha adequacy decision con EU per GDPR ✓
 - **Vercel**: edge globale per static, ma dati DB restano in EU
 - **Backup Supabase**: automatici, stesso region
 - Dichiarare nel privacy policy: "I dati sono ospitati in EU su Supabase (Frankfurt) e Vercel (edge globale, no storage)"
@@ -933,7 +941,7 @@ Ogni task eseguibile da un sub-agent in isolamento. Ordine = dipendenze.
 | 2 | Schema DB | `supabase/migrations/0001_schema.sql` con 6 tabelle + RLS | general-purpose | `supabase db reset` esegue, RLS attiva su tutte le tabelle |
 | 3 | Seed data | `supabase/migrations/0002_seed.sql` con i dati di §12 | general-purpose | 11 skill + 3 esami + junction `exam_skill_requirements` popolata |
 | 4 | Supabase clients | `lib/supabase/{client,server,middleware}.ts` | general-purpose | I 3 client esportano funzioni separate, tipi corretti |
-| 5 | Middleware auth | `src/middleware.ts` con redirect a `/login` per `(app)/*` | general-purpose | Request a `/today` senza sessione → 307 a `/login` |
+| 5 | Proxy auth (ex middleware) | `src/proxy.ts` con redirect a `/login` per `(app)/*` (Next 16 file convention) | general-purpose | Request a `/today` senza sessione → 307 a `/login` |
 | 6 | Login page | `(auth)/login/page.tsx` con form email/password | frontend-design | Login funzionante con utente Supabase |
 | 7 | Onboarding | `(app)/onboarding/page.tsx` con selezione esame | frontend-design | UserProfile creato, redirect a `/today` |
 | 8 | YouTubeEmbed | `components/skill/YouTubeEmbed.tsx` | general-purpose | Converte `watch?v=` in `embed/`, responsive 16:9, `rel=0` |
@@ -946,7 +954,7 @@ Ogni task eseguibile da un sub-agent in isolamento. Ordine = dipendenze.
 | 15 | Skill detail | `(app)/skill/[skillId]/page.tsx` | frontend-design | Video play, "Aggiungi al piano" funzionante |
 | 16 | Profile page | `(app)/profile/page.tsx` | frontend-design | Nome, livello, esame, progresso settimanale |
 | 17 | BottomNav | `(app)/layout.tsx` con nav | frontend-design | 3 tab funzionanti, active state |
-| 18 | PWA manifest | `public/manifest.json` + icone (192, 512, maskable) | general-purpose | Lighthouse PWA ≥90, installabile su Android |
+| 18 | PWA manifest | `public/manifest.json` + icone (SVG ora; PNG 192/512/maskable per polish) | general-purpose | Manifest valido, installabile su Android. Lighthouse PWA ≥90 richiede service worker → Sprint 2 con `@serwist/next` |
 | 19 | Security headers | `next.config.js` da §14.5 | general-purpose | securityheaders.com grade A |
 | 20 | Deploy | Vercel + env vars | general-purpose | URL Vercel pubblico funzionante, login OK |
 
