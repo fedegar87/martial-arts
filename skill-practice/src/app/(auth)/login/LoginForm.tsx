@@ -20,8 +20,10 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Accedi</CardTitle>
-        <CardDescription>Skill Practice — pratica guidata</CardDescription>
+        <CardTitle>Skill Practice FESK</CardTitle>
+        <CardDescription>
+          Accedi al tuo quaderno tecnico digitale.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={action} className="space-y-4">

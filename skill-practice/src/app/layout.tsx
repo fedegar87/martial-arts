@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Bebas_Neue,
+  Cormorant_Garamond,
+  Geist,
+  Space_Mono,
+  Spectral,
+} from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -7,9 +14,29 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const displayFont = Cormorant_Garamond({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const bodyFont = Spectral({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+const labelFont = Bebas_Neue({
+  variable: "--font-label",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const monoFont = Space_Mono({
+  variable: "--font-space-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -27,8 +54,6 @@ export const viewport = {
   themeColor: "#080808",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -39,9 +64,10 @@ export default function RootLayout({
   return (
     <html
       lang="it"
-      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${displayFont.variable} ${bodyFont.variable} ${labelFont.variable} ${monoFont.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground min-h-full flex flex-col">
+        <ServiceWorkerRegister />
         <div className="grain-overlay" aria-hidden="true" />
         {children}
       </body>

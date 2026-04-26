@@ -9,7 +9,7 @@ type Props = {
 
 export function CurriculumMap({ cells }: Props) {
   return (
-    <section className="space-y-4 rounded-lg border p-4">
+    <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]">
       <SectionHeader icon={Grid3X3} title="Copertura curriculum" />
       <div className="grid grid-cols-10 gap-1 sm:grid-cols-14">
         {cells.map((cell) => {
@@ -20,6 +20,7 @@ export function CurriculumMap({ cells }: Props) {
                 key={cell.skill.id}
                 className={className}
                 title={`${cell.skill.name}: bloccata`}
+                aria-label={`${cell.skill.name}: bloccata`}
                 aria-disabled
               />
             );
@@ -30,12 +31,13 @@ export function CurriculumMap({ cells }: Props) {
               href={`/skill/${cell.skill.id}`}
               className={className}
               title={cell.skill.name}
+              aria-label={`${cell.skill.name}: ${statusLabel(cell.status)}`}
             />
           );
         })}
       </div>
       <div className="text-muted-foreground text-sm">
-        {cells.filter((cell) => cell.status !== "locked").length} skill
+        {cells.filter((cell) => cell.status !== "locked").length} contenuti
         accessibili,{" "}
         {
           cells.filter(
@@ -53,8 +55,16 @@ export function CurriculumMap({ cells }: Props) {
 
 function statusClass(status: CurriculumCell["status"]): string {
   if (status === "focus") return "bg-primary";
-  if (status === "review") return "bg-amber-500";
-  if (status === "maintenance") return "bg-green-500";
+  if (status === "review") return "bg-[var(--status-warning)]";
+  if (status === "maintenance") return "bg-[var(--status-success)]";
   if (status === "locked") return "bg-muted opacity-40";
   return "bg-muted-foreground/25";
+}
+
+function statusLabel(status: CurriculumCell["status"]): string {
+  if (status === "focus") return "focus";
+  if (status === "review") return "ripasso";
+  if (status === "maintenance") return "mantenimento";
+  if (status === "locked") return "bloccata";
+  return "accessibile";
 }

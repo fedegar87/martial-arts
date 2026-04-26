@@ -3,8 +3,8 @@ import { DISCIPLINE_LABELS } from "@/lib/labels";
 import type { Discipline } from "@/lib/types";
 
 const STYLES: Record<Discipline, string> = {
-  shaolin: "bg-orange-700 text-white border-transparent",
-  taichi: "bg-blue-700 text-white border-transparent",
+  shaolin: "border-primary/30 bg-primary/10 text-primary",
+  taichi: "border-primary/30 bg-primary/10 text-primary",
 };
 
 export function DisciplineBadge({ discipline }: { discipline: Discipline }) {

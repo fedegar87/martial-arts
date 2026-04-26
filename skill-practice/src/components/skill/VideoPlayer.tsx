@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 import { extractYouTubeId } from "@/lib/youtube";
-import { categoryEmoji } from "@/lib/labels";
 import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
+import { CategoryIcon } from "@/components/skill/CategoryIcon";
 import type { PracticeMode, SkillCategory } from "@/lib/types";
 
 type Props = {
@@ -54,11 +54,9 @@ export function VideoPlayer({
         type="button"
         onClick={() => setIsPlaying(true)}
         aria-label={`Riproduci video: ${title}`}
-            className="bg-card hover:bg-primary/10 active:bg-primary/20 focus-visible:outline-primary flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-md border border-border transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="tap-feedback hairline bg-card hover:bg-primary/10 active:bg-primary/20 focus-visible:outline-primary flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-md border filter sepia-[0.12] transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2"
       >
-        <span className="text-3xl" aria-hidden>
-          {categoryEmoji(category)}
-        </span>
+        <CategoryIcon category={category} className="text-primary h-8 w-8" />
         <span className="text-foreground px-4 text-center text-sm font-medium leading-tight">
           {title}
         </span>
@@ -77,10 +75,8 @@ export function VideoPlayer({
 
 function UnavailablePlaceholder({ category }: { category?: SkillCategory }) {
   return (
-    <div className="bg-muted flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-md">
-      <span className="text-2xl" aria-hidden>
-        {categoryEmoji(category)}
-      </span>
+    <div className="surface-inset flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-md filter sepia-[0.12]">
+      <CategoryIcon category={category} className="text-primary/80 h-7 w-7" />
       <span className="text-muted-foreground text-sm">
         Video non ancora disponibile
       </span>

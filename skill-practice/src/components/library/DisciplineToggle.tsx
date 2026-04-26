@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SegmentedNav } from "@/components/shared/SegmentedNav";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import type { Discipline } from "@/lib/types";
 
@@ -22,23 +22,13 @@ export function DisciplineToggle({
   if (visible.length < 2) return null;
 
   return (
-    <div className="bg-muted inline-flex rounded-lg p-1">
-      {visible.map((discipline) => {
-        const active = current === discipline;
-        return (
-          <Link
-            key={discipline}
-            href={`${basePath}?d=${discipline}`}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              active
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {DISCIPLINE_LABELS[discipline]}
-          </Link>
-        );
-      })}
-    </div>
+    <SegmentedNav
+      ariaLabel="Disciplina"
+      items={visible.map((discipline) => ({
+        href: `${basePath}?d=${discipline}`,
+        label: DISCIPLINE_LABELS[discipline],
+        active: current === discipline,
+      }))}
+    />
   );
 }

@@ -3,6 +3,7 @@ import { Lightbulb, Users } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getSkillById } from "@/lib/queries/skills";
 import { getUserPlanItemBySkill } from "@/lib/queries/plan";
+import { getPersonalNotesForSkill } from "@/lib/queries/practice-log";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
 import { LevelBadge } from "@/components/skill/LevelBadge";
 import { StatusBadge } from "@/components/skill/StatusBadge";
@@ -24,6 +25,7 @@ export default async function SkillDetailPage({ params }: Props) {
   if (!skill) notFound();
 
   const planItem = await getUserPlanItemBySkill(profile.id, skillId);
+  const personalNotes = await getPersonalNotesForSkill(profile.id, skillId);
   const inPlan = planItem !== null && !planItem.is_hidden;
   const requiresPartner =
     skill.practice_mode === "paired" || skill.practice_mode === "both";
@@ -31,6 +33,10 @@ export default async function SkillDetailPage({ params }: Props) {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
+        <h1 className="text-2xl font-semibold">{skill.name}</h1>
+        {skill.name_italian && (
+          <p className="text-muted-foreground">{skill.name_italian}</p>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <DisciplineBadge discipline={skill.discipline} />
           <span className="text-muted-foreground text-sm">
@@ -40,10 +46,6 @@ export default async function SkillDetailPage({ params }: Props) {
           <PracticeModeBadge mode={skill.practice_mode} />
           {inPlan && planItem && <StatusBadge status={planItem.status} />}
         </div>
-        <h1 className="text-2xl font-semibold">{skill.name}</h1>
-        {skill.name_italian && (
-          <p className="text-muted-foreground">{skill.name_italian}</p>
-        )}
       </header>
 
       <VideoPlayer
@@ -65,7 +67,7 @@ export default async function SkillDetailPage({ params }: Props) {
       )}
 
       {skill.teacher_notes && (
-        <Card>
+        <Card className="surface-inset">
           <CardContent className="flex gap-3 pt-6">
             <Lightbulb className="text-primary mt-0.5 h-5 w-5 shrink-0" />
             <div className="space-y-1">
@@ -78,7 +80,35 @@ export default async function SkillDetailPage({ params }: Props) {
         </Card>
       )}
 
-      <AddToPlanButton skillId={skillId} inPlan={inPlan} />
+      {personalNotes.length > 0 && (
+        <Card>
+          <CardContent className="space-y-3 pt-6">
+            <div className="font-medium">Le tue note</div>
+            <div className="space-y-3">
+              {personalNotes.map((note) => (
+                <article key={note.id} className="border-border border-l pl-3">
+                  <time className="text-muted-foreground text-xs">
+                    {formatDate(note.date)}
+                  </time>
+                  <p className="text-sm">{note.personal_note}</p>
+                </article>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="material-bar sticky bottom-24 z-40 -mx-4 border-t border-border px-4 py-3">
+        <AddToPlanButton skillId={skillId} inPlan={inPlan} />
+      </div>
     </div>
   );
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("it-IT", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
 }

@@ -25,7 +25,7 @@ export function GradeEditor({
           <select
             name="assignedLevelShaolin"
             defaultValue={assignedLevelShaolin}
-            className="border-input bg-background h-9 w-full rounded-lg border px-2 text-sm"
+            className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             {SHAOLIN_GRADES.map((grade) => (
               <option key={grade.value} value={grade.value}>
@@ -40,7 +40,7 @@ export function GradeEditor({
           <select
             name="assignedLevelTaichi"
             defaultValue={assignedLevelTaichi}
-            className="border-input bg-background h-9 w-full rounded-lg border px-2 text-sm"
+            className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             {TAICHI_GRADES.map((grade) => (
               <option key={grade.value} value={grade.value}>
@@ -59,6 +59,11 @@ export function GradeEditor({
       {state && "success" in state && (
         <p className="text-muted-foreground text-sm">Gradi aggiornati.</p>
       )}
+
+      <p className="text-muted-foreground text-xs">
+        Cambiare grado modifica i contenuti accessibili e puo richiedere una
+        revisione del piano.
+      </p>
 
       <Button type="submit" disabled={pending}>
         {pending ? "Salvataggio..." : "Salva gradi"}

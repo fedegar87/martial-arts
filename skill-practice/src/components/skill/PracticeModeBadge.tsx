@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { PracticeMode } from "@/lib/types";
-import { PRACTICE_MODE_ICONS, PRACTICE_MODE_LABELS } from "@/lib/labels";
+import { PRACTICE_MODE_LABELS } from "@/lib/labels";
+import { UserRound, UsersRound, type LucideIcon } from "lucide-react";
 
 type Props = {
   mode: PracticeMode;
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export function PracticeModeBadge({ mode, compact = false }: Props) {
+  const Icon = ICONS[mode];
   return (
     <Badge
       variant="secondary"
@@ -15,8 +17,14 @@ export function PracticeModeBadge({ mode, compact = false }: Props) {
       className={compact ? "bg-background/80 px-2 backdrop-blur-sm" : undefined}
       title={compact ? PRACTICE_MODE_LABELS[mode] : undefined}
     >
-      <span className={compact ? "" : "mr-1"}>{PRACTICE_MODE_ICONS[mode]}</span>
+      <Icon className={compact ? "" : "mr-1"} />
       {!compact && PRACTICE_MODE_LABELS[mode]}
     </Badge>
   );
 }
+
+const ICONS: Record<PracticeMode, LucideIcon> = {
+  solo: UserRound,
+  paired: UsersRound,
+  both: UsersRound,
+};

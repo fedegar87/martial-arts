@@ -1,23 +1,16 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { dateKeyDaysAgo, weekStartDateKey } from "@/lib/date";
 import type { PracticeLog } from "@/lib/types";
-
-function toDateString(d: Date): string {
-  return d.toISOString().split("T")[0];
-}
 
 export async function getThisWeekLogs(userId: string): Promise<PracticeLog[]> {
   const supabase = await createClient();
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // 0=Dom, 1=Lun
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
 
   const { data } = await supabase
     .from("practice_logs")
     .select("*")
     .eq("user_id", userId)
-    .gte("date", toDateString(monday))
+    .gte("date", weekStartDateKey())
     .order("date", { ascending: false });
   return (data as PracticeLog[] | null) ?? [];
 }
@@ -27,14 +20,33 @@ export async function getRecentLogsForUser(
   days = 30,
 ): Promise<PracticeLog[]> {
   const supabase = await createClient();
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
 
   const { data } = await supabase
     .from("practice_logs")
     .select("*")
     .eq("user_id", userId)
-    .gte("date", toDateString(cutoff))
+    .gte("date", dateKeyDaysAgo(days))
     .order("date", { ascending: false });
   return (data as PracticeLog[] | null) ?? [];
+}
+
+export async function getPersonalNotesForSkill(
+  userId: string,
+  skillId: string,
+  limit = 8,
+): Promise<PracticeLog[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("practice_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("skill_id", skillId)
+    .not("personal_note", "is", null)
+    .order("date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  return ((data as PracticeLog[] | null) ?? []).filter(
+    (log) => log.personal_note && log.personal_note.trim().length > 0,
+  );
 }

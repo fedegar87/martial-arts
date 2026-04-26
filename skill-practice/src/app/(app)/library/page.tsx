@@ -37,7 +37,7 @@ export default async function LibraryPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Libreria</h1>
+        <h1 className="text-2xl font-semibold">Programma</h1>
         <p className="text-muted-foreground text-sm">
           {DISCIPLINE_LABELS[discipline]} —{" "}
           {userGradeValue === 0

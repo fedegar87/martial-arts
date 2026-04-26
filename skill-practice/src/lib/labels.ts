@@ -11,12 +11,6 @@ export const PRACTICE_MODE_LABELS: Record<PracticeMode, string> = {
   both: "Forma + applicazione",
 };
 
-export const PRACTICE_MODE_ICONS: Record<PracticeMode, string> = {
-  solo: "🧍",
-  paired: "👥",
-  both: "🧍👥",
-};
-
 export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
   forme: "Forme",
   tui_fa: "Tui Fa (calci)",
@@ -29,21 +23,3 @@ export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
   chi_kung: "Chi Kung",
   preparatori: "Preparatori",
 };
-
-const CATEGORY_EMOJI: Record<SkillCategory, string> = {
-  forme: "🥋",
-  tui_fa: "🦵",
-  po_chi: "⚔️",
-  chin_na: "🤝",
-  armi_forma: "🗡️",
-  armi_combattimento: "⚔️",
-  tue_shou: "🤲",
-  ta_lu: "◎",
-  chi_kung: "●",
-  preparatori: "◆",
-};
-
-export function categoryEmoji(category?: SkillCategory | string): string {
-  if (!category) return "🥋";
-  return CATEGORY_EMOJI[category as SkillCategory] ?? "🥋";
-}

@@ -40,7 +40,7 @@ export default async function ProgramPage({ searchParams }: Props) {
       <header>
         <h1 className="text-2xl font-semibold">Programma FESK</h1>
         <p className="text-muted-foreground text-sm">
-          {DISCIPLINE_LABELS[discipline]} — skill introdotte per grado.
+          {DISCIPLINE_LABELS[discipline]} — forme e tecniche introdotte per grado.
         </p>
       </header>
 

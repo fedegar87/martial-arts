@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SegmentedNav } from "@/components/shared/SegmentedNav";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import type { Discipline } from "@/lib/types";
 
@@ -16,26 +16,13 @@ const OPTIONS: Array<{ value: FilterValue; label: string }> = [
 
 export function DisciplineFilter({ current }: Props) {
   return (
-    <div className="bg-muted inline-flex rounded-lg p-1">
-      {OPTIONS.map((option) => {
-        const active = current === option.value;
-        const href =
-          option.value === "all" ? "/today" : `/today?d=${option.value}`;
-
-        return (
-          <Link
-            key={option.value}
-            href={href}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              active
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {option.label}
-          </Link>
-        );
-      })}
-    </div>
+    <SegmentedNav
+      ariaLabel="Filtro disciplina"
+      items={OPTIONS.map((option) => ({
+        href: option.value === "all" ? "/today" : `/today?d=${option.value}`,
+        label: option.label,
+        active: current === option.value,
+      }))}
+    />
   );
 }

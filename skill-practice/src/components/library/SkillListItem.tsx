@@ -7,7 +7,7 @@ import type { Skill } from "@/lib/types";
 export function SkillListItem({ skill }: { skill: Skill }) {
   return (
     <Link href={`/skill/${skill.id}`}>
-      <Card className="hover:bg-muted/50 flex flex-row items-center gap-3 p-3 transition-colors">
+      <Card className="tap-feedback hover:bg-muted/50 flex min-h-16 flex-row items-center gap-3 p-3 transition-colors">
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">{skill.name}</div>
           <div className="text-muted-foreground mt-1 flex items-center gap-2 text-xs">

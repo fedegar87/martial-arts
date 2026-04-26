@@ -14,19 +14,19 @@ const STATUS_CONFIG: Record<
   review: {
     label: "Ripasso",
     Icon: Repeat,
-    className: "border-muted-foreground bg-transparent text-muted-foreground",
+    className: "border-[color:var(--status-warning)] bg-transparent text-[var(--status-warning)]",
   },
   maintenance: {
     label: "Mantenimento",
     Icon: Wrench,
-    className: "border-green-700 bg-transparent text-green-500",
+    className: "border-[color:var(--status-success)] bg-transparent text-[var(--status-success)]",
   },
 };
 
 export function StatusBadge({ status }: { status: PlanStatus }) {
   const { label, Icon, className } = STATUS_CONFIG[status];
   return (
-    <Badge className={className}>
+    <Badge className={`label-font ${className}`}>
       <Icon className="mr-1 h-3 w-3" />
       {label}
     </Badge>

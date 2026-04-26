@@ -8,7 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-body);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-space-mono);
   --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -49,43 +49,75 @@
 }
 
 :root {
-  --background: #080808;
-  --foreground: #e8dfd0;
-  --card: #111111;
-  --card-foreground: #e8dfd0;
-  --popover: #111111;
-  --popover-foreground: #e8dfd0;
-  --primary: #c8a84b;
-  --primary-foreground: #080808;
-  --secondary: #1e1c1a;
-  --secondary-foreground: #c7baa4;
-  --muted: #050505;
-  --muted-foreground: #9a8f80;
-  --accent: #c8a84b;
-  --accent-foreground: #080808;
-  --destructive: #7a1818;
-  --border: #1e1c1a;
-  --input: #1e1c1a;
-  --ring: #c8a84b;
-  --chart-1: #c8a84b;
-  --chart-2: #8a6e2f;
-  --chart-3: #9a8f80;
-  --chart-4: #4a4540;
-  --chart-5: #7a1818;
-  --radius: 0.25rem;
-  --sidebar: #111111;
-  --sidebar-foreground: #e8dfd0;
-  --sidebar-primary: #c8a84b;
-  --sidebar-primary-foreground: #080808;
-  --sidebar-accent: #1e1c1a;
-  --sidebar-accent-foreground: #e8dfd0;
-  --sidebar-border: #1e1c1a;
-  --sidebar-ring: #c8a84b;
-  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-  --font-body: "Spectral", Georgia, "Times New Roman", serif;
-  --font-label: "Bebas Neue", var(--font-geist-sans), Arial, sans-serif;
-  --gold-muted: #8a6e2f;
-  --gold-glow: rgba(200, 168, 75, 0.12);
+  --neutral-950: #080808;
+  --neutral-925: #0d0c0b;
+  --neutral-900: #111111;
+  --neutral-850: #171514;
+  --neutral-800: #1e1c1a;
+  --warm-100: #e8dfd0;
+  --warm-300: #c7baa4;
+  --warm-500: #9a8f80;
+  --gold-500: #c8a84b;
+  --gold-650: #8a6e2f;
+
+  --surface-base: var(--neutral-950);
+  --surface-grouped: var(--neutral-900);
+  --surface-elevated: var(--neutral-850);
+  --surface-inset: #050505;
+  --label: var(--warm-100);
+  --label-secondary: var(--warm-500);
+  --label-tertiary: #6f675d;
+  --separator: rgba(154, 143, 128, 0.14);
+  --separator-opaque: var(--neutral-800);
+  --tint: var(--gold-500);
+  --tint-muted: var(--gold-650);
+  --tint-glow: rgba(200, 168, 75, 0.14);
+  --status-success: #33a661;
+  --status-warning: #d6911d;
+  --status-info: #4f91d8;
+  --status-error: #9c2424;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.44), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.32);
+  --ease-spring-snappy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+  --duration-feedback: 150ms;
+  --duration-transition: 280ms;
+
+  --background: var(--surface-base);
+  --foreground: var(--label);
+  --card: var(--surface-grouped);
+  --card-foreground: var(--label);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--label);
+  --primary: var(--tint);
+  --primary-foreground: var(--surface-base);
+  --secondary: var(--surface-elevated);
+  --secondary-foreground: var(--warm-300);
+  --muted: var(--surface-inset);
+  --muted-foreground: var(--label-secondary);
+  --accent: var(--tint);
+  --accent-foreground: var(--surface-base);
+  --destructive: var(--status-error);
+  --border: var(--separator);
+  --input: var(--separator-opaque);
+  --ring: var(--tint);
+  --chart-1: var(--tint);
+  --chart-2: var(--status-warning);
+  --chart-3: var(--status-success);
+  --chart-4: var(--status-info);
+  --chart-5: var(--status-error);
+  --radius: 0.625rem;
+  --sidebar: var(--surface-grouped);
+  --sidebar-foreground: var(--label);
+  --sidebar-primary: var(--tint);
+  --sidebar-primary-foreground: var(--surface-base);
+  --sidebar-accent: var(--surface-elevated);
+  --sidebar-accent-foreground: var(--label);
+  --sidebar-border: var(--separator);
+  --sidebar-ring: var(--tint);
+  --gold-muted: var(--tint-muted);
+  --gold-glow: var(--tint-glow);
 }
 
 .dark {
@@ -98,6 +130,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-height: 100dvh;
   }
   html {
     @apply font-sans;
@@ -108,14 +141,74 @@
   [data-slot="card-title"] {
     font-family: var(--font-display);
   }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+  select,
+  textarea,
+  input[data-slot="input"] {
+    min-height: 44px;
+  }
+  button[data-slot="button"],
+  a[data-slot="button"] {
+    min-height: 44px;
+  }
+  button[data-slot="button"][data-size^="icon"],
+  a[data-slot="button"][data-size^="icon"] {
+    min-width: 44px;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--tint);
+  }
+}
+
+@layer components {
+  .material-bar {
+    background: rgba(17, 17, 17, 0.74);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .material-sheet {
+    background: rgba(23, 21, 20, 0.9);
+    backdrop-filter: saturate(150%) blur(26px);
+    -webkit-backdrop-filter: saturate(150%) blur(26px);
+  }
+
+  .surface-inset {
+    background: var(--surface-inset);
+    border: 0.5px solid var(--separator);
+  }
+
+  .hairline {
+    border-color: var(--separator);
+  }
+
+  .tap-feedback {
+    transition:
+      transform var(--duration-feedback) var(--ease-spring-snappy),
+      background-color var(--duration-feedback) ease,
+      color var(--duration-feedback) ease,
+      border-color var(--duration-feedback) ease;
+  }
+
+  .tap-feedback:active {
+    transform: scale(0.97);
+  }
 }
 
 .grain-overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 20;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0.045;
   mix-blend-mode: overlay;
   background-image:
     radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px),
@@ -127,4 +220,24 @@
   font-family: var(--font-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.12s !important;
+  }
+}
+
+@media (prefers-reduced-transparency) {
+  .material-bar,
+  .material-sheet {
+    background: var(--surface-elevated);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { categoryEmoji } from "@/lib/labels";
+import { CategoryIcon } from "@/components/skill/CategoryIcon";
 import type { PlanStatus, Skill } from "@/lib/types";
 
 type Props = {
@@ -10,14 +10,14 @@ type Props = {
 
 const STATUS_CLASS: Record<PlanStatus, string> = {
   focus: "bg-primary",
-  review: "bg-amber-500",
-  maintenance: "bg-green-500",
+  review: "bg-[var(--status-warning)]",
+  maintenance: "bg-[var(--status-success)]",
 };
 
 export function ProgramSkillRow({ skill, locked, planStatus }: Props) {
   const content = (
     <div
-      className={`flex items-center gap-3 rounded-md px-2 py-2 text-sm ${
+      className={`tap-feedback flex min-h-12 items-center gap-3 rounded-md px-2 py-2 text-sm ${
         locked ? "text-muted-foreground opacity-60" : "hover:bg-muted"
       }`}
     >
@@ -27,7 +27,7 @@ export function ProgramSkillRow({ skill, locked, planStatus }: Props) {
         }`}
         aria-label={planStatus ? `Nel piano: ${planStatus}` : "Non nel piano"}
       />
-      <span aria-hidden>{categoryEmoji(skill.category)}</span>
+      <CategoryIcon category={skill.category} className="text-muted-foreground h-4 w-4" />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{skill.name}</span>
         {skill.name_italian && (

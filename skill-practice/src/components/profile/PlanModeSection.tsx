@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { switchToCustomMode } from "@/lib/actions/plan";
 import type { ExamProgram, PlanMode } from "@/lib/types";
 
@@ -20,15 +28,17 @@ export function PlanModeSection({
   planCount,
 }: Props) {
   const [pending, startTransition] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   function handleCustomClick() {
-    const confirmed = window.confirm(
-      "Passare alla selezione libera rimuove le skill del programma esame, ma mantiene lo storico pratica.",
-    );
-    if (!confirmed) return;
+    if (planMode === "custom") return;
+    setConfirmOpen(true);
+  }
 
+  function confirmCustomMode() {
     startTransition(async () => {
       await switchToCustomMode();
+      setConfirmOpen(false);
     });
   }
 
@@ -39,7 +49,7 @@ export function PlanModeSection({
           {planMode === "custom" ? "Selezione libera" : "Programma esame"}
         </div>
         <p className="text-muted-foreground text-sm">
-          {planCount} skill attive nel piano
+          {planCount} contenuti attivi nel piano
         </p>
       </div>
 
@@ -63,6 +73,29 @@ export function PlanModeSection({
           Selezione libera
         </Button>
       </div>
+      <Sheet open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <SheetContent side="bottom" className="material-sheet pb-[env(safe-area-inset-bottom)]">
+          <SheetHeader>
+            <SheetTitle>Passare alla selezione libera?</SheetTitle>
+            <SheetDescription>
+              Verranno rimossi dal piano i contenuti generati dal programma
+              esame. Lo storico pratica e le note restano salvati.
+            </SheetDescription>
+          </SheetHeader>
+          <SheetFooter>
+            <Button onClick={confirmCustomMode} disabled={pending}>
+              {pending ? "Aggiornamento..." : "Conferma"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setConfirmOpen(false)}
+            >
+              Annulla
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

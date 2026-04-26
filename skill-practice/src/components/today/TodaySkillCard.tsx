@@ -21,8 +21,8 @@ export function TodaySkillCard({ skill, status, alreadyDoneToday }: Props) {
     <Card
       className={
         status === "focus"
-          ? "border-primary shadow-[0_0_24px_var(--gold-glow)]"
-          : undefined
+          ? "border-primary/40 shadow-[0_0_24px_var(--gold-glow)]"
+          : "border-transparent"
       }
     >
       <CardHeader>
@@ -50,8 +50,8 @@ export function TodaySkillCard({ skill, status, alreadyDoneToday }: Props) {
           practiceMode={skill.practice_mode}
         />
         {skill.teacher_notes && (
-          <div className="bg-muted text-muted-foreground flex gap-2 rounded-sm p-3 text-sm italic">
-            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="surface-inset text-muted-foreground flex gap-2 rounded-sm p-3 text-sm italic">
+            <Lightbulb className="text-primary/80 mt-0.5 h-4 w-4 shrink-0" />
             <span>{skill.teacher_notes}</span>
           </div>
         )}

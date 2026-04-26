@@ -161,4 +161,5 @@ Questo aggiornamento trasforma l'app `skill-practice` da uno strumento puramente
 - Palette dark/gold applicata in `src/app/globals.css` tramite variabili shadcn/Tailwind.
 - Overlay grain implementato via CSS puro (`.grain-overlay`) in `src/app/layout.tsx`, senza asset esterni.
 - Componenti core aggiornati: `Button`, `Badge`, `Card`, `BottomNav`, `StatusBadge`, `TodaySkillCard`, `VideoPlayer`.
-- Font dichiarati come stack CSS (`Cormorant Garamond`, `Spectral`, `Bebas Neue`) con fallback locali; non sono stati aggiunti download o dipendenze runtime.
+- Font caricati con `next/font/google`: `Cormorant Garamond`, `Spectral`, `Bebas Neue`, `Space Mono`.
+- `StatusBadge` usa `.label-font`, `LevelBadge` usa `font-mono`, `VideoPlayer` applica sepia al placeholder senza toccare l'iframe.

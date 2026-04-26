@@ -23,7 +23,7 @@ export function GradeSection({
         <h2 className="text-sm font-medium">{title}</h2>
         <div className="text-muted-foreground flex items-center gap-1 text-xs">
           {locked && <Lock className="h-3.5 w-3.5" />}
-          {skills.length} skill
+          {skills.length} contenuti
         </div>
       </div>
       <div className="divide-border rounded-lg border p-1">

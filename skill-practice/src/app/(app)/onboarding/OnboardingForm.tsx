@@ -52,23 +52,23 @@ export function OnboardingForm({ exams, displayName }: Props) {
           <section className="space-y-3">
             <div className="text-sm font-medium">Discipline praticate</div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="flex items-center gap-3 rounded-lg border p-3 text-sm">
+              <label className="tap-feedback flex min-h-12 items-center gap-3 rounded-lg border p-3 text-sm">
                 <input
                   type="checkbox"
                   name="practicesShaolin"
                   checked={practicesShaolin}
                   onChange={(event) => setPracticesShaolin(event.target.checked)}
-                  className="h-4 w-4"
+                  className="h-5 w-5"
                 />
                 {DISCIPLINE_LABELS.shaolin}
               </label>
-              <label className="flex items-center gap-3 rounded-lg border p-3 text-sm">
+              <label className="tap-feedback flex min-h-12 items-center gap-3 rounded-lg border p-3 text-sm">
                 <input
                   type="checkbox"
                   name="practicesTaichi"
                   checked={practicesTaichi}
                   onChange={(event) => setPracticesTaichi(event.target.checked)}
-                  className="h-4 w-4"
+                  className="h-5 w-5"
                 />
                 {DISCIPLINE_LABELS.taichi}
               </label>
@@ -84,7 +84,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   <select
                     name="assignedLevelShaolin"
                     defaultValue={8}
-                    className="border-input bg-background h-9 w-full rounded-lg border px-2 text-sm"
+                    className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
                   >
                     {SHAOLIN_GRADES.map((grade) => (
                       <option key={grade.value} value={grade.value}>
@@ -103,7 +103,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   <select
                     name="assignedLevelTaichi"
                     defaultValue={5}
-                    className="border-input bg-background h-9 w-full rounded-lg border px-2 text-sm"
+                    className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
                   >
                     {TAICHI_GRADES.filter((grade) => grade.value !== 0).map(
                       (grade) => (
@@ -126,7 +126,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
               name="examId"
               required
               defaultValue={firstExamId}
-              className="border-input bg-background h-9 w-full rounded-lg border px-2 text-sm"
+              className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
               disabled={visibleExams.length === 0}
             >
               {visibleExams.map((exam) => (

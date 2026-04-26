@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Target } from "lucide-react";
 import { SectionHeader } from "@/components/progress/SectionHeader";
-import type { ProgressData } from "@/lib/queries/progress";
+import type { ExamProgressInfo } from "@/lib/queries/progress";
 
 type Props = {
-  progress: NonNullable<ProgressData["examProgress"]>;
+  progress: ExamProgressInfo;
 };
 
 export function ExamProgress({ progress }: Props) {
@@ -13,7 +13,7 @@ export function ExamProgress({ progress }: Props) {
   const offset = circumference - (progress.percent / 100) * circumference;
 
   return (
-    <section className="space-y-4 rounded-lg border p-4">
+    <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]">
       <SectionHeader icon={Target} title="Esame in preparazione" />
       <div className="flex items-center gap-5">
         <svg viewBox="0 0 100 100" className="h-28 w-28 shrink-0">
@@ -51,14 +51,15 @@ export function ExamProgress({ progress }: Props) {
         <div className="min-w-0 flex-1">
           <div className="font-medium">{progress.title}</div>
           <p className="text-muted-foreground text-sm">
-            {progress.missing.length} skill mancanti nel piano
+            {progress.covered}/{progress.total} contenuti nel piano.{" "}
+            {progress.missing.length} mancanti.
           </p>
         </div>
       </div>
       {progress.missing.length > 0 && (
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">
-            Mostra skill mancanti
+            Mostra contenuti mancanti
           </summary>
           <div className="mt-2 space-y-1">
             {progress.missing.map((skill) => (

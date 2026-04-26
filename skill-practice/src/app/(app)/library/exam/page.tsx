@@ -22,7 +22,7 @@ export default async function ExamListPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Libreria</h1>
+        <h1 className="text-2xl font-semibold">Programma</h1>
         <p className="text-muted-foreground text-sm">
           Per esame — {DISCIPLINE_LABELS[discipline]}
         </p>
@@ -38,7 +38,7 @@ export default async function ExamListPage({ searchParams }: Props) {
       <div className="space-y-2">
         {exams.map((exam) => (
           <Link key={exam.id} href={`/library/exam/${exam.id}`}>
-            <Card className="hover:bg-muted/50 flex flex-row items-center gap-3 p-3 transition-colors">
+            <Card className="tap-feedback hover:bg-muted/50 flex min-h-16 flex-row items-center gap-3 p-3 transition-colors">
               <div className="flex-1">
                 <div className="font-medium">{exam.level_name}</div>
                 {exam.description && (

@@ -79,6 +79,7 @@ export type UserProfile = {
   preparing_exam_taichi_id: string | null;
   plan_mode: PlanMode;
   role: UserRole;
+  last_news_seen_at: string | null;
   created_at: string;
 };
 
@@ -113,4 +114,13 @@ export type NewsItem = {
   event_date: string | null;
   event_location: string | null;
   pinned: boolean;
+};
+
+export type WeeklyReflection = {
+  id: string;
+  user_id: string;
+  week_start: string;
+  prompt_1_text: string;
+  prompt_2_text: string;
+  created_at: string;
 };

@@ -52,14 +52,14 @@ Per il razionale completo vedi `archive/`:
 | **D1** | Auth | **Supabase Auth da subito.** Predispone multi-utente senza dover riscrivere. Il debt di localStorage costerebbe più dei 2-3 giorni risparmiati |
 | **D2** | Wing Chun Trainer "At Home" come competitor | **Verificato, nessuna sovrapposizione.** È B2C generico con video pre-fatti, niente contenuti scuola, niente logica esame. Idem "Wuji" di Sifu Leo Au Yeung: B2C single-master, non B2B per federazioni. Il valore proprio resta: video della **tua** federazione, esami **tuoi**, curriculum **tuo** |
 | **D3** | Kill metric personale | **Valutazione soggettiva.** Nessun numero rigido — il founder giudica dopo qualche settimana di uso se l'app è utile. L'utilità si sente (vedi §11.1) |
-| **D4** | Bacheca/News | **Sprint 2.** Richiesta esplicitamente come una delle 3 funzioni core (libreria + pratica + bacheca), non floating |
+| **D4** | Bacheca/News | **Implementata localmente.** Route `/news`, banner unread in Today, migration `0006_news_reflections.sql` con seed demo e read-state |
+| **D6** | Note post-pratica + reflection settimanale | **Implementata localmente.** Note opzionali dopo pratica, note nello skill detail, weekly reflection in Progress |
 
 ### 2.2 Decisioni aperte ⚠️
 
 | # | Decisione | Opzioni | Impatto | Priorità |
 |---|-----------|---------|---------|----------|
 | **D5** | **SRS "vero" per review/maintenance** | A) Rotazione semplice (ultima pratica). B) Intervalli crescenti tipo Anki/Chessable | Letteratura supporta SR per skill motorie. B = differenziatore reale ma più complesso. Sprint 3 corretto | 🟢 Sprint 3 o oltre |
-| **D6** | **Note post-pratica + reflection settimanale** | Importate da pattern Tonebase. Aggiungere o no? | +1 giorno Sprint 2. Aiuta retention | 🟢 Sprint 2 |
 | **D7** | **Player video** | YouTube embed accettato in v3. Verificare se loop/slow-mo diventano frustranti dopo 30 giorni di uso personale. Eventuale switch a MP4 self-hosted con player custom | Se uso personale rivela frustrazione → riapertura decisione | 🟢 Dopo 30 giorni di uso |
 
 ---
@@ -70,7 +70,7 @@ Per il razionale completo vedi `archive/`:
 |------------|--------|------|
 | Frontend | Next.js 14+ App Router + TypeScript | — |
 | UI | Tailwind CSS + shadcn/ui | Componenti accessibili pronti |
-| PWA | next-pwa | Installabile Android/iOS |
+| PWA | Service worker statico + manifest | `public/sw.js` registrato in produzione; `next-pwa` resta installato ma non usato |
 | Database | Supabase (PostgreSQL + Auth) | Auth predisposta multi-utente |
 | Video | YouTube unlisted embed | Zero infrastruttura video |
 | Hosting | Vercel | Free tier |
@@ -83,7 +83,8 @@ Per il razionale completo vedi `archive/`:
 - `cookies()`, `headers()`, dynamic route `params` sono ora `Promise` (da `await`are)
 - Tailwind v4 (config via `globals.css` `@theme`, niente `tailwind.config.ts` per shadcn)
 - shadcn preset usato: **Nova** (Lucide + Geist), base color: **neutral**
-- `next-pwa@5.6` installato ma **non wirato**: incompatibile con Next 16, da sostituire con `@serwist/next` in Sprint 2
+- `npm run dev` forza `next dev --webpack`: Turbopack dev ha dato panic locale su `/login`; `npm run build` resta verde con Turbopack
+- `next-pwa@5.6` resta installato ma **non usato**. Offline locale implementato con `public/sw.js` + `ServiceWorkerRegister`; rimozione pacchetto da fare quando Windows non blocca `node_modules`
 - Per breaking changes complete vedi `skill-practice/node_modules/next/dist/docs/01-app/`
 
 ---
@@ -424,9 +425,9 @@ PIANO LIBERO
 ### Sprint 2
 
 12. Piano libero: aggiungi/rimuovi/nascondi skill
-13. **⚠️ D6:** note personali post-pratica
+13. **D6:** note personali post-pratica + reflection settimanale — implementate localmente in Sprint 2
 14. Progresso settimanale + countdown esame — sostituito da Sprint 1.8 per le visualizzazioni progresso; countdown resta futuro perché manca una data esame nel modello dati
-15. Bacheca news (eventi + comunicazioni federazione)
+15. Bacheca news (eventi + comunicazioni federazione) — implementata localmente in Sprint 2
 
 ### Sprint 3
 
@@ -434,7 +435,7 @@ PIANO LIBERO
 17. Pannello admin: gestisci skill, esami dall'app
 18. **⚠️ D5:** SRS reale per review/maintenance (intervalli crescenti)
 19. Storico pratica con calendario
-20. Offline mode completo
+20. Offline mode base — implementato localmente con service worker statico; test mobile/deploy ancora da fare
 
 ---
 

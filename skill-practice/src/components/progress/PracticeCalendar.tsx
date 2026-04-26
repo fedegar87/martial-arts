@@ -14,13 +14,14 @@ export function PracticeCalendar({
   bestStreak,
 }: Props) {
   return (
-    <section className="space-y-4 rounded-lg border p-4">
+    <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]">
       <SectionHeader icon={CalendarDays} title="Pratica recente" />
       <div className="grid grid-flow-col grid-rows-7 gap-1 overflow-x-auto pb-1">
         {days.map((day) => (
           <div
             key={day.date}
-            title={`${day.date}: ${day.count} skill`}
+            title={`${day.date}: ${day.count} contenuti praticati`}
+            aria-label={`${day.date}: ${day.count} contenuti praticati`}
             className={`h-3 w-3 rounded-sm ${intensity(day.count)}`}
           />
         ))}
