@@ -18,6 +18,24 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: [
+          { loader: "@svgr/webpack", options: { svgo: false } },
+        ],
+        as: "*.js",
+      },
+    },
+  },
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: [{ loader: "@svgr/webpack", options: { svgo: false } }],
+    });
+    return config;
+  },
 };
 
 export default nextConfig;
