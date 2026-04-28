@@ -5,7 +5,7 @@
 BEGIN;
 
 CREATE TABLE training_schedule (
-  user_id        uuid PRIMARY KEY REFERENCES user_profiles(id) ON DELETE CASCADE,
+  user_id        uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   weekdays       smallint[] NOT NULL,
   cadence_weeks  smallint NOT NULL,
   reps_per_form  smallint NOT NULL DEFAULT 3,
