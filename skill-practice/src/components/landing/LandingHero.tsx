@@ -14,16 +14,14 @@ export function LandingHero({ ctaHref }: { ctaHref: string }) {
         <HorseEmblem className="landing-anim-horse w-full max-w-xs h-auto" />
 
         <h1
-          className="landing-anim-ideogram mt-8 text-[80px] sm:text-[96px] leading-none text-accent font-bold"
-          style={{ fontFamily: "var(--font-serif-tc)" }}
+          className="landing-anim-ideogram mt-8 text-[80px] sm:text-[96px] leading-none text-accent font-serif-tc font-bold"
           lang="zh-Hant"
         >
           丙午
         </h1>
 
         <p
-          className="landing-anim-citation mt-6 text-4xl text-foreground"
-          style={{ fontFamily: "var(--font-serif-tc)", fontWeight: 500 }}
+          className="landing-anim-citation mt-6 text-4xl text-foreground font-serif-tc font-medium"
           lang="zh-Hant"
         >
           學而不厭
