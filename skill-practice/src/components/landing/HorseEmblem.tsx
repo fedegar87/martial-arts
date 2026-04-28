@@ -1,5 +1,12 @@
-import HorseSvg from "@public/landing/cavallo-fuoco.svg";
+/* eslint-disable @next/next/no-img-element */
 
 export function HorseEmblem({ className }: { className?: string }) {
-  return <HorseSvg className={className} aria-hidden="true" focusable="false" />;
+  return (
+    <img
+      src="/landing/cavallo-fuoco.svg"
+      alt=""
+      aria-hidden="true"
+      className={className}
+    />
+  );
 }
