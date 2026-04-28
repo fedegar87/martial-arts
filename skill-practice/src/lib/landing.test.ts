@@ -29,3 +29,12 @@ test("resolveLandingDestination: profilo con tai chi exam torna /today", () => {
   };
   assert.equal(resolveLandingDestination(profile), "/today");
 });
+
+test("resolveLandingDestination: plan_mode custom senza esami torna /today", () => {
+  const profile = {
+    preparing_exam_id: null,
+    preparing_exam_taichi_id: null,
+    plan_mode: "custom" as const,
+  };
+  assert.equal(resolveLandingDestination(profile), "/today");
+});
