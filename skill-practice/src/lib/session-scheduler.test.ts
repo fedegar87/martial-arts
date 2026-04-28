@@ -99,6 +99,18 @@ test("nextTrainingDate is start_date if start_date is a training weekday", () =>
   if (result.kind === "rest_day") assert.equal(result.nextTrainingDate, "2026-05-04");
 });
 
+test("nextTrainingDate skips dates before start_date even if they fall on a weekday", () => {
+  // start_date = Mon 2026-05-04, weekdays = [1,3,5] (Lun/Mer/Ven)
+  // Query Wed 2026-04-29 (in weekdays, but before start_date)
+  // Expected nextTrainingDate = 2026-05-04 (start_date itself), NOT 2026-04-29
+  const schedule = makeSchedule({ start_date: "2026-05-04", weekdays: [1, 3, 5] });
+  const result = getScheduledSession("2026-04-29", schedule, []);
+  assert.equal(result.kind, "rest_day");
+  if (result.kind === "rest_day") {
+    assert.equal(result.nextTrainingDate, "2026-05-04");
+  }
+});
+
 test("training day returns all focus items sorted by display_order", () => {
   const schedule = makeSchedule({ start_date: "2026-04-27", weekdays: [1, 3, 5] });
   const items: ItemWithSkill[] = [

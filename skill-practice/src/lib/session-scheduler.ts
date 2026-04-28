@@ -1,5 +1,7 @@
 import type { Skill, TrainingSchedule, UserPlanItem } from "./types";
 
+const MAX_GAP_BETWEEN_TRAINING_DAYS = 7;
+
 export type ItemWithSkill = UserPlanItem & { skill: Skill };
 
 export type ScheduledSession =
@@ -28,7 +30,7 @@ export function getScheduledSession(
   if (date < schedule.start_date) {
     return {
       kind: "rest_day",
-      nextTrainingDate: findNextTrainingDate(addDays(date, -1), schedule),
+      nextTrainingDate: findNextTrainingDate(addDays(schedule.start_date, -1), schedule),
     };
   }
 
@@ -107,7 +109,7 @@ function findNextTrainingDate(
   fromExclusive: string,
   schedule: TrainingSchedule,
 ): string | null {
-  for (let offset = 1; offset <= 14; offset++) {
+  for (let offset = 1; offset <= MAX_GAP_BETWEEN_TRAINING_DAYS; offset++) {
     const candidate = addDays(fromExclusive, offset);
     if (candidate > schedule.end_date) return null;
     if (schedule.weekdays.includes(isoWeekday(candidate))) return candidate;
