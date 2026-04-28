@@ -101,7 +101,20 @@ export type PracticeLog = {
   date: string;
   completed: boolean;
   personal_note: string | null;
+  reps_target: number | null;
+  reps_done: number;
   created_at: string;
+};
+
+export type TrainingSchedule = {
+  user_id: string;
+  weekdays: number[];
+  cadence_weeks: 1 | 2 | 4;
+  reps_per_form: number;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export type NewsItem = {

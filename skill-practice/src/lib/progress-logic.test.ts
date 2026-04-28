@@ -92,6 +92,8 @@ function log(date: string) {
     date,
     completed: true,
     personal_note: null,
+    reps_target: null,
+    reps_done: 0,
     created_at: `${date}T00:00:00.000Z`,
   };
 }
