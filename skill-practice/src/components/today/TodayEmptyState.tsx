@@ -1,13 +1,44 @@
 import Link from "next/link";
-import { Library } from "lucide-react";
+import { CalendarPlus, Library, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
 
 type Props = {
+  reason: "no_schedule" | "expired" | "no_plan";
   customMode?: boolean;
 };
 
-export function TodayEmptyState({ customMode = false }: Props) {
+export function TodayEmptyState({ reason, customMode = false }: Props) {
+  if (reason === "no_schedule") {
+    return (
+      <EmptyState
+        icon={<CalendarPlus className="h-10 w-10" />}
+        title="Definisci le tue sessioni"
+        description="Scegli giorni, durata e cadenza. Distribuiamo noi le forme sulle tue settimane."
+        action={
+          <Button asChild>
+            <Link href="/sessions/setup">Definisci sessioni</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (reason === "expired") {
+    return (
+      <EmptyState
+        icon={<Sparkles className="h-10 w-10" />}
+        title="Le tue sessioni sono terminate"
+        description="Aggiorna durata e cadenza per ripartire."
+        action={
+          <Button asChild>
+            <Link href="/sessions/setup">Rinnova sessioni</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
   if (customMode) {
     return (
       <EmptyState
@@ -27,10 +58,10 @@ export function TodayEmptyState({ customMode = false }: Props) {
     <EmptyState
       icon={<Library className="h-10 w-10" />}
       title="Nessun contenuto nel tuo piano"
-      description="Vai nel programma e aggiungi forme o tecniche da praticare."
+      description="Attiva un programma esame oppure passa alla selezione libera."
       action={
         <Button asChild>
-          <Link href="/library">Vai al programma</Link>
+          <Link href="/plan/exam">Programma esame</Link>
         </Button>
       }
     />
