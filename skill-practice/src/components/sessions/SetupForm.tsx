@@ -17,11 +17,15 @@ import { RepsStepper } from "./RepsStepper";
 import { SessionPreview } from "./SessionPreview";
 import type { TrainingSchedule } from "@/lib/types";
 
+// Riapertura: ricostruiamo il pill "durata" dalla differenza date salvate.
+// L'action ri-ancora start_date a oggi al save, quindi un re-save senza modifiche estende
+// implicitamente la fine di N giorni. Comportamento voluto: "rieditare = N settimane da ora".
 function durationFromSchedule(schedule: TrainingSchedule | null): 4 | 8 | 12 | 24 {
   if (!schedule) return 12;
   const start = new Date(`${schedule.start_date}T00:00:00Z`).getTime();
   const end = new Date(`${schedule.end_date}T00:00:00Z`).getTime();
   const weeks = Math.round((end - start) / (7 * 24 * 60 * 60 * 1000));
+  if (!Number.isFinite(weeks)) return 12;
   const options: Array<4 | 8 | 12 | 24> = [4, 8, 12, 24];
   return options.reduce((best, opt) =>
     Math.abs(opt - weeks) < Math.abs(best - weeks) ? opt : best

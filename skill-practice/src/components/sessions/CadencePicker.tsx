@@ -27,6 +27,7 @@ export function CadencePicker({ value, onChange }: Props) {
             value={opt.value}
             checked={value === opt.value}
             onChange={() => onChange(opt.value)}
+            className="sr-only"
           />
           <span>{opt.label}</span>
         </label>
