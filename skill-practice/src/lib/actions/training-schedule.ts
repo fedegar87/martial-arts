@@ -20,9 +20,14 @@ export async function setupTrainingSchedule(
   const durationWeeks = Number(formData.get("duration_weeks"));
 
   const weekdays = weekdaysRaw.filter((n) => Number.isInteger(n) && n >= 1 && n <= 7);
+  if (weekdays.length !== weekdaysRaw.length) {
+    return { error: "Giorni non validi." };
+  }
   if (weekdays.length === 0) return { error: "Seleziona almeno un giorno." };
   if (![1, 2, 4].includes(cadenceWeeks)) return { error: "Cadenza non valida." };
-  if (!(repsPerForm >= 1 && repsPerForm <= 10)) return { error: "Ripetizioni fuori range (1-10)." };
+  if (!Number.isInteger(repsPerForm) || repsPerForm < 1 || repsPerForm > 10) {
+    return { error: "Ripetizioni fuori range (1-10)." };
+  }
   if (![4, 8, 12, 24].includes(durationWeeks)) return { error: "Durata non valida." };
 
   const today = new Date();
