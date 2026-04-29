@@ -17,6 +17,17 @@ import { RepsStepper } from "./RepsStepper";
 import { SessionPreview } from "./SessionPreview";
 import type { TrainingSchedule } from "@/lib/types";
 
+function durationFromSchedule(schedule: TrainingSchedule | null): 4 | 8 | 12 | 24 {
+  if (!schedule) return 12;
+  const start = new Date(`${schedule.start_date}T00:00:00Z`).getTime();
+  const end = new Date(`${schedule.end_date}T00:00:00Z`).getTime();
+  const weeks = Math.round((end - start) / (7 * 24 * 60 * 60 * 1000));
+  const options: Array<4 | 8 | 12 | 24> = [4, 8, 12, 24];
+  return options.reduce((best, opt) =>
+    Math.abs(opt - weeks) < Math.abs(best - weeks) ? opt : best
+  , 12 as 4 | 8 | 12 | 24);
+}
+
 type Props = {
   current: TrainingSchedule | null;
   programLabel: string;
@@ -28,7 +39,7 @@ export function SetupForm({ current, programLabel, approxFormCount }: Props) {
   const [weekdays, setWeekdays] = useState<number[]>(
     current?.weekdays ?? [1, 3, 5],
   );
-  const [duration, setDuration] = useState<4 | 8 | 12 | 24>(12);
+  const [duration, setDuration] = useState<4 | 8 | 12 | 24>(durationFromSchedule(current));
   const [cadence, setCadence] = useState<1 | 2 | 4>(
     current?.cadence_weeks ?? 2,
   );
