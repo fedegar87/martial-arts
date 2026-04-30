@@ -7,13 +7,20 @@ export type UserPlanItemWithSkill = UserPlanItem & { skill: Skill };
 export async function getUserPlanItems(
   userId: string,
   discipline?: Discipline,
+  source?: PlanItemSource,
 ): Promise<UserPlanItemWithSkill[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("user_plan_items")
     .select("*, skill:skills(*)")
     .eq("user_id", userId)
     .eq("is_hidden", false);
+
+  if (source) {
+    query = query.eq("source", source);
+  }
+
+  const { data } = await query;
 
   return ((data ?? []) as UserPlanItemWithSkill[]).filter((item) => {
     if (!item.skill) return false;

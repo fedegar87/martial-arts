@@ -10,8 +10,7 @@ export default async function SetupPage() {
 
   const schedule = await getTrainingSchedule(profile.id);
   const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const allItems = await getUserPlanItems(profile.id);
-  const items = allItems.filter((item) => item.source === sourceFilter);
+  const items = await getUserPlanItems(profile.id, undefined, sourceFilter);
 
   const programLabel =
     profile.plan_mode === "custom"

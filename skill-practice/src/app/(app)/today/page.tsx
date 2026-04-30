@@ -22,14 +22,12 @@ export default async function TodayPage() {
   if (!profile) redirect("/login");
 
   const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const [allItems, logs, unreadNewsCount, schedule] = await Promise.all([
-    getUserPlanItems(profile.id),
+  const [items, logs, unreadNewsCount, schedule] = await Promise.all([
+    getUserPlanItems(profile.id, undefined, sourceFilter),
     getThisWeekLogs(profile.id),
     getUnreadNewsCount(profile),
     getTrainingSchedule(profile.id),
   ]);
-  // TODO: push source filter into query layer once main lands
-  const items = allItems.filter((item) => item.source === sourceFilter);
 
   const todayStr = localDateKey();
   const session = getScheduledSession(todayStr, schedule, items);
