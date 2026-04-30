@@ -89,6 +89,10 @@ export default async function TodayPage() {
     logs.filter((l) => l.date === todayStr && l.completed).map((l) => l.skill_id),
   );
 
+  const repsByLog = new Map(
+    logs.filter((l) => l.date === todayStr).map((l) => [l.skill_id, l]),
+  );
+
   const dayName = new Date().toLocaleDateString("it-IT", { weekday: "long" });
   const weekDoneCount = new Set(logs.filter((l) => l.completed).map((l) => l.date)).size;
 
@@ -140,6 +144,8 @@ export default async function TodayPage() {
                 skill={it.skill}
                 status={it.status}
                 alreadyDoneToday={doneTodaySkillIds.has(it.skill.id)}
+                repsTarget={schedule!.reps_per_form}
+                repsDone={repsByLog.get(it.skill.id)?.reps_done ?? 0}
               />
             ))}
           </Section>
@@ -152,6 +158,8 @@ export default async function TodayPage() {
                 skill={it.skill}
                 status={it.status}
                 alreadyDoneToday={doneTodaySkillIds.has(it.skill.id)}
+                repsTarget={schedule!.reps_per_form}
+                repsDone={repsByLog.get(it.skill.id)?.reps_done ?? 0}
               />
             ))}
           </Section>
@@ -164,6 +172,8 @@ export default async function TodayPage() {
                 skill={it.skill}
                 status={it.status}
                 alreadyDoneToday={doneTodaySkillIds.has(it.skill.id)}
+                repsTarget={schedule!.reps_per_form}
+                repsDone={repsByLog.get(it.skill.id)?.reps_done ?? 0}
               />
             ))}
           </Section>

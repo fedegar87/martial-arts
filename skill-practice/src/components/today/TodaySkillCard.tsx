@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/skill/StatusBadge";
 import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
 import { PracticeCheckButton } from "./PracticeCheckButton";
+import { RepsCounter } from "./RepsCounter";
 import type { PlanStatus, Skill } from "@/lib/types";
 import { Lightbulb } from "lucide-react";
 
@@ -11,9 +12,17 @@ type Props = {
   skill: Skill;
   status: PlanStatus;
   alreadyDoneToday: boolean;
+  repsTarget?: number;
+  repsDone?: number;
 };
 
-export function TodaySkillCard({ skill, status, alreadyDoneToday }: Props) {
+export function TodaySkillCard({
+  skill,
+  status,
+  alreadyDoneToday,
+  repsTarget,
+  repsDone,
+}: Props) {
   const needsPartner =
     skill.practice_mode === "paired" || skill.practice_mode === "both";
 
@@ -62,10 +71,18 @@ export function TodaySkillCard({ skill, status, alreadyDoneToday }: Props) {
               : "Ripassa la forma da solo; l'applicazione richiede un partner."}
           </p>
         )}
-        <PracticeCheckButton
-          skillId={skill.id}
-          alreadyDone={alreadyDoneToday}
-        />
+        {typeof repsTarget === "number" && typeof repsDone === "number" ? (
+          <RepsCounter
+            skillId={skill.id}
+            repsDone={repsDone}
+            repsTarget={repsTarget}
+          />
+        ) : (
+          <PracticeCheckButton
+            skillId={skill.id}
+            alreadyDone={alreadyDoneToday}
+          />
+        )}
       </CardContent>
     </Card>
   );
