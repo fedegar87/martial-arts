@@ -144,7 +144,7 @@ export default async function TodayPage() {
                 skill={it.skill}
                 status={it.status}
                 alreadyDoneToday={doneTodaySkillIds.has(it.skill.id)}
-                repsTarget={schedule!.reps_per_form}
+                repsTarget={repsByLog.get(it.skill.id)?.reps_target ?? schedule!.reps_per_form}
                 repsDone={repsByLog.get(it.skill.id)?.reps_done ?? 0}
               />
             ))}
@@ -158,7 +158,7 @@ export default async function TodayPage() {
                 skill={it.skill}
                 status={it.status}
                 alreadyDoneToday={doneTodaySkillIds.has(it.skill.id)}
-                repsTarget={schedule!.reps_per_form}
+                repsTarget={repsByLog.get(it.skill.id)?.reps_target ?? schedule!.reps_per_form}
                 repsDone={repsByLog.get(it.skill.id)?.reps_done ?? 0}
               />
             ))}
@@ -172,7 +172,7 @@ export default async function TodayPage() {
                 skill={it.skill}
                 status={it.status}
                 alreadyDoneToday={doneTodaySkillIds.has(it.skill.id)}
-                repsTarget={schedule!.reps_per_form}
+                repsTarget={repsByLog.get(it.skill.id)?.reps_target ?? schedule!.reps_per_form}
                 repsDone={repsByLog.get(it.skill.id)?.reps_done ?? 0}
               />
             ))}
