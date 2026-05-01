@@ -1,16 +1,22 @@
 import { notFound, redirect } from "next/navigation";
-import { Lightbulb, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getSkillById } from "@/lib/queries/skills";
 import { getUserPlanItemBySkill } from "@/lib/queries/plan";
-import { getPersonalNotesForSkill } from "@/lib/queries/practice-log";
+import {
+  getPersonalNotesForSkill,
+  getTodayLogForSkill,
+} from "@/lib/queries/practice-log";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
+import { PersonalNotesPanel } from "@/components/skill/PersonalNotesPanel";
+import { SkillPracticeActions } from "@/components/skill/SkillPracticeActions";
+import { TeacherNote } from "@/components/skill/TeacherNote";
 import { LevelBadge } from "@/components/skill/LevelBadge";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
-import { AddToPlanButton } from "@/components/skill/AddToPlanButton";
-import { Card, CardContent } from "@/components/ui/card";
+import { PracticeCompletionBadge } from "@/components/skill/PracticeCompletionBadge";
+import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 
@@ -24,9 +30,13 @@ export default async function SkillDetailPage({ params }: Props) {
   const skill = await getSkillById(skillId);
   if (!skill) notFound();
 
-  const planItem = await getUserPlanItemBySkill(profile.id, skillId);
-  const personalNotes = await getPersonalNotesForSkill(profile.id, skillId);
+  const [planItem, personalNotes, todayLog] = await Promise.all([
+    getUserPlanItemBySkill(profile.id, skillId),
+    getPersonalNotesForSkill(profile.id, skillId),
+    getTodayLogForSkill(profile.id, skillId),
+  ]);
   const inPlan = planItem !== null && !planItem.is_hidden;
+  const practicedToday = todayLog?.completed ?? false;
   const requiresPartner =
     skill.practice_mode === "paired" || skill.practice_mode === "both";
 
@@ -45,6 +55,8 @@ export default async function SkillDetailPage({ params }: Props) {
           <LevelBadge level={skill.minimum_grade_value} />
           <PracticeModeBadge mode={skill.practice_mode} />
           {inPlan && planItem && <StatusBadge status={planItem.status} />}
+          <PracticeCompletionBadge completed={practicedToday} />
+          <VideoAvailabilityBadge videoUrl={skill.video_url} />
         </div>
       </header>
 
@@ -66,49 +78,17 @@ export default async function SkillDetailPage({ params }: Props) {
         </Alert>
       )}
 
-      {skill.teacher_notes && (
-        <Card className="surface-inset">
-          <CardContent className="flex gap-3 pt-6">
-            <Lightbulb className="text-primary mt-0.5 h-5 w-5 shrink-0" />
-            <div className="space-y-1">
-              <div className="font-medium">Nota del maestro</div>
-              <p className="text-muted-foreground text-sm">
-                {skill.teacher_notes}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <TeacherNote note={skill.teacher_notes} />
 
-      {personalNotes.length > 0 && (
-        <Card>
-          <CardContent className="space-y-3 pt-6">
-            <div className="font-medium">Le tue note</div>
-            <div className="space-y-3">
-              {personalNotes.map((note) => (
-                <article key={note.id} className="border-border border-l pl-3">
-                  <time className="text-muted-foreground text-xs">
-                    {formatDate(note.date)}
-                  </time>
-                  <p className="text-sm">{note.personal_note}</p>
-                </article>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <PersonalNotesPanel notes={personalNotes} />
 
       <div className="material-bar sticky bottom-24 z-40 -mx-4 border-t border-border px-4 py-3">
-        <AddToPlanButton skillId={skillId} inPlan={inPlan} />
+        <SkillPracticeActions
+          skillId={skillId}
+          inPlan={inPlan}
+          practicedToday={practicedToday}
+        />
       </div>
     </div>
   );
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("it-IT", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
 }
