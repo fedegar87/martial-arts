@@ -93,5 +93,5 @@ export async function selectExam(
     if (insertError) return { error: insertError.message };
   }
 
-  redirect("/today");
+  redirect("/hub");
 }
