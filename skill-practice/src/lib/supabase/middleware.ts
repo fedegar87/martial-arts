@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = [
+  "/hub",
   "/today",
   "/programma",
   "/library",
@@ -10,6 +11,8 @@ const PROTECTED_PREFIXES = [
   "/profile",
   "/onboarding",
   "/news",
+  "/progress",
+  "/sessions",
 ];
 
 export async function updateSession(request: NextRequest) {
