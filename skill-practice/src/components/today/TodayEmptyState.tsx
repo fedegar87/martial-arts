@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { CalendarPlus, Library, Sparkles } from "lucide-react";
+import { CalendarPlus, Dumbbell, Library, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
 
 type Props = {
-  reason: "no_schedule" | "expired" | "no_plan";
+  reason: "no_schedule" | "expired" | "no_plan" | "empty_session";
   customMode?: boolean;
 };
 
@@ -33,6 +33,21 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
         action={
           <Button asChild>
             <Link href="/sessions/setup">Rinnova sessioni</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (reason === "empty_session") {
+    return (
+      <EmptyState
+        icon={<Dumbbell className="h-10 w-10" />}
+        title="Nessun esercizio previsto oggi"
+        description="Il piano attivo non assegna esercizi a questa sessione. Controlla gli stati nel programma o aggiorna le sessioni."
+        action={
+          <Button asChild>
+            <Link href="/programma">Controlla programma</Link>
           </Button>
         }
       />
