@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { resolveLandingDestination } from "@/lib/landing";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
 
 export type AuthFormState = { error: string } | null;
 
@@ -23,11 +25,13 @@ export async function login(
     return { error: error.message };
   }
 
-  redirect("/");
+  // Sblocco esplicito: salta la landing e vai direttamente alla destination corretta.
+  const profile = await getCurrentProfile();
+  redirect(resolveLandingDestination(profile));
 }
 
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  redirect("/");
 }

@@ -3,6 +3,7 @@ import {
   Bebas_Neue,
   Cormorant_Garamond,
   Geist,
+  Noto_Serif_TC,
   Space_Mono,
   Spectral,
 } from "next/font/google";
@@ -39,6 +40,13 @@ const monoFont = Space_Mono({
   weight: ["400", "700"],
 });
 
+const serifTcFont = Noto_Serif_TC({
+  variable: "--font-serif-tc",
+  weight: ["500", "700"],
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: "Skill Practice",
   description: "Pratica guidata di arti marziali tradizionali",
@@ -64,7 +72,7 @@ export default function RootLayout({
   return (
     <html
       lang="it"
-      className={`dark ${geistSans.variable} ${displayFont.variable} ${bodyFont.variable} ${labelFont.variable} ${monoFont.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${displayFont.variable} ${bodyFont.variable} ${labelFont.variable} ${monoFont.variable} ${serifTcFont.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground min-h-full flex flex-col">
         <ServiceWorkerRegister />

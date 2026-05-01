@@ -869,7 +869,9 @@ Stop e consultare un avvocato data protection prima di shippare. Required:
 
 ### 15.6 Landing page
 
-Per MVP personale: non serve. La PWA stessa è il punto d'ingresso, accessibile via URL Vercel.
+Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/2026-04-26-landing-page-design.md` per il design e `plan/2026-04-26-landing-page-plan.md` per l'implementazione.
+
+Non è una landing promozionale né di onboarding: è solo identità visiva (cavallo di fuoco + citazione di Confucio) prima della pratica. Sempre visibile, anche per utente loggato. Login bypassa la landing (sblocco esplicito), logout vi torna.
 
 Per pre-vendita federazione: landing statica separata su Carrd (€19/anno) o Framer (free tier). Una pagina, value prop, screenshot, form contatto. Non integrata nell'app.
 

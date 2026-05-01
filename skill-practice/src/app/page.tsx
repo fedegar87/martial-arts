@@ -1,13 +1,15 @@
-import { redirect } from "next/navigation";
+import { LandingHero } from "@/components/landing/LandingHero";
+import { resolveLandingDestination } from "@/lib/landing";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 
 export default async function RootPage() {
-  const profile = await getCurrentProfile();
-
-  if (!profile) redirect("/login");
-  if (profile.plan_mode === "custom") redirect("/today");
-  if (!profile.preparing_exam_id && !profile.preparing_exam_taichi_id) {
-    redirect("/onboarding");
+  let profile = null;
+  try {
+    profile = await getCurrentProfile();
+  } catch {
+    // Fallback silenzioso: la landing resta visibile, CTA -> /login
   }
-  redirect("/today");
+
+  const destination = resolveLandingDestination(profile);
+  return <LandingHero ctaHref={destination} />;
 }
