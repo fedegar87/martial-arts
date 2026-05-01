@@ -74,6 +74,8 @@
   --tint-muted: var(--gold-650);
   --tint-glow: rgba(200, 168, 75, 0.14);
   --status-success: #33a661;
+  --status-success-weak: rgba(51, 166, 97, 0.3);
+  --status-success-medium: rgba(51, 166, 97, 0.62);
   --status-warning: #d6911d;
   --status-info: #4f91d8;
   --status-error: #9c2424;

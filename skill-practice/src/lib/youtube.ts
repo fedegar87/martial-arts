@@ -27,3 +27,7 @@ export function extractYouTubeId(url: string): string | null {
 
   return null;
 }
+
+export function hasPlayableVideo(url: string | null | undefined): boolean {
+  return extractYouTubeId(url ?? "") !== null;
+}

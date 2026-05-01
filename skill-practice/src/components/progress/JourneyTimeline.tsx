@@ -17,15 +17,22 @@ export function JourneyTimeline({ grades, currentLevel }: Props) {
           .map((grade) => {
             const current = grade.value === currentLevel;
             const future = currentLevel !== 0 && grade.value < currentLevel;
+            const markerLabel = current
+              ? `${grade.label}: grado attuale`
+              : future
+                ? `${grade.label}: futuro`
+                : `${grade.label}: completato`;
             return (
               <div key={grade.value} className="flex items-center gap-3">
                 <span
+                  aria-label={markerLabel}
+                  title={markerLabel}
                   className={`h-3 w-3 rounded-full ${
                     current
                       ? "bg-primary ring-4 ring-primary/20"
                       : future
                         ? "bg-muted"
-                        : "bg-green-500"
+                        : "bg-[var(--status-success)]"
                   }`}
                 />
                 <span

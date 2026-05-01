@@ -46,7 +46,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 function intensity(count: number): string {
   if (count <= 0) return "bg-muted";
-  if (count === 1) return "bg-primary/30";
-  if (count === 2) return "bg-primary/60";
-  return "bg-primary";
+  if (count === 1) return "bg-[var(--status-success-weak)]";
+  if (count === 2) return "bg-[var(--status-success-medium)]";
+  return "bg-[var(--status-success)]";
 }

@@ -1,17 +1,13 @@
 import Link from "next/link";
 import { CategoryIcon } from "@/components/skill/CategoryIcon";
+import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
+import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import type { PlanStatus, Skill } from "@/lib/types";
 
 type Props = {
   skill: Skill;
   locked: boolean;
   planStatus?: PlanStatus;
-};
-
-const STATUS_CLASS: Record<PlanStatus, string> = {
-  focus: "bg-primary",
-  review: "bg-[var(--status-warning)]",
-  maintenance: "bg-[var(--status-success)]",
 };
 
 export function ProgramSkillRow({ skill, locked, planStatus }: Props) {
@@ -21,12 +17,7 @@ export function ProgramSkillRow({ skill, locked, planStatus }: Props) {
         locked ? "text-muted-foreground opacity-60" : "hover:bg-muted"
       }`}
     >
-      <span
-        className={`h-2.5 w-2.5 rounded-full ${
-          planStatus ? STATUS_CLASS[planStatus] : "bg-border"
-        }`}
-        aria-label={planStatus ? `Nel piano: ${planStatus}` : "Non nel piano"}
-      />
+      <PlanStatusDot status={planStatus} />
       <CategoryIcon category={skill.category} className="text-muted-foreground h-4 w-4" />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{skill.name}</span>
@@ -36,6 +27,7 @@ export function ProgramSkillRow({ skill, locked, planStatus }: Props) {
           </span>
         )}
       </span>
+      <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
     </div>
   );
 

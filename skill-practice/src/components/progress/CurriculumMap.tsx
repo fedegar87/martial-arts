@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Grid3X3 } from "lucide-react";
 import { SectionHeader } from "@/components/progress/SectionHeader";
+import {
+  CURRICULUM_MARKER_VISUALS,
+  PLAN_STATUS_VISUALS,
+} from "@/lib/marker-visuals";
 import type { CurriculumCell } from "@/lib/queries/progress";
 
 type Props = {
@@ -54,17 +58,19 @@ export function CurriculumMap({ cells }: Props) {
 }
 
 function statusClass(status: CurriculumCell["status"]): string {
-  if (status === "focus") return "bg-primary";
-  if (status === "review") return "bg-[var(--status-warning)]";
-  if (status === "maintenance") return "bg-[var(--status-success)]";
-  if (status === "locked") return "bg-muted opacity-40";
-  return "bg-muted-foreground/25";
+  if (status === "focus") return PLAN_STATUS_VISUALS.focus.mapClassName;
+  if (status === "review") return PLAN_STATUS_VISUALS.review.mapClassName;
+  if (status === "maintenance") {
+    return PLAN_STATUS_VISUALS.maintenance.mapClassName;
+  }
+  if (status === "locked") return CURRICULUM_MARKER_VISUALS.locked.mapClassName;
+  return CURRICULUM_MARKER_VISUALS.available.mapClassName;
 }
 
 function statusLabel(status: CurriculumCell["status"]): string {
-  if (status === "focus") return "focus";
-  if (status === "review") return "ripasso";
-  if (status === "maintenance") return "mantenimento";
-  if (status === "locked") return "bloccata";
-  return "accessibile";
+  if (status === "focus") return PLAN_STATUS_VISUALS.focus.label;
+  if (status === "review") return PLAN_STATUS_VISUALS.review.label;
+  if (status === "maintenance") return PLAN_STATUS_VISUALS.maintenance.label;
+  if (status === "locked") return CURRICULUM_MARKER_VISUALS.locked.label;
+  return CURRICULUM_MARKER_VISUALS.available.label;
 }

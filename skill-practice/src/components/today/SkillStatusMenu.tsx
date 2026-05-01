@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreVertical } from "lucide-react";
+import {
+  CheckCircle2,
+  Flame,
+  MoreVertical,
+  Repeat,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -11,6 +18,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { hidePlanItem, updatePlanItemStatus } from "@/lib/actions/plan";
+import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
 import type { PlanStatus } from "@/lib/types";
 
 type Props = {
@@ -18,11 +26,13 @@ type Props = {
   currentStatus: PlanStatus;
 };
 
-const STATUS_OPTIONS: Array<{ value: PlanStatus; label: string }> = [
-  { value: "focus", label: "Focus" },
-  { value: "review", label: "Ripasso" },
-  { value: "maintenance", label: "Mantenimento" },
-];
+const STATUS_OPTIONS: PlanStatus[] = ["focus", "review", "maintenance"];
+
+const STATUS_ICONS: Record<PlanStatus, LucideIcon> = {
+  focus: Flame,
+  review: Repeat,
+  maintenance: Wrench,
+};
 
 export function SkillStatusMenu({ skillId, currentStatus }: Props) {
   const [open, setOpen] = useState(false);
@@ -47,19 +57,14 @@ export function SkillStatusMenu({ skillId, currentStatus }: Props) {
           <SheetTitle>Stato nel piano</SheetTitle>
         </SheetHeader>
         <div className="grid gap-2 px-4 pb-4">
-          {STATUS_OPTIONS.map((option) => (
-            <Button
-              key={option.value}
-              type="button"
-              variant={option.value === currentStatus ? "default" : "outline"}
+          {STATUS_OPTIONS.map((status) => (
+            <StatusOptionButton
+              key={status}
+              status={status}
+              selected={status === currentStatus}
               disabled={pending}
-              onClick={() =>
-                run(() => updatePlanItemStatus(skillId, option.value))
-              }
-              className="justify-start"
-            >
-              {option.label}
-            </Button>
+              onClick={() => run(() => updatePlanItemStatus(skillId, status))}
+            />
           ))}
           <Button
             type="button"
@@ -73,5 +78,34 @@ export function SkillStatusMenu({ skillId, currentStatus }: Props) {
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function StatusOptionButton({
+  status,
+  selected,
+  disabled,
+  onClick,
+}: {
+  status: PlanStatus;
+  selected: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const Icon = STATUS_ICONS[status];
+  const visual = PLAN_STATUS_VISUALS[status];
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      disabled={disabled}
+      onClick={onClick}
+      className={`justify-start ${selected ? visual.badgeClassName : visual.textClassName}`}
+    >
+      <Icon className="mr-2 h-4 w-4" />
+      {visual.label}
+      {selected && <CheckCircle2 className="ml-auto h-4 w-4" />}
+    </Button>
   );
 }

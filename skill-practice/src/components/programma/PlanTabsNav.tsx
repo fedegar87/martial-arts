@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
 import type { Discipline, PlanMode } from "@/lib/types";
 
 type Props = {
@@ -48,7 +49,7 @@ function TabLink({
       aria-current={active ? "page" : undefined}
       className={`tap-feedback label-font relative flex min-h-12 items-center gap-2 border-r-2 px-3 text-sm font-medium transition-colors ${
         active
-          ? "border-primary text-foreground bg-card"
+          ? "border-primary bg-card text-foreground"
           : "border-border text-muted-foreground hover:text-foreground"
       }`}
     >
@@ -57,8 +58,11 @@ function TabLink({
         <span
           aria-label="Modalità attiva"
           title="Modalità attiva"
-          className="bg-primary ml-auto inline-block h-1.5 w-1.5 rounded-full"
-        />
+          className="ml-auto inline-flex items-center gap-1 text-primary"
+        >
+          <CheckCircle2 className="h-3 w-3" />
+          <span className="hidden text-[0.65rem] sm:inline">Attivo</span>
+        </span>
       )}
     </Link>
   );

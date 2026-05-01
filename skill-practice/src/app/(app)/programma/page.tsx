@@ -14,7 +14,7 @@ import { PlanTabsNav } from "@/components/programma/PlanTabsNav";
 import { Button } from "@/components/ui/button";
 import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline, nextGradeValue } from "@/lib/grades";
-import type { Discipline, PlanMode, Skill, SkillCategory } from "@/lib/types";
+import type { Discipline, PlanMode, PlanStatus, Skill, SkillCategory } from "@/lib/types";
 
 type Props = { searchParams: Promise<{ d?: string; t?: string }> };
 
@@ -34,14 +34,21 @@ export default async function ProgrammaPage({ searchParams }: Props) {
       : profile.assigned_level_taichi;
   const nextGrade = userLevel === 0 ? null : nextGradeValue(userLevel);
 
-  const skills =
-    tab === "exam"
-      ? nextGrade === null
-        ? []
-        : await listSkillsAtGrade(discipline, nextGrade)
-      : (await getUserPlanItems(profile.id, discipline, "manual")).map(
-          (item) => item.skill,
-        );
+  const activeSource = activeMode === "custom" ? "manual" : "exam_program";
+  const [examSkills, customItems, activePlanItems] = await Promise.all([
+    tab === "exam" && nextGrade !== null
+      ? listSkillsAtGrade(discipline, nextGrade)
+      : Promise.resolve([]),
+    tab === "custom"
+      ? getUserPlanItems(profile.id, discipline, "manual")
+      : Promise.resolve([]),
+    getUserPlanItems(profile.id, discipline, activeSource),
+  ]);
+
+  const skills = tab === "exam" ? examSkills : customItems.map((item) => item.skill);
+  const planStatusBySkillId = new Map<string, PlanStatus>(
+    activePlanItems.map((item) => [item.skill_id, item.status]),
+  );
 
   const grouped = skills.reduce<Record<SkillCategory, Skill[]>>((acc, skill) => {
     (acc[skill.category] ??= []).push(skill);
@@ -89,7 +96,11 @@ export default async function ProgrammaPage({ searchParams }: Props) {
                     </h2>
                     <div className="space-y-2">
                       {grouped[category].map((skill) => (
-                        <SkillListItem key={skill.id} skill={skill} />
+                        <SkillListItem
+                          key={skill.id}
+                          skill={skill}
+                          planStatus={planStatusBySkillId.get(skill.id)}
+                        />
                       ))}
                     </div>
                   </section>
