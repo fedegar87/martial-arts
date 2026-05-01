@@ -302,6 +302,38 @@
     opacity: 0;
     animation: landing-mount-fade-static 600ms ease-out 900ms forwards;
   }
+  .hub-anim-heading {
+    opacity: 0;
+    animation: landing-mount-fade-soft 500ms ease-out 0ms forwards;
+  }
+  .hub-anim-subtitle {
+    opacity: 0;
+    animation: landing-mount-fade-static 500ms ease-out 100ms forwards;
+  }
+  .hub-anim-tile-1 {
+    opacity: 0;
+    animation: landing-mount-fade 500ms ease-out 200ms forwards;
+  }
+  .hub-anim-tile-2 {
+    opacity: 0;
+    animation: landing-mount-fade 500ms ease-out 300ms forwards;
+  }
+  .hub-anim-tile-3 {
+    opacity: 0;
+    animation: landing-mount-fade 500ms ease-out 400ms forwards;
+  }
+  .hub-anim-tile-4 {
+    opacity: 0;
+    animation: landing-mount-fade 500ms ease-out 500ms forwards;
+  }
+  .hub-anim-tile-5 {
+    opacity: 0;
+    animation: landing-mount-fade 500ms ease-out 600ms forwards;
+  }
+  .hub-anim-tile-6 {
+    opacity: 0;
+    animation: landing-mount-fade 500ms ease-out 700ms forwards;
+  }
 }
 
 @media (prefers-reduced-transparency) {
