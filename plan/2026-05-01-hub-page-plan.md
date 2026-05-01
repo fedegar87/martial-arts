@@ -2,9 +2,9 @@
 
 > **Per Claude:** SUB-SKILL RICHIESTA: usa `superpowers:executing-plans` per implementare questo piano task-per-task.
 
-**Goal:** Aggiungere pagina `/hub` (home permanente) fra la landing e le 5 aree dell'app, con header globale `AppHeader` per tornare all'hub da qualunque pagina.
+**Goal:** Aggiungere pagina `/hub` (home permanente) fra la landing e le 6 aree dell'app, con `AppHeader` non-sticky per tornare all'hub da qualunque pagina. Risolve bug pre-esistente di onboarding state inconsistente.
 
-**Architecture:** `/hub` è un Server Component dentro `(app)/`. Renderizza una lista verticale di 5 tile outlined oro (Oggi, Programma, Scuola Chang, Progressi, Profilo), con cavallo watermark di sfondo e animazione staggered identica alla landing. Layout annidato `(app)/hub/layout.tsx` esclude `AppHeader` solo su `/hub`. La logica di redirect post-login/onboarding cambia: `/today` → `/hub`.
+**Architecture:** `/hub` è un Server Component dentro `(app)/`. Renderizza una lista verticale di 6 tile outlined oro (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo), con cavallo watermark di sfondo e animazione staggered. Helper condiviso `isProfileOnboarded` unifica il check fra landing, hub e onboarding. Client conditional `AppHeaderConditional` nasconde l'header solo su `/hub` (i layout Next non possono sostituire il parent). `AppHeader` è non-sticky per evitare collisioni con sub-sticky pre-esistenti.
 
 **Tech Stack:** Next.js 16 App Router, React 19, TypeScript strict, Tailwind v4, lucide-react (già in deps), Noto Serif TC (già caricato per landing). Niente nuove dipendenze.
 
@@ -18,26 +18,163 @@ Tutti i comandi sotto `c:/martial-arts/skill-practice` salvo dove indicato (`pla
 
 ## Convenzioni di test
 
-Il progetto usa `node --test` (vedi `package.json` script `test`). Test esistenti in `src/lib/*.test.ts`. Niente Vitest/Jest. Per i componenti React presentational non si scrivono unit test: si verifica visivamente in dev e con `npm run build` + smoke test manuale (DoD §8.1 del design doc).
+`node --test` (vedi `package.json` script `test`). Test esistenti in `src/lib/*.test.ts`. Per logica pura usiamo TDD; per i componenti React presentational verifichiamo con `npm run build` + smoke test manuale (DoD §8.2 del design doc).
 
 ---
 
-### Task 1 — Aggiornare `resolveLandingDestination` per ritornare `/hub`
+### Task 1 — Estrarre helper `isProfileOnboarded` (TDD)
 
-**Razionale:** La logica della landing CTA deve mandare gli utenti onboardati a `/hub`, non `/today`. Test-first sul file `src/lib/landing.ts` e relativo `landing.test.ts`.
+**Razionale:** Oggi il check "utente onboardato" è duplicato in `landing.ts` (considera `plan_mode === "custom"` come onboarded) e `onboarding/page.tsx` (controlla solo `preparing_exam_id`). Bug: utente custom senza esami va in loop. Estraiamo helper condiviso.
 
 **Files:**
-- Modify: `src/lib/landing.ts` (return type + 2 occorrenze di `"/today"`)
-- Modify: `src/lib/landing.test.ts` (3 test di "torna /today" → "torna /hub")
+- Create: `src/lib/onboarding-state.ts`
+- Create: `src/lib/onboarding-state.test.ts`
 
-**Step 1.1 — Aggiornare i test esistenti**
+**Step 1.1 — Scrivere il test fallito**
 
-Sostituire in `src/lib/landing.test.ts` ogni `"/today"` con `"/hub"` nei 3 test che asseriscono il caso onboardato. Manteniamo invariati i test "senza profilo → /login" e "senza esami → /onboarding".
-
-Apri `src/lib/landing.test.ts` e applica:
+Creare `src/lib/onboarding-state.test.ts`:
 
 ```typescript
-// Riga 17-23
+import assert from "node:assert/strict";
+import test from "node:test";
+import { isProfileOnboarded } from "./onboarding-state.ts";
+
+test("isProfileOnboarded: con esame kung fu torna true", () => {
+  assert.equal(
+    isProfileOnboarded({
+      preparing_exam_id: "exam-1",
+      preparing_exam_taichi_id: null,
+    }),
+    true,
+  );
+});
+
+test("isProfileOnboarded: con esame tai chi torna true", () => {
+  assert.equal(
+    isProfileOnboarded({
+      preparing_exam_id: null,
+      preparing_exam_taichi_id: "tc-1",
+    }),
+    true,
+  );
+});
+
+test("isProfileOnboarded: plan_mode custom senza esami torna true", () => {
+  assert.equal(
+    isProfileOnboarded({
+      preparing_exam_id: null,
+      preparing_exam_taichi_id: null,
+      plan_mode: "custom",
+    }),
+    true,
+  );
+});
+
+test("isProfileOnboarded: senza esami e senza plan_mode custom torna false", () => {
+  assert.equal(
+    isProfileOnboarded({
+      preparing_exam_id: null,
+      preparing_exam_taichi_id: null,
+    }),
+    false,
+  );
+});
+
+test("isProfileOnboarded: plan_mode exam senza esami torna false", () => {
+  assert.equal(
+    isProfileOnboarded({
+      preparing_exam_id: null,
+      preparing_exam_taichi_id: null,
+      plan_mode: "exam",
+    }),
+    false,
+  );
+});
+```
+
+> NOTA: aggiunto un 5° caso `plan_mode: "exam"` senza esami → false. Cattura il caso "utente ha scelto modalità exam ma non ha ancora selezionato un esame": va a `/onboarding` per completare.
+
+**Step 1.2 — Eseguire test e verificare che falliscano**
+
+Aggiungere prima il file alla suite. Modificare `package.json` script `test`:
+
+```json
+"test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none src/lib/youtube.test.ts src/lib/practice-logic.test.ts src/lib/progress-logic.test.ts src/lib/session-scheduler.test.ts src/lib/landing.test.ts src/lib/onboarding-state.test.ts"
+```
+
+Run:
+```bash
+npm run test
+```
+
+Atteso: errore "Cannot find module './onboarding-state.ts'" o equivalente. Tutti gli altri test passano.
+
+**Step 1.3 — Implementare il helper**
+
+Creare `src/lib/onboarding-state.ts`:
+
+```typescript
+export type OnboardingProfile = {
+  preparing_exam_id: string | null;
+  preparing_exam_taichi_id: string | null;
+  plan_mode?: "exam" | "custom";
+};
+
+export function isProfileOnboarded(profile: OnboardingProfile): boolean {
+  if (profile.plan_mode === "custom") return true;
+  return Boolean(
+    profile.preparing_exam_id || profile.preparing_exam_taichi_id,
+  );
+}
+```
+
+**Step 1.4 — Eseguire test e verificare passino**
+
+Run:
+```bash
+npm run test
+```
+
+Atteso: tutti i test verdi.
+
+**Step 1.5 — Commit**
+
+```bash
+git add src/lib/onboarding-state.ts src/lib/onboarding-state.test.ts package.json
+git commit -m "feat(onboarding): helper condiviso isProfileOnboarded con test"
+```
+
+---
+
+### Task 2 — Aggiornare `resolveLandingDestination` per usare helper + ritornare `/hub`
+
+**Razionale:** Sostituire la logica duplicata in `landing.ts` con il helper. Ritornare `/hub` invece di `/today` per onboardati. Aggiornare i test.
+
+**Files:**
+- Modify: `src/lib/landing.ts`
+- Modify: `src/lib/landing.test.ts`
+
+**Step 2.1 — Aggiornare i test**
+
+Sostituire `src/lib/landing.test.ts` con:
+
+```typescript
+import assert from "node:assert/strict";
+import test from "node:test";
+import { resolveLandingDestination } from "./landing.ts";
+
+test("resolveLandingDestination: senza profilo torna /login", () => {
+  assert.equal(resolveLandingDestination(null), "/login");
+});
+
+test("resolveLandingDestination: profilo senza esami torna /onboarding", () => {
+  const profile = {
+    preparing_exam_id: null,
+    preparing_exam_taichi_id: null,
+  };
+  assert.equal(resolveLandingDestination(profile), "/onboarding");
+});
+
 test("resolveLandingDestination: profilo con kung fu exam torna /hub", () => {
   const profile = {
     preparing_exam_id: "exam-1",
@@ -46,7 +183,6 @@ test("resolveLandingDestination: profilo con kung fu exam torna /hub", () => {
   assert.equal(resolveLandingDestination(profile), "/hub");
 });
 
-// Riga 25-31
 test("resolveLandingDestination: profilo con tai chi exam torna /hub", () => {
   const profile = {
     preparing_exam_id: null,
@@ -55,7 +191,6 @@ test("resolveLandingDestination: profilo con tai chi exam torna /hub", () => {
   assert.equal(resolveLandingDestination(profile), "/hub");
 });
 
-// Riga 33-40
 test("resolveLandingDestination: plan_mode custom senza esami torna /hub", () => {
   const profile = {
     preparing_exam_id: null,
@@ -66,66 +201,132 @@ test("resolveLandingDestination: plan_mode custom senza esami torna /hub", () =>
 });
 ```
 
-**Step 1.2 — Eseguire i test e verificare che falliscano**
+**Step 2.2 — Eseguire test, verificare falliscano**
 
 Run:
 ```bash
 npm run test
 ```
 
-Atteso: 3 fallimenti su `landing.test.ts` con messaggio tipo `Expected '/today' to equal '/hub'`. Tutti gli altri test devono passare.
+Atteso: 3 fallimenti su `landing.test.ts` (i test "torna /hub"). Helper test (Task 1) verde. Altri verdi.
 
-**Step 1.3 — Aggiornare l'implementazione**
+**Step 2.3 — Aggiornare l'implementazione**
 
-In `src/lib/landing.ts` sostituire ogni `return "/today"` con `return "/hub"` e il return type union. Risultato finale:
+Sostituire `src/lib/landing.ts` con:
 
 ```typescript
-type LandingProfile = {
-  preparing_exam_id: string | null;
-  preparing_exam_taichi_id: string | null;
-  plan_mode?: "exam" | "custom";
-};
+import { isProfileOnboarded, type OnboardingProfile } from "./onboarding-state";
 
 export function resolveLandingDestination(
-  profile: LandingProfile | null,
+  profile: OnboardingProfile | null,
 ): "/login" | "/onboarding" | "/hub" {
   if (!profile) return "/login";
-  if (profile.plan_mode === "custom") return "/hub";
-  if (!profile.preparing_exam_id && !profile.preparing_exam_taichi_id) {
-    return "/onboarding";
-  }
+  if (!isProfileOnboarded(profile)) return "/onboarding";
   return "/hub";
 }
 ```
 
-**Step 1.4 — Eseguire i test e verificare che passino**
+> NOTA: il tipo `LandingProfile` locale viene rimosso e sostituito da `OnboardingProfile` importato. Più DRY.
+
+**Step 2.4 — Eseguire test**
 
 Run:
 ```bash
 npm run test
 ```
 
-Atteso: tutti i test verdi. Output finale `# pass N` senza fail.
+Atteso: tutti verdi.
 
-**Step 1.5 — Commit**
+**Step 2.5 — Commit**
 
 ```bash
 git add src/lib/landing.ts src/lib/landing.test.ts
-git commit -m "feat(landing): redirect onboardati a /hub invece di /today"
+git commit -m "feat(landing): usa isProfileOnboarded e redirige a /hub"
 ```
 
 ---
 
-### Task 2 — Reindirizzare login/onboarding/auth-callback a `/hub`
+### Task 3 — Allineare `onboarding/page.tsx` al helper (fix bug pre-esistente)
 
-**Razionale:** Tre punti del flusso post-success oggi vanno a `/today`. Vanno tutti spostati a `/hub` per coerenza con la nuova home.
+**Razionale:** Oggi `onboarding/page.tsx:9` controlla solo `preparing_exam_id`. Un utente con `plan_mode = custom` senza esami (legittimo) atterra su /onboarding e non viene mai rediretto via — bug pre-esistente. Usare il helper risolve.
 
 **Files:**
-- Modify: `src/app/auth/callback/route.ts:7` (`?? "/today"` → `?? "/hub"`)
-- Modify: `src/lib/actions/onboarding.ts:96` (`redirect("/today")` → `redirect("/hub")`)
-- Modify: `src/app/(app)/onboarding/page.tsx:10` (`redirect("/today")` → `redirect("/hub")`)
+- Modify: `src/app/(app)/onboarding/page.tsx`
 
-**Step 2.1 — Modificare auth callback**
+**Step 3.1 — Leggere il file completo**
+
+Apri `src/app/(app)/onboarding/page.tsx` per contesto. Struttura attuale:
+
+```typescript
+import { redirect } from "next/navigation";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
+import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
+import { OnboardingForm } from "./OnboardingForm";
+
+export default async function OnboardingPage() {
+  const profile = await getCurrentProfile();
+  if (!profile) redirect("/login");
+  if (profile.preparing_exam_id || profile.preparing_exam_taichi_id) {
+    redirect("/today");
+  }
+  // ...
+}
+```
+
+**Step 3.2 — Applicare la modifica**
+
+Sostituire l'import e la logica di gating:
+
+```typescript
+import { redirect } from "next/navigation";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
+import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
+import { isProfileOnboarded } from "@/lib/onboarding-state";
+import { OnboardingForm } from "./OnboardingForm";
+
+export default async function OnboardingPage() {
+  const profile = await getCurrentProfile();
+  if (!profile) redirect("/login");
+  if (isProfileOnboarded(profile)) {
+    redirect("/hub");
+  }
+
+  const exams = await listExamProgramsForSchool(profile.school_id);
+
+  return <OnboardingForm exams={exams} displayName={profile.display_name} />;
+}
+```
+
+> NOTA: il redirect ora va a `/hub` (era `/today`). Coerente con Task 5.
+
+**Step 3.3 — Verificare lint + build**
+
+Run:
+```bash
+npm run lint
+npm run build
+```
+
+Atteso: verde. Se TS lamenta su `getCurrentProfile()` perché ritorna un tipo più ricco di `OnboardingProfile`, va bene — lo struct è subset, TS strutturale.
+
+**Step 3.4 — Commit**
+
+```bash
+git add src/app/\(app\)/onboarding/page.tsx
+git commit -m "fix(onboarding): usa isProfileOnboarded e redirige a /hub (chiude bug custom-senza-esami)"
+```
+
+---
+
+### Task 4 — Reindirizzare auth callback e onboarding action a `/hub`
+
+**Razionale:** Due punti del flusso post-success oggi vanno a `/today`. Vanno a `/hub`.
+
+**Files:**
+- Modify: `src/app/auth/callback/route.ts:7`
+- Modify: `src/lib/actions/onboarding.ts:96`
+
+**Step 4.1 — Modificare auth callback**
 
 `src/app/auth/callback/route.ts`, riga 7:
 
@@ -139,7 +340,7 @@ A:
 const next = searchParams.get("next") ?? "/hub";
 ```
 
-**Step 2.2 — Modificare onboarding action**
+**Step 4.2 — Modificare onboarding action**
 
 `src/lib/actions/onboarding.ts`, riga 96:
 
@@ -153,23 +354,7 @@ A:
 redirect("/hub");
 ```
 
-**Step 2.3 — Modificare onboarding page redirect**
-
-`src/app/(app)/onboarding/page.tsx`, riga 10:
-
-Da:
-```typescript
-redirect("/today");
-```
-
-A:
-```typescript
-redirect("/hub");
-```
-
-> ATTENZIONE: questo redirect parte solo se l'utente è GIÀ onboardato e atterra su `/onboarding`. Verifica leggendo il context circostante prima di toccare la riga: la condizione deve restare la stessa (utente onboardato → mandalo via dalla pagina di onboarding).
-
-**Step 2.4 — Build e lint**
+**Step 4.3 — Build**
 
 Run:
 ```bash
@@ -177,27 +362,101 @@ npm run lint
 npm run build
 ```
 
-Atteso: entrambi verdi. La build conferma che la rotta `/hub` è ancora marcata come "non esistente" — non è ancora un errore di compilazione perché Next App Router non valida i `redirect()` a tempo di build, ma noteremo eventuali type error sui tipi del path.
+Atteso: verde.
 
-**Step 2.5 — Commit**
+**Step 4.4 — Commit**
 
 ```bash
-git add src/app/auth/callback/route.ts src/lib/actions/onboarding.ts src/app/(app)/onboarding/page.tsx
-git commit -m "feat(auth): redirect post-login/onboarding a /hub"
+git add src/app/auth/callback/route.ts src/lib/actions/onboarding.ts
+git commit -m "feat(auth): redirect post-login/onboarding-action a /hub"
 ```
 
 ---
 
-### Task 3 — Aggiungere keyframes e classi `.hub-anim-*` in `globals.css`
+### Task 5 — Aggiungere `/hub` (e gap pre-esistenti) a `PROTECTED_PREFIXES`
 
-**Razionale:** Le animazioni mount dell'hub riusano i pattern `.landing-anim-*` esistenti (vedi `globals.css` righe 237-305). Aggiungiamo 7 classi nuove per heading, sottotitolo e 5 tile, riutilizzando i keyframes `landing-mount-fade-soft` e `landing-mount-fade` già definiti.
+**Razionale:** Il middleware ha array hardcoded `PROTECTED_PREFIXES`. Senza `/hub` aggiunto, la rotta sarebbe pubblica. Bonus segnalato dalla review: aggiungo `/progress` e `/sessions` per consistenza con il route group `(app)` (sono attualmente non protetti). Cambio low-risk.
 
 **Files:**
-- Modify: `src/app/globals.css` (aggiunta dopo riga 305, prima di `@media (prefers-reduced-transparency)` che è a riga 307)
+- Modify: `src/lib/supabase/middleware.ts:4-13`
 
-**Step 3.1 — Aggiungere il blocco hub-anim**
+**Step 5.1 — Aggiornare l'array**
 
-Inserire all'interno del blocco `@media (prefers-reduced-motion: no-preference)` esistente (che si chiude a riga 305), subito dopo `.landing-anim-cta`:
+Sostituire:
+
+```typescript
+const PROTECTED_PREFIXES = [
+  "/today",
+  "/programma",
+  "/library",
+  "/skill",
+  "/plan",
+  "/profile",
+  "/onboarding",
+  "/news",
+];
+```
+
+Con:
+
+```typescript
+const PROTECTED_PREFIXES = [
+  "/hub",
+  "/today",
+  "/programma",
+  "/library",
+  "/skill",
+  "/plan",
+  "/profile",
+  "/onboarding",
+  "/news",
+  "/progress",
+  "/sessions",
+];
+```
+
+**Step 5.2 — Verificare**
+
+Run:
+```bash
+npm run lint
+npm run build
+```
+
+Atteso: verde.
+
+**Step 5.3 — Smoke test in dev (opzionale ma consigliato)**
+
+```bash
+npm run dev
+```
+
+Aprire browser **incognito** (nessuna sessione):
+1. Vai a `http://localhost:3000/hub` → deve redirigere a `/login?next=/hub`
+2. Vai a `http://localhost:3000/progress` → deve redirigere a `/login?next=/progress`
+3. Vai a `http://localhost:3000/sessions/setup` → deve redirigere a `/login?next=/sessions/setup`
+
+Se uno qualunque non redirige, fermarsi e investigare.
+
+**Step 5.4 — Commit**
+
+```bash
+git add src/lib/supabase/middleware.ts
+git commit -m "fix(auth): aggiunge /hub /progress /sessions a PROTECTED_PREFIXES"
+```
+
+---
+
+### Task 6 — Aggiungere keyframes `.hub-anim-*` in `globals.css` (heading + 6 tile)
+
+**Razionale:** Le animazioni mount dell'hub riusano i pattern `.landing-anim-*` esistenti (`globals.css` righe 237-305). Aggiungiamo 8 classi: heading, sottotitolo, 6 tile.
+
+**Files:**
+- Modify: `src/app/globals.css` (aggiunta dentro il blocco `@media (prefers-reduced-motion: no-preference)` esistente, prima della chiusura a riga 305)
+
+**Step 6.1 — Aggiungere il blocco hub-anim**
+
+Inserire alla fine del blocco `@media (prefers-reduced-motion: no-preference)` (dopo `.landing-anim-cta` riga 304):
 
 ```css
   .hub-anim-heading {
@@ -228,36 +487,38 @@ Inserire all'interno del blocco `@media (prefers-reduced-motion: no-preference)`
     opacity: 0;
     animation: landing-mount-fade 500ms ease-out 600ms forwards;
   }
+  .hub-anim-tile-6 {
+    opacity: 0;
+    animation: landing-mount-fade 500ms ease-out 700ms forwards;
+  }
 ```
 
-> NOTA: il keyframe `landing-mount-fade` originale fa translateY 20→0; per le tile il design dice 12→0 ma la differenza è impercettibile, riusiamo lo stesso keyframe per non duplicare. Se in test visivo il movimento risulta troppo grande, sostituire con un keyframe `hub-mount-tile` dedicato.
-
-**Step 3.2 — Verificare CSS valido**
+**Step 6.2 — Verificare CSS valido**
 
 Run:
 ```bash
 npm run build
 ```
 
-Atteso: build verde. PostCSS/Tailwind v4 non solleva errori sul nuovo blocco.
+Atteso: verde.
 
-**Step 3.3 — Commit**
+**Step 6.3 — Commit**
 
 ```bash
 git add src/app/globals.css
-git commit -m "feat(hub): aggiunte classi animation .hub-anim-* in globals.css"
+git commit -m "feat(hub): aggiunge keyframes .hub-anim-* (heading + 6 tile)"
 ```
 
 ---
 
-### Task 4 — Creare il componente `HubTile`
+### Task 7 — Creare il componente `HubTile`
 
-**Razionale:** Componente presentational riusabile per ogni riga dell'hub. Outlined oro, icona lucide a sinistra, titolo + sottotitolo a destra. Server Component (nessun `"use client"`), riceve la classe animation come prop per consentire delay sequenziale.
+**Razionale:** Componente presentational riusabile per ogni riga dell'hub. Outlined oro, icona lucide a sinistra, titolo + sottotitolo a destra. Server Component.
 
 **Files:**
 - Create: `src/components/hub/HubTile.tsx`
 
-**Step 4.1 — Creare il file**
+**Step 7.1 — Creare il file**
 
 ```typescript
 import Link from "next/link";
@@ -295,12 +556,7 @@ export function HubTile({
 }
 ```
 
-> NOTE:
-> - `border-accent`, `bg-accent/5`, `text-accent`, `text-foreground`, `text-muted-foreground` sono token Tailwind v4 generati dal `@theme` in `globals.css` — verificati: `--accent` esiste come token CSS.
-> - `tap-feedback` è la classe utility globale che dà `active:scale-0.97` (vedi `globals.css:194-204`).
-> - Il `min-height` della tile è dato dal padding `py-4` + altezza testo (≈76px), coerente con design §4.5.
-
-**Step 4.2 — Verificare lint + build**
+**Step 7.2 — Verificare**
 
 Run:
 ```bash
@@ -308,28 +564,35 @@ npm run lint
 npm run build
 ```
 
-Atteso: entrambi verdi. ESLint potrebbe lamentarsi se `LucideIcon` non è importato come `type-only`; in caso di warning, aggiustare a `import type { LucideIcon } from "lucide-react"`.
+Atteso: verde.
 
-**Step 4.3 — Commit**
+**Step 7.3 — Commit**
 
 ```bash
 git add src/components/hub/HubTile.tsx
-git commit -m "feat(hub): aggiunto componente HubTile outlined oro"
+git commit -m "feat(hub): aggiunge componente HubTile"
 ```
 
 ---
 
-### Task 5 — Creare il componente `HubGrid`
+### Task 8 — Creare il componente `HubGrid` (6 tile con Bacheca)
 
-**Razionale:** Server Component che monta la lista delle 5 tile con i dati hardcoded delle aree. È hardcoded perché le aree sono fisse e cambiano solo se il piano cambia (vedi `plan/current-plan.md §7.1`).
+**Razionale:** Server Component che monta la lista delle 6 tile. Bacheca è la 5° (sopra Profilo), coerente con design §4.1.
 
 **Files:**
 - Create: `src/components/hub/HubGrid.tsx`
 
-**Step 5.1 — Creare il file**
+**Step 8.1 — Creare il file**
 
 ```typescript
-import { BarChart3, BookOpenText, Home, Target, User } from "lucide-react";
+import {
+  BarChart3,
+  BookOpenText,
+  Home,
+  Megaphone,
+  Target,
+  User,
+} from "lucide-react";
 import { HubTile } from "./HubTile";
 
 const HUB_AREAS = [
@@ -362,11 +625,18 @@ const HUB_AREAS = [
     anim: "hub-anim-tile-4",
   },
   {
+    href: "/news",
+    Icon: Megaphone,
+    title: "Bacheca",
+    subtitle: "comunicazioni della scuola",
+    anim: "hub-anim-tile-5",
+  },
+  {
     href: "/profile",
     Icon: User,
     title: "Profilo",
     subtitle: "livello, esame, settings",
-    anim: "hub-anim-tile-5",
+    anim: "hub-anim-tile-6",
   },
 ];
 
@@ -388,11 +658,7 @@ export function HubGrid() {
 }
 ```
 
-> NOTE:
-> - I titoli hanno la `label-font` applicata da `HubTile` (uppercase + tracking 0.08em via `globals.css:220`). Quindi i titoli appariranno come `OGGI`, `PROGRAMMA`, ecc. anche se nel codice sono in title-case. Coerente con design §4.3.
-> - Le icone sono identiche al `BottomNav` (`src/components/nav/BottomNav.tsx:5,8-12`) — coerenza voluta dal design §4.6.
-
-**Step 5.2 — Verificare lint + build**
+**Step 8.2 — Verificare**
 
 Run:
 ```bash
@@ -402,23 +668,23 @@ npm run build
 
 Atteso: verde.
 
-**Step 5.3 — Commit**
+**Step 8.3 — Commit**
 
 ```bash
 git add src/components/hub/HubGrid.tsx
-git commit -m "feat(hub): aggiunto componente HubGrid con 5 tile"
+git commit -m "feat(hub): aggiunge HubGrid con 6 tile (incluso Bacheca)"
 ```
 
 ---
 
-### Task 6 — Creare il componente `HubBackground`
+### Task 9 — Creare il componente `HubBackground`
 
-**Razionale:** Cavallo watermark fixed in basso a destra, opacity ~0.05. Riusa l'asset SVG già presente in `public/landing/cavallo-fuoco.svg`.
+**Razionale:** Cavallo watermark fixed in basso a destra, opacity ~0.05. Riusa l'asset SVG già presente. **z-index decisione upfront**: `z-0` (sopra il `bg-background` del layout, sotto al contenuto). Il wrapping di `relative` sul `<section>` di `/hub` (Task 10) evita che le tile finiscano sotto il watermark.
 
 **Files:**
 - Create: `src/components/hub/HubBackground.tsx`
 
-**Step 6.1 — Creare il file**
+**Step 9.1 — Creare il file**
 
 ```typescript
 /* eslint-disable @next/next/no-img-element */
@@ -429,43 +695,36 @@ export function HubBackground() {
       src="/landing/cavallo-fuoco.svg"
       alt=""
       aria-hidden="true"
-      className="pointer-events-none fixed bottom-0 right-0 -z-10 w-[70vw] max-w-2xl opacity-[0.05]"
+      className="pointer-events-none fixed bottom-0 right-0 z-0 w-[70vw] max-w-2xl opacity-[0.05]"
     />
   );
 }
 ```
 
-> NOTE:
-> - `-z-10` posiziona il watermark dietro a tutto. Il `<main>` del layout `(app)` ha `bg-background` ma il fondo è opaco solo se sovrapposto a un layer dietro: verificare visivamente che il watermark sia effettivamente visibile (potrebbe servire `z-index: 0` invece di `-z-10` se il main copre il watermark). Se invisibile, cambiare in `z-0` e applicare `relative` al wrapper del page hub.
-> - Niente animazione idle (defocalizzato, design §6.2).
-
-**Step 6.2 — Commit**
+**Step 9.2 — Commit**
 
 ```bash
 git add src/components/hub/HubBackground.tsx
-git commit -m "feat(hub): aggiunto componente HubBackground (cavallo watermark)"
+git commit -m "feat(hub): aggiunge HubBackground (cavallo watermark)"
 ```
 
 ---
 
-### Task 7 — Creare la pagina `/hub`
+### Task 10 — Creare la pagina `/hub`
 
-**Razionale:** Server Component che è il vero entry point. Verifica gating onboarding lato server (utente senza esami selezionati → redirect a `/onboarding`) e renderizza heading + HubGrid + HubBackground.
+**Razionale:** Server Component che usa `isProfileOnboarded` per gating, monta heading + HubGrid e include `HubBackground`. Wrapper `<section className="relative">` per stack z-index pulito.
 
 **Files:**
 - Create: `src/app/(app)/hub/page.tsx`
 
-**Step 7.1 — Verificare il pattern di gating esistente**
-
-Aprire `src/app/(app)/onboarding/page.tsx` per leggere come fa il check `getCurrentProfile()` e il redirect. Replicare lo stesso pattern (l'inverso: redirect se NON onboardato).
-
-**Step 7.2 — Creare il file**
+**Step 10.1 — Creare il file**
 
 ```typescript
 import { redirect } from "next/navigation";
 import { HubGrid } from "@/components/hub/HubGrid";
 import { HubBackground } from "@/components/hub/HubBackground";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
+import { isProfileOnboarded } from "@/lib/onboarding-state";
 
 export default async function HubPage() {
   let profile = null;
@@ -479,17 +738,14 @@ export default async function HubPage() {
     redirect("/login");
   }
 
-  const hasExam =
-    profile.preparing_exam_id || profile.preparing_exam_taichi_id;
-  const isCustom = profile.plan_mode === "custom";
-  if (!hasExam && !isCustom) {
+  if (!isProfileOnboarded(profile)) {
     redirect("/onboarding");
   }
 
   return (
     <>
       <HubBackground />
-      <section className="relative">
+      <section className="relative z-10 mx-auto max-w-md">
         <h1 className="hub-anim-heading mt-8 text-[22px] font-medium text-foreground">
           Dove vuoi praticare oggi?
         </h1>
@@ -506,11 +762,11 @@ export default async function HubPage() {
 ```
 
 > NOTE:
-> - Il pattern try/catch su `getCurrentProfile()` rispecchia la landing (`src/app/page.tsx:5-11`).
-> - Il check `plan_mode === "custom"` è coerente con `resolveLandingDestination` aggiornata.
-> - `relative` su `<section>` è importante se il watermark resta sotto.
+> - `relative z-10` sulla section: stack context locale che mantiene le tile sopra il watermark `z-0`.
+> - `max-w-md` (~28rem): più stretto del `max-w-2xl` ereditato dal layout `(app)`. Coerente con design §4.1.
+> - Try/catch su `getCurrentProfile()` rispecchia il pattern di `src/app/page.tsx:5-11`.
 
-**Step 7.3 — Verificare**
+**Step 10.2 — Verificare**
 
 Run:
 ```bash
@@ -520,80 +776,47 @@ npm run build
 
 Atteso: verde. Build genera la rotta `/hub` come Server Component.
 
-**Step 7.4 — Commit**
+**Step 10.3 — Smoke test parziale**
+
+```bash
+npm run dev
+```
+
+In browser loggato e onboardato:
+1. Vai a `/hub` → vedi heading, sottotitolo, 6 tile, cavallo watermark in basso a destra (opacity bassa)
+2. Tap su tile "Bacheca" → naviga a `/news`
+3. Tap su altre tile → naviga correttamente
+
+L'header globale NON è ancora montato — verrà aggiunto in Task 12. Per ora ogni pagina interna non ha modo di tornare a `/hub` se non con back-button del browser. È atteso a questo step.
+
+**Step 10.4 — Commit**
 
 ```bash
 git add src/app/\(app\)/hub/page.tsx
-git commit -m "feat(hub): aggiunta pagina /hub con gating onboarding"
+git commit -m "feat(hub): aggiunge pagina /hub con gating onboarding"
 ```
 
 ---
 
-### Task 8 — Creare layout annidato `(app)/hub/layout.tsx`
+### Task 11 — Creare il componente `AppHeader` (NON-sticky)
 
-**Razionale:** Override del layout parent `(app)/layout.tsx` per **non** montare `AppHeader` su `/hub`. Sfrutta il file system nesting di Next App Router. **Va creato PRIMA di Task 9-10**, altrimenti quando aggiungiamo `AppHeader` al parent layout, comparirà anche su `/hub`.
-
-**Files:**
-- Create: `src/app/(app)/hub/layout.tsx`
-
-**Step 8.1 — Creare il file**
-
-```typescript
-export default function HubLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
-}
-```
-
-> NOTE:
-> - Questo layout fa solo da pass-through. Importante: in Next App Router i layout sono CUMULATIVI: il parent layout `(app)/layout.tsx` continua a montare BottomNav, padding container, ecc. Il nuovo `hub/layout.tsx` aggiunge SOLO un fragment, non sostituisce il parent. Quindi BottomNav resta visibile su `/hub` (corretto, design §3.1).
-> - Per "togliere" l'AppHeader su /hub useremo un'altra tecnica: vedi Task 10. Questo layout serve come marker.
-
-> ATTENZIONE — aggiornamento al design: il pattern "layout annidato per togliere header" non funziona perché in Next App Router i layout sono additivi, non sostitutivi. Vedi Task 10 per la soluzione effettiva.
-
-**Step 8.2 — Verificare**
-
-Run:
-```bash
-npm run build
-```
-
-Atteso: verde.
-
-**Step 8.3 — Commit**
-
-```bash
-git add src/app/\(app\)/hub/layout.tsx
-git commit -m "feat(hub): aggiunto layout annidato per /hub (pass-through)"
-```
-
----
-
-### Task 9 — Creare il componente `AppHeader`
-
-**Razionale:** Header sticky globale con ideogramma 丙午 cliccabile che porta a `/hub`. Niente lato destro. Server Component (no interattività JS oltre al `<Link>`).
+**Razionale:** Header con ideogramma 丙午 cliccabile che porta a `/hub`. **Non-sticky**: scrolla via insieme al contenuto. Decisione basata su review: sticky causerebbe collisioni con sub-header su `/today` e sticky su CalendarMonth.
 
 **Files:**
 - Create: `src/components/shared/AppHeader.tsx`
 
-**Step 9.1 — Creare il file**
+**Step 11.1 — Creare il file**
 
 ```typescript
 import Link from "next/link";
 
 export function AppHeader() {
   return (
-    <header
-      className="material-bar hairline sticky top-0 z-40 flex h-14 items-center border-b px-5 pt-[env(safe-area-inset-top)]"
-    >
+    <header className="material-bar hairline flex h-14 items-center border-b px-5 pt-[env(safe-area-inset-top)]">
       <Link
         href="/hub"
         aria-label="Torna alla home"
-        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-2xl font-bold text-accent transition-opacity hover:opacity-80"
-        style={{ fontFamily: "var(--font-serif-tc)" }}
+        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-2xl font-bold text-accent transition-opacity hover:opacity-80 font-serif-tc"
         lang="zh-Hant"
       >
         丙午
@@ -604,12 +827,12 @@ export function AppHeader() {
 ```
 
 > NOTE:
-> - Riusa `material-bar` + `hairline` esattamente come `BottomNav` per coerenza visiva.
-> - Il `style={{ fontFamily: "var(--font-serif-tc)" }}` accede al CSS variable definito in `globals.css:13`. Verifica funzioni: alternativa è la classe Tailwind `font-serif-tc` se è esposta dal `@theme` (vedi `LandingHero.tsx:18` che la usa). Se la classe `font-serif-tc` esiste come Tailwind utility, preferirla allo style inline.
-> - `pt-[env(safe-area-inset-top)]` rispetta la safe-area iOS.
-> - `z-40` < z-50 della BottomNav (no conflitto).
+> - Niente `sticky top-0 z-40`. Header è block normale, scrolla via.
+> - `font-serif-tc` come Tailwind utility (esposta dal `@theme` in `globals.css`, vedi `LandingHero.tsx:17` che la usa). Se la build dice "unknown utility", fallback a `style={{ fontFamily: "var(--font-serif-tc)" }}`.
+> - `material-bar` + `hairline` per coerenza visiva con BottomNav.
+> - `pt-[env(safe-area-inset-top)]` rispetta safe-area iOS anche se non sticky.
 
-**Step 9.2 — Verificare**
+**Step 11.2 — Verificare**
 
 Run:
 ```bash
@@ -619,26 +842,24 @@ npm run build
 
 Atteso: verde.
 
-**Step 9.3 — Commit**
+**Step 11.3 — Commit**
 
 ```bash
 git add src/components/shared/AppHeader.tsx
-git commit -m "feat(nav): aggiunto AppHeader globale con ideogramma 丙午"
+git commit -m "feat(nav): aggiunge AppHeader non-sticky con ideogramma 丙午"
 ```
 
 ---
 
-### Task 10 — Montare `AppHeader` nel layout `(app)` con esclusione su `/hub`
+### Task 12 — Wrapper `AppHeaderConditional` + montaggio in `(app)/layout.tsx`
 
-**Razionale:** Il pattern "layout annidato per togliere header" non funziona in Next App Router perché i layout sono additivi. Soluzione corretta: leggere il pathname server-side via `headers()` (Next 16 espone l'URL dell'attuale request via header `x-pathname` settato dal `proxy.ts`, oppure si usa una soluzione client-side).
-
-**Approccio scelto:** Client Component che legge `usePathname()` e nasconde l'header su `/hub`. Server-only sarebbe più pulito ma richiederebbe modificare `proxy.ts` per esporre il pathname; client component è più semplice e ha overhead trascurabile.
+**Razionale:** Il pattern "layout annidato per togliere header" non funziona in Next App Router (i layout sono additivi). Soluzione: client component che legge pathname e nasconde l'header su `/hub`.
 
 **Files:**
-- Modify: `src/app/(app)/layout.tsx` (aggiungere import + render `<AppHeader />`)
-- Create: `src/components/shared/AppHeaderConditional.tsx` (Client Component wrapper)
+- Create: `src/components/shared/AppHeaderConditional.tsx`
+- Modify: `src/app/(app)/layout.tsx`
 
-**Step 10.1 — Creare il wrapper conditional**
+**Step 12.1 — Creare il wrapper**
 
 `src/components/shared/AppHeaderConditional.tsx`:
 
@@ -655,11 +876,7 @@ export function AppHeaderConditional() {
 }
 ```
 
-> NOTE:
-> - Questo è uno dei pochi Client Components ammessi: legge URL reattivamente. Nessuna fetch, nessun stato proprio.
-> - L'override su `/hub` è esplicito qui — lascia commentato per leggibilità futura.
-
-**Step 10.2 — Modificare `(app)/layout.tsx`**
+**Step 12.2 — Modificare `(app)/layout.tsx`**
 
 Sostituire il contenuto di `src/app/(app)/layout.tsx` con:
 
@@ -683,19 +900,11 @@ export default function AppLayout({
 ```
 
 > NOTE:
-> - `<AppHeaderConditional />` è messo PRIMA del `<main>` perché è sticky top.
-> - Il `pb-[calc(5.5rem+env(safe-area-inset-bottom))]` esistente continua a gestire lo spazio sopra BottomNav. L'header sticky NON richiede padding aggiuntivo perché è posto in flow normale.
+> - `<AppHeaderConditional />` è la prima riga dentro il `<div>`. Header non-sticky → scrolla via insieme al main.
+> - `<main>` mantiene `max-w-2xl` come prima. Il `/hub` dentro va più stretto (`max-w-md` nel suo `<section>`, vedi Task 10).
+> - BottomNav resta `fixed bottom-0` invariata.
 
-**Step 10.3 — Reconsiderare il `hub/layout.tsx` di Task 8**
-
-Il file `src/app/(app)/hub/layout.tsx` creato in Task 8 ora diventa **inutile** (il filtraggio avviene client-side nel wrapper). Possiamo:
-
-a) **Lasciarlo come marker** (pass-through fragment, costo zero, esplicita la specialità di /hub)
-b) **Rimuoverlo**
-
-Decisione: **lasciarlo** (a). Costa zero ed esprime intent. Niente da fare in questo step.
-
-**Step 10.4 — Verificare**
+**Step 12.3 — Verificare lint + build**
 
 Run:
 ```bash
@@ -703,100 +912,103 @@ npm run lint
 npm run build
 ```
 
-Atteso: verde. La build conferma il client boundary fra layout server e wrapper conditional client.
+Atteso: verde. Build conferma il client boundary fra layout server e wrapper conditional client.
 
-**Step 10.5 — Smoke test manuale**
+**Step 12.4 — Smoke test golden path**
 
 ```bash
 npm run dev
 ```
 
-Aprire browser su `http://localhost:3000`:
+Eseguire (utente loggato e onboardato):
 
-1. `/` mostra landing → tap "Entra" → atterro su `/hub` (utente loggato e onboardato). Verifico cavallo watermark in basso a destra, 5 tile animate in sequenza.
-2. Tap su tile "Oggi" → `/today` carica, vedo header con 丙午 in alto, BottomNav in basso.
-3. Tap su 丙午 → torno a `/hub`, header sparisce.
-4. Tap su tab BottomNav "Profilo" → `/profile`, header torna visibile.
-5. Refresh `/hub` → animazioni ripartono, gating funziona.
+1. `/` → tap "Entra" → atterro su `/hub`. Vedo heading, 6 tile animate, cavallo watermark.
+2. `/hub` non ha header (verifica visiva: nessun ideogramma in alto).
+3. Tap tile "Oggi" → `/today`. Vedo header con 丙午 in alto. Sub-header "Oggi - lunedì" sotto. BottomNav sotto.
+4. Scroll su `/today` → AppHeader scrolla via (non sticky), sub-header con titolo resta sticky in alto. Nessuna sovrapposizione.
+5. Tap su 丙午 dell'header → torno a `/hub`. Header sparisce.
+6. Vai a `/sessions/calendar` → AppHeader visibile, mese sticky funziona. Scroll: AppHeader scrolla via, mese resta sticky. OK.
+7. Tap tile "Bacheca" → `/news`. Header visibile.
 
-Se uno qualunque di questi step fallisce, fermarsi e investigare prima di committare.
+Se uno qualunque step fallisce, fermarsi e investigare prima di committare.
 
-**Step 10.6 — Commit**
+**Step 12.5 — Commit**
 
 ```bash
 git add src/components/shared/AppHeaderConditional.tsx src/app/\(app\)/layout.tsx
-git commit -m "feat(nav): monta AppHeader in layout (app) con esclusione /hub"
+git commit -m "feat(nav): monta AppHeader in layout (app) escludendolo da /hub"
 ```
 
 ---
 
-### Task 11 — Aggiornare `plan/current-plan.md`
+### Task 13 — Aggiornare `plan/current-plan.md`
 
-**Razionale:** Il piano è la fonte di verità. Aggiornarlo con le modifiche fatte (rotta /hub, AppHeader, struttura cartelle, flusso landing).
+**Razionale:** Il piano è la fonte di verità. Aggiornarlo con le modifiche fatte.
 
 **Files:**
 - Modify: `plan/current-plan.md` (§5 struttura, §7 navigazione, §15.6 flusso landing)
 
-**Step 11.1 — Aggiornare §5 struttura cartelle**
+**Step 13.1 — Aggiornare §5 struttura cartelle**
 
-In `plan/current-plan.md`, dentro il blocco di codice della struttura (riga 211-307), aggiungere:
+In `plan/current-plan.md`, aggiungere all'interno del blocco di codice della struttura (riga 211-307):
 
-- Sotto `(app)/` aggiungere riga `│   │   │   ├── hub/page.tsx                # Home permanente con 5 aree`
-- Sotto `components/` creare/aggiornare entry `hub/` con `HubTile.tsx`, `HubGrid.tsx`, `HubBackground.tsx`
-- Sotto `components/shared/` aggiungere `AppHeader.tsx` e `AppHeaderConditional.tsx`
+- Sotto `(app)/` aggiungere riga: `│   │   │   ├── hub/page.tsx                # Home permanente con 6 aree`
+- Sotto `components/`, dopo `today/`: cartella `hub/` con `HubTile.tsx`, `HubGrid.tsx`, `HubBackground.tsx`
+- Sotto `components/shared/`: aggiungere `AppHeader.tsx` e `AppHeaderConditional.tsx`
+- Sotto `lib/`: aggiungere `onboarding-state.ts` e `onboarding-state.test.ts`
 
-**Step 11.2 — Aggiornare §7 navigazione**
+**Step 13.2 — Aggiungere §7.0 hub e header**
 
-In §7.1 Bottom navigation: aggiungere subito sopra al diagramma BottomNav una nota:
+In §7 (Navigazione), aggiungere subito sopra §7.1:
 
 ```markdown
 ### 7.0 Hub e header globale
 
-Da Sprint 2.x esiste `/hub`, home permanente con 5 tile (Oggi, Programma, Scuola Chang, Progressi, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
+Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
 
-In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra sticky con ideogramma 丙午 cliccabile che riporta a `/hub`. Vedi `plan/2026-05-01-hub-page-design.md` per i dettagli.
+In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile che riporta a `/hub`. È non-sticky di design: l'AppHeader scrolla via per non collidere con sticky pre-esistenti su `/today` e `/sessions/calendar`. Vedi `plan/2026-05-01-hub-page-design.md`.
 ```
 
-**Step 11.3 — Aggiornare §15.6 landing page**
+**Step 13.3 — Aggiornare §15.6 landing page**
 
-Sostituire l'attuale §15.6 con un paragrafo aggiornato:
+Sostituire l'attuale §15.6 con:
 
 ```markdown
 ### 15.6 Landing page e hub
 
-Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/2026-04-26-landing-page-design.md` per il design originale.
+Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/2026-04-26-landing-page-design.md`.
 
-Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 5 tile che mostrano le aree dell'app e fungono da crocevia panoramico. Vedi `plan/2026-05-01-hub-page-design.md`.
+Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 6 tile che mostrano le aree dell'app e fungono da crocevia panoramico. Vedi `plan/2026-05-01-hub-page-design.md`.
 
-Il flusso completo è: landing `/` → Entra → `/hub` → scegli un'area → BottomNav per saltare fra aree → ideogramma 丙午 in `AppHeader` per tornare al hub. Login/onboarding redirigono a `/hub`. Logout torna a `/` (landing).
+Il flusso completo: landing `/` → Entra → `/hub` → scegli area → BottomNav per saltare fra aree → ideogramma 丙午 in `AppHeader` per tornare al hub. Login/onboarding redirigono a `/hub`. Logout torna a `/` (landing).
+
+L'AppHeader è non-sticky per evitare collisioni con sub-header sticky pre-esistenti.
+
+Lo stato di onboarding è centralizzato in `src/lib/onboarding-state.ts` (helper `isProfileOnboarded`). Usato da landing, /hub, /onboarding per evitare check duplicati e inconsistenti.
 
 Per pre-vendita federazione: landing statica separata su Carrd (€19/anno) o Framer (free tier). Una pagina, value prop, screenshot, form contatto. Non integrata nell'app.
 ```
 
-**Step 11.4 — Commit**
+**Step 13.4 — Commit**
 
 ```bash
+cd c:/martial-arts
 git add plan/current-plan.md
-git commit -m "docs(plan): aggiorna piano con /hub e AppHeader"
+git commit -m "docs(plan): aggiorna piano con /hub, AppHeader, helper onboarding"
+cd skill-practice
 ```
 
-> NOTE: `plan/` è in `c:/martial-arts/`, non `c:/martial-arts/skill-practice/`. Eseguire il commit dalla root del repo:
-> ```bash
-> cd c:/martial-arts
-> git add plan/current-plan.md
-> git commit -m "docs(plan): aggiorna piano con /hub e AppHeader"
-> cd skill-practice
-> ```
+> NOTE: `plan/` è in `c:/martial-arts/`, non `c:/martial-arts/skill-practice/`.
 
 ---
 
-### Task 12 — Verifica finale: build, lint, test, smoke test golden path
+### Task 14 — Verifica finale: lint, test, build, smoke test golden path
 
-**Razionale:** Definition of Done del design doc §8.2. Ultima passata prima di considerare completa l'implementazione.
+**Razionale:** Definition of Done del design doc §8.3.
 
 **Files:** Nessuno modificato — solo verifiche.
 
-**Step 12.1 — Suite completa di verifica**
+**Step 14.1 — Suite completa**
 
 ```bash
 npm run lint
@@ -804,53 +1016,52 @@ npm run test
 npm run build
 ```
 
-Atteso: tutti verdi.
+Atteso: tutti verdi. In particolare `npm run test` deve includere:
+- 5 test in `onboarding-state.test.ts`
+- 5 test in `landing.test.ts` (con `/hub` invece di `/today`)
+- Tutti i test pre-esistenti
 
-**Step 12.2 — Smoke test golden path manuale**
+**Step 14.2 — Smoke test golden path manuale**
 
 ```bash
 npm run dev
 ```
 
-Eseguire i seguenti scenari (corrispondono a §8.1 del design):
+Eseguire scenari di §8.2 del design:
 
-| # | Azione | Esito atteso |
-|---|--------|--------------|
-| 1 | Vai a `/` da incognito (no sessione) | Landing visibile, tap "Entra" → `/login` |
-| 2 | Login con utente onboardato | Redirect a `/hub` |
-| 3 | `/hub` mostra 5 tile animate + cavallo watermark | OK |
-| 4 | Tap tile "Oggi" | `/today` carica, header con 丙午 visibile, BottomNav visibile |
-| 5 | Tap su 丙午 dall'header | Torna a `/hub`, header sparisce |
-| 6 | Tap tab BottomNav "Programma" da `/hub` | `/programma` carica, header visibile |
-| 7 | Logout | Torna alla landing `/` |
-| 8 | Da onboarding completato fai Entra | `/hub` (era `/today`) |
-| 9 | DevTools: forza `prefers-reduced-motion: reduce` | Animazioni hub disattivate, render statico |
-| 10 | DevTools mobile: iPhone SE simulato | Safe-area top per header, layout 5 tile leggibili |
+| # | Azione | Esito |
+|---|--------|-------|
+| 1 | `/` da incognito | Landing → tap Entra → /login |
+| 2 | Login con utente onboardato | Redirect /hub |
+| 3 | `/hub` mostra 6 tile + cavallo | OK |
+| 4 | Tap tile "Oggi" | /today, header 丙午 visibile, BottomNav |
+| 5 | Tap su 丙午 | Torna a /hub, header sparisce |
+| 6 | Scroll su /today | AppHeader scrolla via, sub-header sticky resta in alto, nessuna sovrapposizione |
+| 7 | Tap tile "Bacheca" | /news, header visibile |
+| 8 | `/sessions/calendar` scroll | AppHeader scrolla via, mese sticky funziona |
+| 9 | Logout | Torna a / (landing) |
+| 10 | Da onboarding completato fai Entra | /hub |
+| 11 | Utente custom senza esami login | /hub (era loop pre-fix) |
+| 12 | DevTools `prefers-reduced-motion: reduce` | Animazioni hub disattivate |
+| 13 | DevTools mobile iPhone SE | Layout 6 tile leggibili, scroll naturale |
+| 14 | Incognito accesso diretto a `/hub` | Redirect a /login?next=/hub |
 
-**Step 12.3 — Se tutto verde, commit di chiusura (opzionale)**
+**Step 14.3 — Done.**
 
-Se i task precedenti hanno già coperto tutto, niente da committare. Altrimenti:
-
-```bash
-git add <eventuali fix scoperti>
-git commit -m "fix(hub): smoke test golden path"
-```
-
-**Step 12.4 — Done.**
-
-L'implementazione è completa quando tutti gli step da 1.5 a 12.2 sono verdi. A questo punto il design `plan/2026-05-01-hub-page-design.md` è realizzato.
+Implementazione completa quando tutti gli step da 1 a 14.2 sono verdi.
 
 ---
 
 ## Esclusioni esplicite (NON fare in questo piano)
 
-- **Aggiungere `/news` come 6° tile** → decisione futura, design §9
-- **Avatar top-right nell'header** → decisione futura, design §9
-- **Info dinamiche nelle tile** → tile pure, design H8
+- **Avatar profilo top-right nell'header** → Profilo resta come tile dell'hub, scelta esplicita post-review
+- **News in BottomNav** → resta solo in hub e banner Today
+- **Info dinamiche nelle tile** → tile pure (design H8)
 - **Skeleton loader sull'hub** → server-rendered statico
-- **Modifiche a `proxy.ts`** → `/hub` è dentro `(app)/*`, già protetto
+- **AppHeader sticky** → escluso per evitare collisioni con sub-sticky
+- **`(app)/hub/layout.tsx`** → escluso, i layout Next non sostituiscono il parent
+- **Refactor degli sticky in `today/page.tsx` o `CalendarMonth.tsx`** → fuori scope, l'AppHeader non-sticky lo evita
 - **Modifiche a `BottomNav`** → resta a 5 tab invariato
-- **Modifiche al cavallo watermark con animazioni** → design §6.2 esclude
 
 ---
 
