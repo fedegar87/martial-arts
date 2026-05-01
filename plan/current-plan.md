@@ -171,7 +171,20 @@ type PracticeLog = {
   skillId: string
   completed: boolean
   personalNote?: string               // Sprint 2 (D6)
+  repsTarget?: number                 // null = log legacy senza schedule
+  repsDone: number                    // default 0
   createdAt: Date
+}
+
+type TrainingSchedule = {
+  userId: string
+  weekdays: number[]                  // ISO 1=Lun ... 7=Dom
+  cadenceWeeks: 1 | 2 | 4              // Frequenza review/maintenance
+  repsPerForm: number                  // 1-10, snapshot del valore attuale
+  startDate: string                    // YYYY-MM-DD
+  endDate: string                      // YYYY-MM-DD
+  createdAt: Date
+  updatedAt: Date
 }
 ```
 
@@ -219,6 +232,9 @@ skill-practice/
 │   │   │   │   └── all/page.tsx
 │   │   │   ├── skill/[skillId]/page.tsx
 │   │   │   ├── profile/page.tsx
+│   │   │   ├── sessions/
+│   │   │   │   ├── setup/page.tsx
+│   │   │   │   └── calendar/page.tsx
 │   │   │   └── news/page.tsx           # Sprint 2
 │   │   └── auth/
 │   │       └── callback/route.ts       # Magic link / OAuth callback
@@ -229,7 +245,17 @@ skill-practice/
 │   │   ├── today/
 │   │   │   ├── TodaySkillCard.tsx
 │   │   │   ├── PracticeCheckButton.tsx
+│   │   │   ├── RestDayCard.tsx
+│   │   │   ├── RepsCounter.tsx
 │   │   │   └── WeekProgress.tsx
+│   │   ├── sessions/
+│   │   │   ├── WeekdayChips.tsx
+│   │   │   ├── DurationPicker.tsx
+│   │   │   ├── CadencePicker.tsx
+│   │   │   ├── RepsStepper.tsx
+│   │   │   ├── SessionPreview.tsx
+│   │   │   ├── SetupForm.tsx
+│   │   │   └── CalendarMonth.tsx
 │   │   ├── library/
 │   │   │   ├── SkillListItem.tsx
 │   │   │   └── AddToPlanSheet.tsx
@@ -251,12 +277,15 @@ skill-practice/
 │   │   │   ├── skills.ts
 │   │   │   ├── plan.ts
 │   │   │   ├── practice-log.ts
+│   │   │   ├── training-schedule.ts
 │   │   │   └── user-profile.ts
 │   │   ├── actions/                    # Mutation: Next.js Server Actions
 │   │   │   ├── plan.ts                 # add / hide / change-status
 │   │   │   ├── practice.ts             # mark done
+│   │   │   ├── training-schedule.ts
 │   │   │   └── onboarding.ts
 │   │   ├── practice-logic.ts           # Algoritmo "oggi fai questo" (puro)
+│   │   ├── session-scheduler.ts        # Logica pura "sessione del giorno X"
 │   │   ├── plan-manager.ts             # Genera UserPlanItem da ExamProgram
 │   │   ├── youtube.ts                  # watch?v= → embed/
 │   │   ├── types.ts                    # Tipi condivisi (DB + UI)
@@ -267,7 +296,8 @@ skill-practice/
 ├── supabase/
 │   ├── migrations/
 │   │   ├── 0001_schema.sql             # Tabelle + RLS
-│   │   └── 0002_seed_school_skills.sql # Seed scuola, skill, esami
+│   │   ├── 0002_seed_school_skills.sql # Seed scuola, skill, esami
+│   │   └── 0012_training_schedule.sql  # Schedulazione sessioni + reps tracking
 │   └── seed.sql                        # Per `supabase db seed` locale
 ├── .env.local.example
 ├── next.config.js                      # + next-pwa wrapping
@@ -312,6 +342,16 @@ Quando l'utente seleziona un esame:
 ### 6.3 Filtro livello (UI only, non security)
 
 Tutti i query lato client filtrano: `skill.minimumLevel <= user.assignedLevel`. Non è protezione: è UX per non sovraccaricare l'allievo con contenuti non rilevanti.
+
+### 6.4 Schedulazione sessioni (`session-scheduler.ts`)
+
+Quando l'utente completa il setup in `/sessions/setup`, una riga in `training_schedule` definisce giorni della settimana, durata, cadenza e ripetizioni. La funzione pura `getScheduledSession(date, schedule, items)` distribuisce le forme:
+
+- **Focus**: tutte ogni sessione (ordinate per `display_order`)
+- **Review**: bucket deterministico, ciclo `cadence_weeks * weekdays.length`
+- **Maintenance**: bucket deterministico, ciclo `cadence_weeks * 2 * weekdays.length`
+
+Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi `plan/2026-04-26-training-schedule-design.md` per i dettagli di algoritmo e UX.
 
 ---
 
@@ -408,6 +448,7 @@ PIANO LIBERO
 - **1.6 — VideoPlayer custom:** implementato in `src/components/skill/VideoPlayer.tsx`; sostituisce `YouTubeEmbed` e carica YouTube solo dopo tap.
 - **1.7 — UX Programma + Modalità di studio:** schema `0005_plan_mode.sql`, `/library/program`, `/plan/exam`, `/plan/custom` e azioni RPC atomiche implementate; richiede migrations applicate per walkthrough reale.
 - **1.8 — Tab Progresso:** `/progress` e BottomNav a 4 tab implementati con SVG/Tailwind, senza dipendenze chart.
+- **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup` e `/sessions/calendar`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Design: `plan/2026-04-26-training-schedule-design.md`. Plan: `plan/2026-04-26-training-schedule-plan.md`.
 - **Visual identity FESK:** tema dark/gold applicato in `globals.css`, con overlay grain e componenti core meno arrotondati.
 
 1. Setup: Next.js + Tailwind + shadcn/ui + PWA + Supabase
