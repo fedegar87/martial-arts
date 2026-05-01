@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { localDateKey, addDaysToDateKey } from "@/lib/date";
 
 type FormState = { error: string } | { success: true } | null;
 
@@ -30,11 +31,8 @@ export async function setupTrainingSchedule(
   }
   if (![4, 8, 12, 24].includes(durationWeeks)) return { error: "Durata non valida." };
 
-  const today = new Date();
-  const startDate = today.toISOString().slice(0, 10);
-  const end = new Date(today);
-  end.setUTCDate(end.getUTCDate() + durationWeeks * 7);
-  const endDate = end.toISOString().slice(0, 10);
+  const startDate = localDateKey();
+  const endDate = addDaysToDateKey(startDate, durationWeeks * 7);
 
   const { error } = await supabase.from("training_schedule").upsert({
     user_id: auth.user.id,
