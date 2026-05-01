@@ -7,9 +7,9 @@ type Props = { monthLabel: string; rows: Row[] };
 export function CalendarMonth({ monthLabel, rows }: Props) {
   return (
     <section className="space-y-2">
-      <h3 className="text-muted-foreground sticky top-16 bg-background py-1 text-xs font-medium uppercase tracking-wide">
+      <h2 className="text-muted-foreground sticky top-0 bg-background py-1 text-xs font-medium uppercase tracking-wide">
         {monthLabel}
-      </h3>
+      </h2>
       <ul className="border-border divide-y divide-border rounded-lg border">
         {rows.map((row) => (
           <CalendarRow key={row.date} row={row} />
