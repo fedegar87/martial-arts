@@ -226,6 +226,7 @@ skill-practice/
 │   │   │   ├── layout.tsx              # Layout app + BottomNav
 │   │   │   ├── onboarding/page.tsx
 │   │   │   ├── today/page.tsx
+│   │   │   ├── hub/page.tsx               # Home permanente con 6 aree
 │   │   │   ├── library/
 │   │   │   │   ├── page.tsx            # default: mio livello
 │   │   │   │   ├── exam/[examId]/page.tsx
@@ -242,6 +243,10 @@ skill-practice/
 │   │   ├── ui/                         # shadcn/ui generato (non modificare a mano)
 │   │   ├── nav/
 │   │   │   └── BottomNav.tsx
+│   │   ├── hub/
+│   │   │   ├── HubTile.tsx
+│   │   │   ├── HubGrid.tsx
+│   │   │   └── HubBackground.tsx
 │   │   ├── today/
 │   │   │   ├── TodaySkillCard.tsx
 │   │   │   ├── PracticeCheckButton.tsx
@@ -266,6 +271,8 @@ skill-practice/
 │   │   ├── profile/
 │   │   │   └── ExamSelector.tsx
 │   │   └── shared/
+│   │       ├── AppHeader.tsx
+│   │       ├── AppHeaderConditional.tsx
 │   │       ├── ExamCountdown.tsx
 │   │       └── EmptyState.tsx
 │   ├── lib/
@@ -287,6 +294,8 @@ skill-practice/
 │   │   ├── practice-logic.ts           # Algoritmo "oggi fai questo" (puro)
 │   │   ├── session-scheduler.ts        # Logica pura "sessione del giorno X"
 │   │   ├── plan-manager.ts             # Genera UserPlanItem da ExamProgram
+│   │   ├── onboarding-state.ts         # Helper isProfileOnboarded (puro)
+│   │   ├── landing.ts                  # resolveLandingDestination (puro)
 │   │   ├── youtube.ts                  # watch?v= → embed/
 │   │   ├── types.ts                    # Tipi condivisi (DB + UI)
 │   │   └── utils.ts                    # Solo utility realmente trasversali
@@ -356,6 +365,12 @@ Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi 
 ---
 
 ## 7. NAVIGAZIONE E UI
+
+### 7.0 Hub e header globale
+
+Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
+
+In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile che riporta a `/hub`. È non-sticky di design: l'AppHeader scrolla via per non collidere con sticky pre-esistenti su `/today` e `/sessions/calendar`. Vedi `plan/2026-05-01-hub-page-design.md`.
 
 ### 7.1 Bottom navigation
 
@@ -867,11 +882,17 @@ Stop e consultare un avvocato data protection prima di shippare. Required:
 - **Backup Supabase**: automatici, stesso region
 - Dichiarare nel privacy policy: "I dati sono ospitati in EU su Supabase (Frankfurt) e Vercel (edge globale, no storage)"
 
-### 15.6 Landing page
+### 15.6 Landing page e hub
 
-Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/2026-04-26-landing-page-design.md` per il design e `plan/2026-04-26-landing-page-plan.md` per l'implementazione.
+Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/2026-04-26-landing-page-design.md`.
 
-Non è una landing promozionale né di onboarding: è solo identità visiva (cavallo di fuoco + citazione di Confucio) prima della pratica. Sempre visibile, anche per utente loggato. Login bypassa la landing (sblocco esplicito), logout vi torna.
+Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 6 tile che mostrano le aree dell'app e fungono da crocevia panoramico. Vedi `plan/2026-05-01-hub-page-design.md`.
+
+Il flusso completo: landing `/` → Entra → `/hub` → scegli area → BottomNav per saltare fra aree → ideogramma 丙午 in `AppHeader` per tornare al hub. Login/onboarding redirigono a `/hub`. Logout torna a `/` (landing).
+
+L'AppHeader è non-sticky per evitare collisioni con sub-header sticky pre-esistenti.
+
+Lo stato di onboarding è centralizzato in `src/lib/onboarding-state.ts` (helper `isProfileOnboarded`). Usato da landing, /hub, /onboarding per evitare check duplicati e inconsistenti.
 
 Per pre-vendita federazione: landing statica separata su Carrd (€19/anno) o Framer (free tier). Una pagina, value prop, screenshot, form contatto. Non integrata nell'app.
 
