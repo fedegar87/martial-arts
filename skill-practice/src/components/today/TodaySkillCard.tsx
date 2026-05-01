@@ -2,11 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
+import { PracticeCompletionBadge } from "@/components/skill/PracticeCompletionBadge";
+import { TeacherNote } from "@/components/skill/TeacherNote";
+import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
 import { PracticeCheckButton } from "./PracticeCheckButton";
 import { RepsCounter } from "./RepsCounter";
 import type { PlanStatus, Skill } from "@/lib/types";
-import { Lightbulb } from "lucide-react";
 
 type Props = {
   skill: Skill;
@@ -25,13 +27,20 @@ export function TodaySkillCard({
 }: Props) {
   const needsPartner =
     skill.practice_mode === "paired" || skill.practice_mode === "both";
+  const completedToday =
+    alreadyDoneToday ||
+    (typeof repsTarget === "number" &&
+      typeof repsDone === "number" &&
+      repsDone >= repsTarget);
 
   return (
     <Card
       className={
-        status === "focus"
-          ? "border-primary/40 shadow-[0_0_24px_var(--gold-glow)]"
-          : "border-transparent"
+        completedToday
+          ? "border-[color:var(--status-success)]"
+          : status === "focus"
+            ? "border-primary/40 shadow-[0_0_24px_var(--gold-glow)]"
+            : "border-transparent"
       }
     >
       <CardHeader>
@@ -47,6 +56,8 @@ export function TodaySkillCard({
           <div className="flex flex-wrap gap-1">
             <PracticeModeBadge mode={skill.practice_mode} />
             <StatusBadge status={status} />
+            <PracticeCompletionBadge completed={completedToday} />
+            <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
             <SkillStatusMenu skillId={skill.id} currentStatus={status} />
           </div>
         </div>
@@ -58,12 +69,7 @@ export function TodaySkillCard({
           category={skill.category}
           practiceMode={skill.practice_mode}
         />
-        {skill.teacher_notes && (
-          <div className="surface-inset text-muted-foreground flex gap-2 rounded-sm p-3 text-sm italic">
-            <Lightbulb className="text-primary/80 mt-0.5 h-4 w-4 shrink-0" />
-            <span>{skill.teacher_notes}</span>
-          </div>
-        )}
+        <TeacherNote note={skill.teacher_notes} compact />
         {needsPartner && (
           <p className="text-muted-foreground text-sm">
             {skill.practice_mode === "paired"

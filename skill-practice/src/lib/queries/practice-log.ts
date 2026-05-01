@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { dateKeyDaysAgo, weekStartDateKey } from "@/lib/date";
+import { dateKeyDaysAgo, localDateKey, weekStartDateKey } from "@/lib/date";
 import type { PracticeLog } from "@/lib/types";
 
 export async function getThisWeekLogs(userId: string): Promise<PracticeLog[]> {
@@ -49,4 +49,22 @@ export async function getPersonalNotesForSkill(
   return ((data as PracticeLog[] | null) ?? []).filter(
     (log) => log.personal_note && log.personal_note.trim().length > 0,
   );
+}
+
+export async function getTodayLogForSkill(
+  userId: string,
+  skillId: string,
+): Promise<PracticeLog | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("practice_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("skill_id", skillId)
+    .eq("date", localDateKey())
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return (data as PracticeLog | null) ?? null;
 }

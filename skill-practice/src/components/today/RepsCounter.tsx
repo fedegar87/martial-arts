@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { incrementRep, decrementRep } from "@/lib/actions/practice";
+import { PracticeNoteButton } from "./PracticeNoteButton";
 
 type Props = {
   skillId: string;
@@ -18,7 +19,7 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           size="icon"
@@ -41,7 +42,13 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
         <Button
           type="button"
           size="sm"
+          variant={completed ? "outline" : "default"}
           disabled={pending || completed}
+          className={
+            completed
+              ? "border-[color:var(--status-success)] text-[var(--status-success)]"
+              : undefined
+          }
           onClick={() =>
             startTransition(async () => {
               setError(null);
@@ -53,6 +60,7 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
           <Plus className="mr-1 h-4 w-4" />
           {completed ? "Completata" : "Ripetizione"}
         </Button>
+        <PracticeNoteButton skillId={skillId} compact />
       </div>
       {error && (
         <p role="status" className="text-destructive text-xs">

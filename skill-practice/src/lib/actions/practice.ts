@@ -18,14 +18,39 @@ export async function markPracticeDone(
 
   const today = localDateKey();
   const now = new Date().toISOString();
+  const normalizedNote = normalizeNote(note);
 
-  const { error: logError } = await supabase.from("practice_logs").insert({
-    user_id: user.id,
-    skill_id: skillId,
-    date: today,
-    completed: true,
-    personal_note: normalizeNote(note),
-  });
+  const { data: latestLog, error: selectError } = await supabase
+    .from("practice_logs")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("skill_id", skillId)
+    .eq("date", today)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (selectError) return { error: selectError.message };
+
+  const logError = latestLog
+    ? (
+        await supabase
+          .from("practice_logs")
+          .update({
+            completed: true,
+            ...(normalizedNote !== null ? { personal_note: normalizedNote } : {}),
+          })
+          .eq("id", (latestLog as { id: string }).id)
+          .eq("user_id", user.id)
+      ).error
+    : (
+        await supabase.from("practice_logs").insert({
+          user_id: user.id,
+          skill_id: skillId,
+          date: today,
+          completed: true,
+          personal_note: normalizedNote,
+        })
+      ).error;
   if (logError) return { error: logError.message };
 
   const { error: planError } = await supabase
@@ -66,11 +91,17 @@ export async function savePracticeNote(
   if (selectError) return { error: selectError.message };
 
   if (!latestLog) {
+    if (normalizedNote === null) {
+      revalidatePath("/today");
+      revalidatePath(`/skill/${skillId}`);
+      return { success: true };
+    }
+
     const { error } = await supabase.from("practice_logs").insert({
       user_id: user.id,
       skill_id: skillId,
       date: today,
-      completed: true,
+      completed: false,
       personal_note: normalizedNote,
     });
     if (error) return { error: error.message };
