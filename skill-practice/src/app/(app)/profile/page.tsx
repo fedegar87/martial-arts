@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Calendar, Trophy } from "lucide-react";
+import { Calendar, CalendarDays, CalendarPlus, Trophy } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
 import { getRecentLogsForUser } from "@/lib/queries/practice-log";
@@ -8,6 +9,7 @@ import { LevelBadge } from "@/components/skill/LevelBadge";
 import { SignOutButton } from "@/components/profile/SignOutButton";
 import { GradeEditor } from "@/components/profile/GradeEditor";
 import { PlanModeSection } from "@/components/profile/PlanModeSection";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { gradeLabel } from "@/lib/grades";
 
@@ -93,6 +95,26 @@ export default async function ProfilePage() {
             examTaichi={preparingExamTaichi}
             planCount={planCount}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Allenamento</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link href="/sessions/setup">
+              <CalendarPlus className="mr-2 h-4 w-4" />
+              Modifica sessioni
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link href="/sessions/calendar">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Calendario sessioni
+            </Link>
+          </Button>
         </CardContent>
       </Card>
 
