@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { generatePlanItemsFromExam } from "@/lib/plan-manager";
 import { getExamProgramRequirements } from "@/lib/queries/exam-programs";
+import { nextGradeValue } from "@/lib/grades";
 
 export type OnboardingFormState = { error: string } | null;
 
@@ -38,7 +39,6 @@ export async function selectExam(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sessione scaduta" };
 
-  // Recupera l'esame per sapere disciplina e grado
   const { data: examRow } = await supabase
     .from("exam_programs")
     .select("id, discipline, grade_value")
@@ -54,15 +54,23 @@ export async function selectExam(
   };
 
   if (exam.discipline === "shaolin" && !practicesShaolin) {
-    return { error: "L'esame scelto è Shaolin: abilita la disciplina Shaolin" };
+    return { error: "L'esame scelto e Shaolin: abilita la disciplina Shaolin" };
   }
 
   if (exam.discipline === "taichi" && !practicesTaichi) {
-    return { error: "L'esame scelto è T'ai Chi: abilita la disciplina T'ai Chi" };
+    return { error: "L'esame scelto e T'ai Chi: abilita la disciplina T'ai Chi" };
+  }
+
+  const currentGrade =
+    exam.discipline === "shaolin" ? assignedLevelShaolin : assignedLevelTaichi;
+  if (nextGradeValue(currentGrade) !== exam.grade_value) {
+    return { error: "L'esame scelto non corrisponde al prossimo grado" };
   }
 
   const profileUpdate: Record<string, unknown> = {
-    preparing_exam_id: examId,
+    preparing_exam_id: exam.discipline === "shaolin" ? examId : null,
+    preparing_exam_taichi_id: exam.discipline === "taichi" ? examId : null,
+    plan_mode: "exam",
     assigned_level_shaolin: assignedLevelShaolin,
     assigned_level_taichi: assignedLevelTaichi,
   };
@@ -81,7 +89,7 @@ export async function selectExam(
   if (newItems.length > 0) {
     const { error: insertError } = await supabase
       .from("user_plan_items")
-      .upsert(newItems, { onConflict: "user_id,skill_id" });
+      .upsert(newItems, { onConflict: "user_id,skill_id,source" });
     if (insertError) return { error: insertError.message };
   }
 

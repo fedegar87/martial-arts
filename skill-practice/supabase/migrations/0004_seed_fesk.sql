@@ -57,7 +57,7 @@ skill_seed (display_order, discipline, minimum_grade_value, name, category, prac
     (30, 'shaolin'::discipline, -1, 'Pang Fa 1 Lu', 'armi_forma'::skill_category, 'solo'::practice_mode, 'Bastone corto'),
     (31, 'shaolin'::discipline, -1, 'Pang Fa 2 Lu', 'armi_forma'::skill_category, 'solo'::practice_mode, 'Bastone corto'),
     (32, 'shaolin'::discipline, -1, 'Mei Hua Ch''uan Chi Pen Pa Fa', 'forme'::skill_category, 'solo'::practice_mode, '8 metodi base Pruno Fiorito'),
-    (33, 'shaolin'::discipline, -1, 'Ti Kung Ch''uan fond. (10)', 'preparatori'::skill_category, 'solo'::practice_mode, '10 cadute fondamentali'),
+    (33, 'shaolin'::discipline, -1, 'Ti Kung Ch''uan fond. (10)', 'forme'::skill_category, 'solo'::practice_mode, '10 cadute fondamentali'),
     (34, 'shaolin'::discipline, -2, 'Tui Fa Lu 3', 'tui_fa'::skill_category, 'solo'::practice_mode, NULL),
     (35, 'shaolin'::discipline, -2, 'Po Chi 6 (Lu-Tao)', 'po_chi'::skill_category, 'both'::practice_mode, NULL),
     (36, 'shaolin'::discipline, -2, 'Po Chi 7 (Lu-Tao)', 'po_chi'::skill_category, 'both'::practice_mode, NULL),
@@ -259,19 +259,14 @@ INSERT INTO exam_skill_requirements (exam_id, skill_id, default_status)
 SELECT
   exam.id,
   skill.id,
-  CASE
-    WHEN skill.minimum_grade_value = exam.grade_value THEN 'focus'
-    WHEN exam_with_prev.previous_grade_value IS NOT NULL
-      AND skill.minimum_grade_value = exam_with_prev.previous_grade_value THEN 'review'
-    ELSE 'maintenance'
-  END::plan_status
+  'focus'::plan_status
 FROM inserted_exams exam
 JOIN exam_with_prev
   ON exam_with_prev.discipline = exam.discipline
  AND exam_with_prev.grade_value = exam.grade_value
 JOIN inserted_skills skill
   ON skill.discipline = exam.discipline
- AND skill.minimum_grade_value >= exam.grade_value;
+ AND skill.minimum_grade_value = exam.grade_value;
 
 DO $$
 DECLARE

@@ -38,9 +38,9 @@ export async function getUserPlanItemBySkill(
     .from("user_plan_items")
     .select("*")
     .eq("user_id", userId)
-    .eq("skill_id", skillId)
-    .maybeSingle();
-  return (data as UserPlanItem | null) ?? null;
+    .eq("skill_id", skillId);
+  const items = (data as UserPlanItem[] | null) ?? [];
+  return items.find((i) => i.source === "manual") ?? items[0] ?? null;
 }
 
 export async function getUserPlanCount(

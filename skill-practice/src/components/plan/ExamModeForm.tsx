@@ -25,8 +25,12 @@ export function ExamModeForm({
     activateExamModeFromForm,
     null,
   );
-  const [shaolinId, setShaolinId] = useState(selectedShaolinId ?? "");
-  const [taichiId, setTaichiId] = useState(selectedTaichiId ?? "");
+  const [shaolinId, setShaolinId] = useState(
+    selectedShaolinId ?? shaolinExams[0]?.id ?? "",
+  );
+  const [taichiId, setTaichiId] = useState(
+    selectedTaichiId ?? taichiExams[0]?.id ?? "",
+  );
   const selectedLabels = useMemo(
     () =>
       [
@@ -35,6 +39,7 @@ export function ExamModeForm({
       ].filter(Boolean),
     [shaolinExams, shaolinId, taichiExams, taichiId],
   );
+  const canSubmit = selectedLabels.length > 0;
 
   return (
     <form action={action} className="space-y-5">
@@ -59,8 +64,8 @@ export function ExamModeForm({
         <div className="font-medium">Anteprima piano</div>
         <p className="text-muted-foreground mt-1">
           {selectedLabels.length > 0
-            ? `Attiverai: ${selectedLabels.join(" + ")}. I contenuti del programma esame verranno rigenerati; storico pratica e note restano salvati.`
-            : "Nessun esame selezionato. Puoi comunque usare la selezione libera."}
+            ? `Attiverai: ${selectedLabels.join(" + ")}. Il piano contiene solo i contenuti nuovi del grado selezionato.`
+            : "Nessun prossimo esame selezionato."}
         </p>
       </div>
 
@@ -73,7 +78,7 @@ export function ExamModeForm({
         <p className="text-muted-foreground text-sm">Programma aggiornato.</p>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending || !canSubmit}>
         {pending ? "Salvataggio..." : "Attiva programma esame"}
       </Button>
     </form>
@@ -109,6 +114,11 @@ function ExamSelect({
           </option>
         ))}
       </select>
+      {exams.length === 0 && (
+        <p className="text-muted-foreground text-xs">
+          Nessun prossimo esame disponibile.
+        </p>
+      )}
     </label>
   );
 }

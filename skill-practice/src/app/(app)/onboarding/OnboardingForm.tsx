@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { ExamProgram } from "@/lib/types";
-import { SHAOLIN_GRADES, TAICHI_GRADES } from "@/lib/grades";
+import { nextGradeValue, SHAOLIN_GRADES, TAICHI_GRADES } from "@/lib/grades";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 
 type Props = {
@@ -25,15 +25,32 @@ export function OnboardingForm({ exams, displayName }: Props) {
   const [state, action, pending] = useActionState(selectExam, null);
   const [practicesShaolin, setPracticesShaolin] = useState(true);
   const [practicesTaichi, setPracticesTaichi] = useState(false);
+  const [assignedLevelShaolin, setAssignedLevelShaolin] = useState(8);
+  const [assignedLevelTaichi, setAssignedLevelTaichi] = useState(5);
 
   const visibleExams = useMemo(
     () =>
       exams.filter(
-        (exam) =>
-          (exam.discipline === "shaolin" && practicesShaolin) ||
-          (exam.discipline === "taichi" && practicesTaichi),
+        (exam) => {
+          if (exam.discipline === "shaolin") {
+            return (
+              practicesShaolin &&
+              exam.grade_value === nextGradeValue(assignedLevelShaolin)
+            );
+          }
+          return (
+            practicesTaichi &&
+            exam.grade_value === nextGradeValue(assignedLevelTaichi)
+          );
+        },
       ),
-    [exams, practicesShaolin, practicesTaichi],
+    [
+      assignedLevelShaolin,
+      assignedLevelTaichi,
+      exams,
+      practicesShaolin,
+      practicesTaichi,
+    ],
   );
 
   const firstExamId = visibleExams[0]?.id ?? "";
@@ -44,7 +61,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
         <CardTitle>Ciao {displayName}</CardTitle>
         <CardDescription>
           Imposta discipline, gradi attuali ed esame da preparare. Genereremo
-          il tuo piano di pratica con focus, ripasso e mantenimento.
+          il tuo piano di pratica dal prossimo esame.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -83,7 +100,10 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   <span className="text-muted-foreground text-sm">Shaolin</span>
                   <select
                     name="assignedLevelShaolin"
-                    defaultValue={8}
+                    value={assignedLevelShaolin}
+                    onChange={(event) =>
+                      setAssignedLevelShaolin(Number(event.target.value))
+                    }
                     className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
                   >
                     {SHAOLIN_GRADES.map((grade) => (
@@ -102,7 +122,10 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   </span>
                   <select
                     name="assignedLevelTaichi"
-                    defaultValue={5}
+                    value={assignedLevelTaichi}
+                    onChange={(event) =>
+                      setAssignedLevelTaichi(Number(event.target.value))
+                    }
                     className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
                   >
                     {TAICHI_GRADES.filter((grade) => grade.value !== 0).map(
@@ -137,7 +160,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
             </select>
             {visibleExams.length === 0 && (
               <p className="text-muted-foreground text-sm">
-                Seleziona almeno una disciplina per vedere gli esami.
+                Nessun prossimo esame disponibile per i gradi selezionati.
               </p>
             )}
             <div className="space-y-2">

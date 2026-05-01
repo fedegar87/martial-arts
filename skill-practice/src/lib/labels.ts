@@ -21,5 +21,5 @@ export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
   tue_shou: "Tue Shou (mani spinte)",
   ta_lu: "Ta Lu",
   chi_kung: "Chi Kung",
-  preparatori: "Preparatori",
+  preparatori: "Altro",
 };

@@ -57,6 +57,21 @@ export async function getSkillById(skillId: string): Promise<Skill | null> {
   return (data as Skill | null) ?? null;
 }
 
+export async function listSkillsAtGrade(
+  discipline: Discipline,
+  gradeValue: number,
+): Promise<Skill[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("skills")
+    .select("*")
+    .eq("discipline", discipline)
+    .eq("minimum_grade_value", gradeValue)
+    .order("category", { ascending: true })
+    .order("display_order", { ascending: true });
+  return (data as Skill[] | null) ?? [];
+}
+
 export async function listSkillsForDiscipline(
   discipline: Discipline,
 ): Promise<Skill[]> {
