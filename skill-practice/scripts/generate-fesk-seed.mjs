@@ -20,7 +20,7 @@ const shaolin = [
   { grade: 3, items: [item("Shaolin 3 Lu", "forme", "solo"), ...range("Tui Fa", 9, 10, "", "tui_fa", "solo", "Calci fondamentali"), item("Po Chi 1 (Lu-Tao)", "po_chi", "both")] },
   { grade: 2, items: [item("Shaolin 4 Lu", "forme", "solo"), ...range("Tui Fa", 11, 12, "", "tui_fa", "solo", "Calci fondamentali"), item("Po Chi 2 (Lu-Tao)", "po_chi", "both")] },
   { grade: 1, items: [item("Shaolin 5 Lu", "forme", "solo"), ...range("Tui Fa", 13, 15, "", "tui_fa", "solo", "Calci fondamentali"), item("Po Chi 3 (Lu-Tao)", "po_chi", "both")] },
-  { grade: -1, items: [...range("Tui Fa Lu", 1, 2, "", "tui_fa", "solo", "Forme che combinano i calci"), ...range("Po Chi", 4, 5, " (Lu-Tao)", "po_chi", "both"), ...range("Pang Fa", 1, 2, " Lu", "armi_forma", "solo", "Bastone corto"), item("Mei Hua Ch'uan Chi Pen Pa Fa", "forme", "solo", "8 metodi base Pruno Fiorito"), item("Ti Kung Ch'uan fond. (10)", "preparatori", "solo", "10 cadute fondamentali")] },
+  { grade: -1, items: [...range("Tui Fa Lu", 1, 2, "", "tui_fa", "solo", "Forme che combinano i calci"), ...range("Po Chi", 4, 5, " (Lu-Tao)", "po_chi", "both"), ...range("Pang Fa", 1, 2, " Lu", "armi_forma", "solo", "Bastone corto"), item("Mei Hua Ch'uan Chi Pen Pa Fa", "forme", "solo", "8 metodi base Pruno Fiorito"), item("Ti Kung Ch'uan fond. (10)", "forme", "solo", "10 cadute fondamentali")] },
   { grade: -2, items: [item("Tui Fa Lu 3", "tui_fa", "solo"), ...range("Po Chi", 6, 7, " (Lu-Tao)", "po_chi", "both"), item("Pang Fa Po Chi 1 Tao", "armi_combattimento", "paired"), ...range("Kun Fa", 1, 2, " Lu", "armi_forma", "solo", "Bastone lungo"), item("Mei Hua Ch'uan 1 Lu", "forme", "solo"), ...range("Shaolin", 6, 7, " Lu", "forme", "solo"), item("Chinna 1 (Lu-Tao)", "chin_na", "both")] },
   { grade: -3, items: [item("Tui Fa Lu 4", "tui_fa", "solo"), item("Pa Chi Ch'uan 1 Lu", "forme", "solo"), ...range("Po Chi", 8, 9, " (Lu-Tao)", "po_chi", "both"), ...range("Shaolin", 8, 9, " Lu", "forme", "solo"), item("Kun Fa Po Chi 1 Tao", "armi_combattimento", "paired"), ...range("Tan Tao", 1, 2, " Lu", "armi_forma", "solo", "Sciabola singola"), item("Tan Tao Tui Pang Fa (Lu-Tao)", "armi_combattimento", "paired"), item("Chinna 2 (Lu-Tao)", "chin_na", "both")] },
   { grade: -4, items: [item("Tui Fa Lu 5", "tui_fa", "solo"), ...range("Po Chi", 10, 11, " (Lu-Tao)", "po_chi", "both"), item("Shaolin 10 Lu", "forme", "solo"), ...range("Shuang Kuei", 1, 2, "", "armi_forma", "solo", "Martelli doppi"), item("Sho Hung Ch'uan", "forme", "solo"), item("Shuang Chieh Kun 1 Lu", "armi_forma", "solo", "Nunchaku"), item("Pang Fa Tui Kun Fa (Lu-Tao)", "armi_combattimento", "paired"), item("Tan Tao Tui Kun Fa (Lu-Tao)", "armi_combattimento", "paired"), item("Chinna 3 (Lu-Tao)", "chin_na", "both")] },
@@ -57,12 +57,12 @@ assertCount("Shaolin exam programs", shaolinExamGrades.length, 15);
 assertCount("T'ai Chi exam programs", taichiExamGrades.length, 12);
 
 const categoryCounts = countBy(skills, (skill) => `${skill.discipline}:${skill.category}`);
-assertCount("Shaolin forme", categoryCounts.get("shaolin:forme") ?? 0, 23);
+assertCount("Shaolin forme", categoryCounts.get("shaolin:forme") ?? 0, 24);
 assertCount("Shaolin tui_fa", categoryCounts.get("shaolin:tui_fa") ?? 0, 23);
 assertCount("Shaolin po_chi", categoryCounts.get("shaolin:po_chi") ?? 0, 15);
 assertCount("Shaolin chin_na", categoryCounts.get("shaolin:chin_na") ?? 0, 6);
 assertCount("Shaolin armi", (categoryCounts.get("shaolin:armi_forma") ?? 0) + (categoryCounts.get("shaolin:armi_combattimento") ?? 0), 30);
-assertCount("Preparatori", categoryCounts.get("shaolin:preparatori") ?? 0, 1);
+assertCount("Preparatori (deprecato → Altro)", categoryCounts.get("shaolin:preparatori") ?? 0, 0);
 assertCount("T'ai Chi forms+chi_kung", (categoryCounts.get("taichi:forme") ?? 0) + (categoryCounts.get("taichi:chi_kung") ?? 0), 15);
 assertCount("T'ai Chi tue_shou+ta_lu+chin_na", (categoryCounts.get("taichi:tue_shou") ?? 0) + (categoryCounts.get("taichi:ta_lu") ?? 0) + (categoryCounts.get("taichi:chin_na") ?? 0), 16);
 assertCount("T'ai Chi armi", (categoryCounts.get("taichi:armi_forma") ?? 0) + (categoryCounts.get("taichi:armi_combattimento") ?? 0), 8);
@@ -169,19 +169,14 @@ INSERT INTO exam_skill_requirements (exam_id, skill_id, default_status)
 SELECT
   exam.id,
   skill.id,
-  CASE
-    WHEN skill.minimum_grade_value = exam.grade_value THEN 'focus'
-    WHEN exam_with_prev.previous_grade_value IS NOT NULL
-      AND skill.minimum_grade_value = exam_with_prev.previous_grade_value THEN 'review'
-    ELSE 'maintenance'
-  END::plan_status
+  'focus'::plan_status
 FROM inserted_exams exam
 JOIN exam_with_prev
   ON exam_with_prev.discipline = exam.discipline
  AND exam_with_prev.grade_value = exam.grade_value
 JOIN inserted_skills skill
   ON skill.discipline = exam.discipline
- AND skill.minimum_grade_value >= exam.grade_value;
+ AND skill.minimum_grade_value = exam.grade_value;
 
 DO $$
 DECLARE

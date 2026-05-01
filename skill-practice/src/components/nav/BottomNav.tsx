@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpenText, Home, User } from "lucide-react";
+import { BarChart3, BookOpenText, Home, Target, User } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/today", label: "Oggi", Icon: Home },
-  { href: "/library", label: "Programma", Icon: BookOpenText },
+  { href: "/programma", label: "Programma", Icon: Target },
+  { href: "/library", label: "Scuola Chang", Icon: BookOpenText },
   { href: "/progress", label: "Progressi", Icon: BarChart3 },
   { href: "/profile", label: "Profilo", Icon: User },
 ];

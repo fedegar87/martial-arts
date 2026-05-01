@@ -27,10 +27,10 @@ export function TodayEmptyState({ customMode = false }: Props) {
     <EmptyState
       icon={<Library className="h-10 w-10" />}
       title="Nessun contenuto nel tuo piano"
-      description="Vai nel programma e aggiungi forme o tecniche da praticare."
+      description="Attiva un programma esame oppure passa alla selezione libera."
       action={
         <Button asChild>
-          <Link href="/library">Vai al programma</Link>
+          <Link href="/plan/exam">Programma esame</Link>
         </Button>
       }
     />

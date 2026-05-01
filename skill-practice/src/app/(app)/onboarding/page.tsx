@@ -6,7 +6,9 @@ import { OnboardingForm } from "./OnboardingForm";
 export default async function OnboardingPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
-  if (profile.preparing_exam_id) redirect("/today");
+  if (profile.preparing_exam_id || profile.preparing_exam_taichi_id) {
+    redirect("/today");
+  }
 
   const exams = await listExamProgramsForSchool(profile.school_id);
 

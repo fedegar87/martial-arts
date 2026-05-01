@@ -1,48 +1,62 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listAccessibleSkills } from "@/lib/queries/skills";
-import { SkillListItem } from "@/components/library/SkillListItem";
-import { LibraryNav } from "@/components/library/LibraryNav";
+import { listSkillsForDiscipline } from "@/lib/queries/skills";
+import { getUserPlanItems } from "@/lib/queries/plan";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
-import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
-import { gradeLabelForDiscipline } from "@/lib/grades";
-import type { Discipline, Skill, SkillCategory } from "@/lib/types";
+import { GradeSection } from "@/components/library/GradeSection";
+import { CategoryFilter } from "@/components/library/CategoryFilter";
+import { DISCIPLINE_LABELS, SKILL_CATEGORY_LABELS } from "@/lib/labels";
+import { gradesForDiscipline } from "@/lib/grades";
+import type { Discipline, PlanStatus, Skill, SkillCategory } from "@/lib/types";
 
-type Props = { searchParams: Promise<{ d?: string }> };
+type Props = { searchParams: Promise<{ d?: string; category?: string }> };
 
-export default async function LibraryPage({ searchParams }: Props) {
+export default async function ScuolaChangPage({ searchParams }: Props) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  const { d } = await searchParams;
+  const { d, category } = await searchParams;
   const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
-  const userGradeValue =
+  const selectedCategory = isSkillCategory(category) ? category : undefined;
+  const userLevel =
     discipline === "shaolin"
       ? profile.assigned_level_shaolin
       : profile.assigned_level_taichi;
 
-  const skills =
-    userGradeValue === 0
-      ? []
-      : await listAccessibleSkills(discipline, userGradeValue);
+  const [allSkills, planItems] = await Promise.all([
+    listSkillsForDiscipline(discipline),
+    getUserPlanItems(profile.id),
+  ]);
 
-  const grouped = skills.reduce<Record<SkillCategory, Skill[]>>(
+  const availableCategories = (
+    Object.keys(SKILL_CATEGORY_LABELS) as SkillCategory[]
+  ).filter((cat) => allSkills.some((s) => s.category === cat));
+
+  const filteredSkills = selectedCategory
+    ? allSkills.filter((s) => s.category === selectedCategory)
+    : allSkills;
+
+  const byGrade = filteredSkills.reduce<Record<number, Skill[]>>(
     (acc, skill) => {
-      (acc[skill.category] ??= []).push(skill);
+      (acc[skill.minimum_grade_value] ??= []).push(skill);
       return acc;
     },
-    {} as Record<SkillCategory, Skill[]>,
+    {},
+  );
+
+  const statusBySkillId = new Map<string, PlanStatus>(
+    planItems.map((item) => [item.skill_id, item.status]),
   );
 
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Programma</h1>
+        <h1 className="text-2xl font-semibold">Scuola Chang</h1>
         <p className="text-muted-foreground text-sm">
           {DISCIPLINE_LABELS[discipline]} —{" "}
-          {userGradeValue === 0
-            ? "non praticato"
-            : gradeLabelForDiscipline(discipline, userGradeValue)}
+          {selectedCategory
+            ? `${SKILL_CATEGORY_LABELS[selectedCategory]}: ${filteredSkills.length} contenuti totali`
+            : "forme e tecniche introdotte per grado."}
         </p>
       </header>
 
@@ -51,22 +65,33 @@ export default async function LibraryPage({ searchParams }: Props) {
         basePath="/library"
         hiddenTaichi={profile.assigned_level_taichi === 0}
       />
-      <LibraryNav />
+
+      <CategoryFilter
+        basePath="/library"
+        discipline={discipline}
+        current={selectedCategory}
+        categories={availableCategories}
+      />
 
       <div className="space-y-6">
-        {(Object.keys(grouped) as SkillCategory[]).map((category) => (
-          <section key={category} className="space-y-2">
-            <h2 className="text-muted-foreground text-sm font-medium uppercase tracking-wide">
-              {SKILL_CATEGORY_LABELS[category]}
-            </h2>
-            <div className="space-y-2">
-              {grouped[category].map((skill) => (
-                <SkillListItem key={skill.id} skill={skill} />
-              ))}
-            </div>
-          </section>
-        ))}
+        {gradesForDiscipline(discipline)
+          .filter((grade) => grade.value !== 0)
+          .map((grade) => (
+            <GradeSection
+              key={grade.value}
+              title={grade.label}
+              skills={byGrade[grade.value] ?? []}
+              locked={userLevel !== 0 && grade.value < userLevel}
+              planStatusBySkillId={statusBySkillId}
+            />
+          ))}
       </div>
     </div>
+  );
+}
+
+function isSkillCategory(value?: string): value is SkillCategory {
+  return Boolean(
+    value && Object.prototype.hasOwnProperty.call(SKILL_CATEGORY_LABELS, value),
   );
 }

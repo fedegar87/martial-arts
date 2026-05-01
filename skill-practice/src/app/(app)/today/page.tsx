@@ -28,7 +28,8 @@ export default async function TodayPage({ searchParams }: Props) {
     d === "shaolin" || d === "taichi" ? d : undefined;
   const practicesBoth = profile.assigned_level_taichi > 0;
 
-  const items = await getUserPlanItems(profile.id, filter);
+  const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
+  const items = await getUserPlanItems(profile.id, filter, sourceFilter);
   const logs = await getThisWeekLogs(profile.id);
   const unreadNewsCount = await getUnreadNewsCount(profile);
 
