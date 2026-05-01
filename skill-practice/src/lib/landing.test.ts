@@ -14,27 +14,27 @@ test("resolveLandingDestination: profilo senza esami torna /onboarding", () => {
   assert.equal(resolveLandingDestination(profile), "/onboarding");
 });
 
-test("resolveLandingDestination: profilo con kung fu exam torna /today", () => {
+test("resolveLandingDestination: profilo con kung fu exam torna /hub", () => {
   const profile = {
     preparing_exam_id: "exam-1",
     preparing_exam_taichi_id: null,
   };
-  assert.equal(resolveLandingDestination(profile), "/today");
+  assert.equal(resolveLandingDestination(profile), "/hub");
 });
 
-test("resolveLandingDestination: profilo con tai chi exam torna /today", () => {
+test("resolveLandingDestination: profilo con tai chi exam torna /hub", () => {
   const profile = {
     preparing_exam_id: null,
     preparing_exam_taichi_id: "tc-1",
   };
-  assert.equal(resolveLandingDestination(profile), "/today");
+  assert.equal(resolveLandingDestination(profile), "/hub");
 });
 
-test("resolveLandingDestination: plan_mode custom senza esami torna /today", () => {
+test("resolveLandingDestination: plan_mode custom senza esami torna /hub", () => {
   const profile = {
     preparing_exam_id: null,
     preparing_exam_taichi_id: null,
     plan_mode: "custom" as const,
   };
-  assert.equal(resolveLandingDestination(profile), "/today");
+  assert.equal(resolveLandingDestination(profile), "/hub");
 });
