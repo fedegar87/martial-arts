@@ -6,7 +6,7 @@ import { BarChart3, BookOpenText, CalendarDays, Target, User } from "lucide-reac
 
 const NAV_ITEMS = [
   { href: "/today", label: "Oggi", shortLabel: "Oggi", Icon: CalendarDays },
-  { href: "/programma", label: "Programma", shortLabel: "Piano", Icon: Target },
+  { href: "/programma", label: "Programma", shortLabel: "Programma", Icon: Target },
   {
     href: "/library",
     label: "Scuola Chang",
