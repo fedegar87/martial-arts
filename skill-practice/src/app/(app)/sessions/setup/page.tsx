@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { SetupForm } from "@/components/sessions/SetupForm";
+import type { Discipline } from "@/lib/types";
 
 export default async function SetupPage() {
   const profile = await getCurrentProfile();
@@ -11,11 +12,12 @@ export default async function SetupPage() {
   const schedule = await getTrainingSchedule(profile.id);
   const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
   const items = await getUserPlanItems(profile.id, undefined, sourceFilter);
+  const disciplineCounts = countByDiscipline(items);
 
   const programLabel =
     profile.plan_mode === "custom"
-      ? `Selezione personalizzata: ${items.length} forme`
-      : `Programma esame attivo · ${items.length} forme`;
+      ? `Selezione personalizzata: ${items.length} esercizi`
+      : `Programma esame attivo · ${items.length} esercizi`;
 
   return (
     <div className="space-y-6">
@@ -29,8 +31,21 @@ export default async function SetupPage() {
       <SetupForm
         current={schedule}
         programLabel={programLabel}
-        approxFormCount={Math.max(1, Math.min(items.length, 6))}
+        planMode={profile.plan_mode}
+        disciplineCounts={disciplineCounts}
       />
     </div>
+  );
+}
+
+function countByDiscipline(
+  items: Array<{ skill: { discipline: Discipline } }>,
+): Record<Discipline, number> {
+  return items.reduce<Record<Discipline, number>>(
+    (counts, item) => {
+      counts[item.skill.discipline] += 1;
+      return counts;
+    },
+    { shaolin: 0, taichi: 0 },
   );
 }

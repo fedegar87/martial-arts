@@ -2,6 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { setupTrainingSchedule } from "@/lib/actions/training-schedule";
+import { DISCIPLINE_LABELS } from "@/lib/labels";
+import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +17,11 @@ import { DurationPicker } from "./DurationPicker";
 import { CadencePicker } from "./CadencePicker";
 import { RepsStepper } from "./RepsStepper";
 import { SessionPreview } from "./SessionPreview";
-import type { TrainingSchedule } from "@/lib/types";
+import type { Discipline, PlanMode, TrainingSchedule } from "@/lib/types";
+
+type ExamDisciplineScope = "both" | Discipline;
+
+const ALL_DISCIPLINES: Discipline[] = ["shaolin", "taichi"];
 
 // Riapertura: ricostruiamo il pill "durata" dalla differenza date salvate.
 // L'action ri-ancora start_date a oggi al save, quindi un re-save senza modifiche estende
@@ -35,11 +41,21 @@ function durationFromSchedule(schedule: TrainingSchedule | null): 4 | 8 | 12 | 2
 type Props = {
   current: TrainingSchedule | null;
   programLabel: string;
-  approxFormCount: number;
+  planMode: PlanMode;
+  disciplineCounts: Record<Discipline, number>;
 };
 
-export function SetupForm({ current, programLabel, approxFormCount }: Props) {
+export function SetupForm({
+  current,
+  programLabel,
+  planMode,
+  disciplineCounts,
+}: Props) {
   const [state, action, pending] = useActionState(setupTrainingSchedule, null);
+  const availableExamDisciplines = availableDisciplines(disciplineCounts);
+  const [examScope, setExamScope] = useState<ExamDisciplineScope>(() =>
+    initialExamScope(current, availableExamDisciplines),
+  );
   const [weekdays, setWeekdays] = useState<number[]>(
     current?.weekdays ?? [1, 3, 5],
   );
@@ -49,6 +65,13 @@ export function SetupForm({ current, programLabel, approxFormCount }: Props) {
   );
   const [reps, setReps] = useState<number>(current?.reps_per_form ?? 3);
 
+  const showExamScope =
+    planMode === "exam" && availableExamDisciplines.length > 1;
+  const selectedItemCount =
+    planMode === "exam"
+      ? countForScope(examScope, disciplineCounts)
+      : totalCount(disciplineCounts);
+  const previewCount = Math.max(1, Math.min(selectedItemCount, 6));
   const canSubmit = weekdays.length > 0;
   const endDate = new Date();
   endDate.setUTCDate(endDate.getUTCDate() + duration * 7);
@@ -68,6 +91,27 @@ export function SetupForm({ current, programLabel, approxFormCount }: Props) {
           <p className="text-muted-foreground text-sm">{programLabel}</p>
         </CardContent>
       </Card>
+
+      {showExamScope ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Ambito sessioni</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ExamScopePicker
+              value={examScope}
+              onChange={setExamScope}
+              disciplineCounts={disciplineCounts}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <input
+          type="hidden"
+          name="exam_discipline_scope"
+          value={hiddenExamScope(planMode, availableExamDisciplines)}
+        />
+      )}
 
       <Card>
         <CardHeader>
@@ -108,7 +152,7 @@ export function SetupForm({ current, programLabel, approxFormCount }: Props) {
         </CardHeader>
         <CardContent className="space-y-3">
           <RepsStepper value={reps} onChange={setReps} />
-          <SessionPreview formCount={approxFormCount} reps={reps} />
+          <SessionPreview formCount={previewCount} reps={reps} />
         </CardContent>
       </Card>
 
@@ -127,4 +171,93 @@ export function SetupForm({ current, programLabel, approxFormCount }: Props) {
       </Button>
     </form>
   );
+}
+
+function ExamScopePicker({
+  value,
+  onChange,
+  disciplineCounts,
+}: {
+  value: ExamDisciplineScope;
+  onChange: (value: ExamDisciplineScope) => void;
+  disciplineCounts: Record<Discipline, number>;
+}) {
+  const options = [
+    {
+      value: "both" as const,
+      label: "Entrambi",
+      detail: `${totalCount(disciplineCounts)} esercizi`,
+    },
+    ...ALL_DISCIPLINES.filter((discipline) => disciplineCounts[discipline] > 0).map(
+      (discipline) => ({
+        value: discipline,
+        label: DISCIPLINE_LABELS[discipline],
+        detail: `${disciplineCounts[discipline]} esercizi`,
+      }),
+    ),
+  ];
+
+  return (
+    <div className="flex flex-col gap-2">
+      {options.map((option) => (
+        <label
+          key={option.value}
+          className={cn(
+            "border-border bg-card flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg border px-4 py-2 text-sm",
+            value === option.value && "border-primary",
+          )}
+        >
+          <span className="font-medium">{option.label}</span>
+          <span className="text-muted-foreground text-xs">{option.detail}</span>
+          <input
+            type="radio"
+            name="exam_discipline_scope"
+            value={option.value}
+            checked={value === option.value}
+            onChange={() => onChange(option.value)}
+            className="sr-only"
+          />
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function availableDisciplines(
+  counts: Record<Discipline, number>,
+): Discipline[] {
+  return ALL_DISCIPLINES.filter((discipline) => counts[discipline] > 0);
+}
+
+function initialExamScope(
+  schedule: TrainingSchedule | null,
+  available: Discipline[],
+): ExamDisciplineScope {
+  if (available.length === 1) return available[0];
+  const selected = new Set(schedule?.exam_disciplines ?? ALL_DISCIPLINES);
+  const visibleSelection = available.filter((discipline) =>
+    selected.has(discipline),
+  );
+  if (visibleSelection.length === 1) return visibleSelection[0];
+  return "both";
+}
+
+function hiddenExamScope(
+  planMode: PlanMode,
+  available: Discipline[],
+): ExamDisciplineScope {
+  if (planMode !== "exam") return "both";
+  return available.length === 1 ? available[0] : "both";
+}
+
+function countForScope(
+  scope: ExamDisciplineScope,
+  counts: Record<Discipline, number>,
+): number {
+  if (scope === "both") return totalCount(counts);
+  return counts[scope];
+}
+
+function totalCount(counts: Record<Discipline, number>): number {
+  return counts.shaolin + counts.taichi;
 }

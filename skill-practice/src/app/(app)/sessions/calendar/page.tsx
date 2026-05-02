@@ -4,7 +4,11 @@ import { Pencil } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getUserPlanItems } from "@/lib/queries/plan";
-import { listSessionsInRange, type ScheduledSession } from "@/lib/session-scheduler";
+import {
+  getScheduledPlanItems,
+  listSessionsInRange,
+  type ScheduledSession,
+} from "@/lib/session-scheduler";
 import { localDateKey } from "@/lib/date";
 import { CalendarMonth } from "@/components/sessions/CalendarMonth";
 import { Button } from "@/components/ui/button";
@@ -36,7 +40,22 @@ export default async function CalendarPage() {
 
   const today = localDateKey();
   const from = today < schedule.start_date ? schedule.start_date : today;
-  const rows = listSessionsInRange(from, schedule.end_date, schedule, items);
+  const scheduledItems = getScheduledPlanItems(items, schedule, profile.plan_mode);
+  if (scheduledItems.length === 0) {
+    return (
+      <EmptyState
+        title="Nessun esercizio nelle sessioni"
+        description="Modifica l'ambito delle sessioni o controlla il programma attivo."
+        action={
+          <Button asChild>
+            <Link href="/sessions/setup">Modifica sessioni</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
+  const rows = listSessionsInRange(from, schedule.end_date, schedule, scheduledItems);
   const monthGroups = groupByMonth(rows);
 
   const totalSessions = rows.filter((r) => r.session.kind === "training").length;

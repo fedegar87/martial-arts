@@ -111,6 +111,7 @@ export type TrainingSchedule = {
   weekdays: number[];
   cadence_weeks: 1 | 2 | 4;
   reps_per_form: number;
+  exam_disciplines: Discipline[];
   start_date: string;
   end_date: string;
   created_at: string;

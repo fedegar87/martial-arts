@@ -1,6 +1,13 @@
-import type { Skill, TrainingSchedule, UserPlanItem } from "./types";
+import type {
+  Discipline,
+  PlanMode,
+  Skill,
+  TrainingSchedule,
+  UserPlanItem,
+} from "./types";
 
 const MAX_GAP_BETWEEN_TRAINING_DAYS = 7;
+const ALL_DISCIPLINES: Discipline[] = ["shaolin", "taichi"];
 
 export type ItemWithSkill = UserPlanItem & { skill: Skill };
 
@@ -79,6 +86,25 @@ export function listSessionsInRange(
     cur = addDays(cur, 1);
   }
   return out;
+}
+
+export function getScheduledPlanItems(
+  items: ItemWithSkill[],
+  schedule: TrainingSchedule,
+  planMode: PlanMode,
+): ItemWithSkill[] {
+  if (planMode !== "exam") return items;
+
+  const allowedDisciplines = new Set(normalizeExamDisciplines(schedule));
+  return items.filter((item) => allowedDisciplines.has(item.skill.discipline));
+}
+
+function normalizeExamDisciplines(schedule: TrainingSchedule): Discipline[] {
+  const selected = schedule.exam_disciplines ?? ALL_DISCIPLINES;
+  const unique = ALL_DISCIPLINES.filter((discipline) =>
+    selected.includes(discipline),
+  );
+  return unique.length > 0 ? unique : ALL_DISCIPLINES;
 }
 
 function bucket<T extends { skill_id: string }>(

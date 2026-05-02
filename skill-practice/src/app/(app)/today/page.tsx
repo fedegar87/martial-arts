@@ -4,7 +4,7 @@ import { getUserPlanItems } from "@/lib/queries/plan";
 import { getThisWeekLogs } from "@/lib/queries/practice-log";
 import { getUnreadNewsCount } from "@/lib/queries/news";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
-import { getScheduledSession } from "@/lib/session-scheduler";
+import { getScheduledPlanItems, getScheduledSession } from "@/lib/session-scheduler";
 import { localDateKey } from "@/lib/date";
 import { NewsBanner } from "@/components/news/NewsBanner";
 import { RestDayCard } from "@/components/today/RestDayCard";
@@ -66,7 +66,21 @@ export default async function TodayPage() {
     );
   }
 
-  const session = getScheduledSession(todayStr, schedule, items);
+  const scheduledItems = getScheduledPlanItems(items, schedule, profile.plan_mode);
+  if (scheduledItems.length === 0) {
+    return (
+      <TodayShell
+        dayName={dayName}
+        planMode={profile.plan_mode}
+        gradeSummary={gradeSummary}
+        unreadNewsCount={unreadNewsCount}
+      >
+        <TodayEmptyState reason="empty_session" />
+      </TodayShell>
+    );
+  }
+
+  const session = getScheduledSession(todayStr, schedule, scheduledItems);
 
   if (session.kind === "no_schedule") {
     return (

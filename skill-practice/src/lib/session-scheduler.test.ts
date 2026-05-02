@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  getScheduledPlanItems,
   getScheduledSession,
   listSessionsInRange,
   type ItemWithSkill,
 } from "./session-scheduler.ts";
-import type { TrainingSchedule } from "./types.ts";
+import type { Discipline, TrainingSchedule } from "./types.ts";
 
 function makeSchedule(over: Partial<TrainingSchedule> = {}): TrainingSchedule {
   return {
@@ -13,6 +14,7 @@ function makeSchedule(over: Partial<TrainingSchedule> = {}): TrainingSchedule {
     weekdays: [1, 3, 5],
     cadence_weeks: 2,
     reps_per_form: 3,
+    exam_disciplines: ["shaolin", "taichi"],
     start_date: "2026-04-27",
     end_date: "2026-07-26",
     created_at: "2026-04-26T00:00:00.000Z",
@@ -24,6 +26,7 @@ function makeSchedule(over: Partial<TrainingSchedule> = {}): TrainingSchedule {
 function item(
   id: string,
   status: "focus" | "review" | "maintenance",
+  discipline: Discipline = "shaolin",
 ): ItemWithSkill {
   return {
     id: `pi-${id}`,
@@ -40,7 +43,7 @@ function item(
       name: id,
       name_italian: null,
       category: "forme",
-      discipline: "shaolin",
+      discipline,
       practice_mode: "solo",
       description: null,
       video_url: "",
@@ -249,4 +252,34 @@ test("empty items list yields empty buckets on training day", () => {
     assert.deepEqual(result.maintenance, []);
     assert.equal(result.sessionIndex, 0);
   }
+});
+
+test("getScheduledPlanItems filters exam items by schedule disciplines", () => {
+  const schedule = makeSchedule({ exam_disciplines: ["taichi"] });
+  const items = [
+    item("shaolin-focus", "focus", "shaolin"),
+    item("taichi-focus", "focus", "taichi"),
+  ];
+
+  const result = getScheduledPlanItems(items, schedule, "exam");
+
+  assert.deepEqual(
+    result.map((entry) => entry.skill_id),
+    ["taichi-focus"],
+  );
+});
+
+test("getScheduledPlanItems keeps all custom items regardless of schedule disciplines", () => {
+  const schedule = makeSchedule({ exam_disciplines: ["shaolin"] });
+  const items = [
+    item("shaolin-review", "review", "shaolin"),
+    item("taichi-review", "review", "taichi"),
+  ];
+
+  const result = getScheduledPlanItems(items, schedule, "custom");
+
+  assert.deepEqual(
+    result.map((entry) => entry.skill_id),
+    ["shaolin-review", "taichi-review"],
+  );
 });
