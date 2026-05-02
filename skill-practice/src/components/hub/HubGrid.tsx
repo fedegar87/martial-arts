@@ -1,17 +1,17 @@
 import {
   BarChart3,
   BookOpenText,
+  CalendarDays,
   Megaphone,
   Target,
   User,
 } from "lucide-react";
-import { TempleHomeIcon } from "@/components/shared/TempleHomeIcon";
 import { HubTile } from "./HubTile";
 
 const HUB_AREAS = [
   {
     href: "/today",
-    Icon: TempleHomeIcon,
+    Icon: CalendarDays,
     title: "Oggi",
     subtitle: "la tua pratica del giorno",
     anim: "hub-anim-tile-1",

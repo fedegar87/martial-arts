@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpenText, Target, User } from "lucide-react";
-import { TempleHomeIcon } from "@/components/shared/TempleHomeIcon";
+import { BarChart3, BookOpenText, CalendarDays, Target, User } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/today", label: "Oggi", shortLabel: "Oggi", Icon: TempleHomeIcon },
+  { href: "/today", label: "Oggi", shortLabel: "Oggi", Icon: CalendarDays },
   { href: "/programma", label: "Programma", shortLabel: "Piano", Icon: Target },
   {
     href: "/library",
