@@ -46,7 +46,7 @@ export function PlanModeSection({
     <div className="space-y-4">
       <div>
         <div className="text-sm font-medium">
-          {planMode === "custom" ? "Selezione libera" : "Programma esame"}
+          {planMode === "custom" ? "Selezione personale" : "Programma esame"}
         </div>
         <p className="text-muted-foreground text-sm">
           {planCount} contenuti attivi nel piano
@@ -70,16 +70,16 @@ export function PlanModeSection({
           disabled={pending}
           onClick={handleCustomClick}
         >
-          Selezione libera
+          Selezione personale
         </Button>
       </div>
       <Sheet open={confirmOpen} onOpenChange={setConfirmOpen}>
         <SheetContent side="bottom" className="material-sheet pb-[env(safe-area-inset-bottom)]">
           <SheetHeader>
-            <SheetTitle>Passare alla selezione libera?</SheetTitle>
+            <SheetTitle>Passare alla selezione personale?</SheetTitle>
             <SheetDescription>
-              Verranno rimossi dal piano i contenuti generati dal programma
-              esame. Lo storico pratica e le note restano salvati.
+              Il piano attivo userà la tua selezione personale. Programma
+              esame, storico pratica e note restano salvati.
             </SheetDescription>
           </SheetHeader>
           <SheetFooter>

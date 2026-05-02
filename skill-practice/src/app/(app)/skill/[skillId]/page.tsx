@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { Users } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getSkillById } from "@/lib/queries/skills";
-import { getUserPlanItemBySkill } from "@/lib/queries/plan";
+import { getUserPlanItemsBySkill } from "@/lib/queries/plan";
 import {
   getPersonalNotesForSkill,
   getTodayLogForSkill,
@@ -30,12 +30,19 @@ export default async function SkillDetailPage({ params }: Props) {
   const skill = await getSkillById(skillId);
   if (!skill) notFound();
 
-  const [planItem, personalNotes, todayLog] = await Promise.all([
-    getUserPlanItemBySkill(profile.id, skillId),
+  const [planItems, personalNotes, todayLog] = await Promise.all([
+    getUserPlanItemsBySkill(profile.id, skillId),
     getPersonalNotesForSkill(profile.id, skillId),
     getTodayLogForSkill(profile.id, skillId),
   ]);
-  const inPlan = planItem !== null && !planItem.is_hidden;
+  const activeSource = profile.plan_mode === "custom" ? "manual" : "exam_program";
+  const activePlanItem =
+    planItems.find((item) => item.source === activeSource && !item.is_hidden) ??
+    null;
+  const manualPlanItem =
+    planItems.find((item) => item.source === "manual" && !item.is_hidden) ??
+    null;
+  const inPersonalSelection = manualPlanItem !== null;
   const practicedToday = todayLog?.completed ?? false;
   const requiresPartner =
     skill.practice_mode === "paired" || skill.practice_mode === "both";
@@ -54,7 +61,7 @@ export default async function SkillDetailPage({ params }: Props) {
           </span>
           <LevelBadge level={skill.minimum_grade_value} />
           <PracticeModeBadge mode={skill.practice_mode} />
-          {inPlan && planItem && <StatusBadge status={planItem.status} />}
+          {activePlanItem && <StatusBadge status={activePlanItem.status} />}
           <PracticeCompletionBadge completed={practicedToday} />
           <VideoAvailabilityBadge videoUrl={skill.video_url} />
         </div>
@@ -85,8 +92,9 @@ export default async function SkillDetailPage({ params }: Props) {
       <div className="app-sticky-action material-bar">
         <SkillPracticeActions
           skillId={skillId}
-          inPlan={inPlan}
+          inPersonalSelection={inPersonalSelection}
           practicedToday={practicedToday}
+          planMode={profile.plan_mode}
         />
       </div>
     </div>

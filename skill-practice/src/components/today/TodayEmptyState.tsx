@@ -44,10 +44,10 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
       <EmptyState
         icon={<Dumbbell className="h-10 w-10" />}
         title="Nessun esercizio previsto oggi"
-        description="Il piano attivo non assegna esercizi a questa sessione. Controlla gli stati nel programma o aggiorna le sessioni."
+        description="Il piano di allenamento attivo non assegna esercizi a questa sessione. Controlla il piano o aggiorna le sessioni."
         action={
           <Button asChild>
-            <Link href="/programma">Controlla programma</Link>
+            <Link href="/programma">Controlla piano</Link>
           </Button>
         }
       />
@@ -59,7 +59,7 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
       <EmptyState
         icon={<Library className="h-10 w-10" />}
         title="Nessuna forma selezionata"
-        description="Apri la selezione libera e scegli forme e tecniche da praticare."
+        description="Apri la selezione personale e scegli forme e tecniche da praticare."
         action={
           <Button asChild>
             <Link href="/plan/custom">Apri selezione</Link>
@@ -73,7 +73,7 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
     <EmptyState
       icon={<Library className="h-10 w-10" />}
       title="Nessun contenuto nel tuo piano"
-      description="Attiva un programma esame oppure passa alla selezione libera."
+      description="Attiva un programma esame oppure passa alla selezione personale."
       action={
         <Button asChild>
           <Link href="/plan/exam">Programma esame</Link>

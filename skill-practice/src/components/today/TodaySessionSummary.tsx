@@ -28,7 +28,7 @@ export function TodaySessionSummary({
         ]}
       />
       <p className="text-xs text-muted-foreground">
-        Ripasso {cadenceText(cadenceWeeks)}. Questa settimana:{" "}
+        Frequenza ripasso: {cadenceText(cadenceWeeks)}. Questa settimana:{" "}
         {weekDoneCount} {weekDoneCount === 1 ? "giorno" : "giorni"} praticati.
       </p>
     </section>

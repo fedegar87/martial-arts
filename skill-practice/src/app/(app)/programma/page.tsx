@@ -126,7 +126,7 @@ function buildSubtitle(
       return `${disciplineLabel} — nessun esame in preparazione.`;
     return `${disciplineLabel} — prossimo esame: ${gradeLabelForDiscipline(discipline, nextGrade)}.`;
   }
-  return `${disciplineLabel} — selezione personalizzata.`;
+  return `${disciplineLabel} — selezione personale.`;
 }
 
 function ActivateModeBanner({ tab }: { tab: PlanMode }) {
@@ -134,8 +134,8 @@ function ActivateModeBanner({ tab }: { tab: PlanMode }) {
     tab === "exam" ? activateExamFormAction : activateCustomFormAction;
   const label =
     tab === "exam"
-      ? "Stai esplorando il programma esame, ma il piano attivo è personalizzato."
-      : "Stai esplorando la selezione personalizzata, ma il piano attivo è l'esame.";
+      ? "Stai esplorando il programma esame, ma il piano attivo è la selezione personale."
+      : "Stai esplorando la selezione personale, ma il piano attivo è il programma esame.";
 
   return (
     <form
@@ -192,10 +192,10 @@ function EmptyState({
   return (
     <div className="space-y-3 text-sm">
       <p className="text-muted-foreground">
-        Non hai ancora una selezione personalizzata.
+        Non hai ancora una selezione personale.
       </p>
       <Button asChild size="sm" variant="outline">
-        <Link href="/plan/custom">Crea selezione personalizzata</Link>
+        <Link href="/plan/custom">Crea selezione personale</Link>
       </Button>
     </div>
   );

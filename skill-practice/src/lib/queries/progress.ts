@@ -100,7 +100,7 @@ async function getPlanProgressByDiscipline(
       result[discipline] = computePlanProgress({
         discipline,
         mode: "custom",
-        title: "Selezione personalizzata",
+        title: "Selezione personale",
         requiredSkills,
         planBySkillId,
         logs,

@@ -85,7 +85,7 @@ export function SetupForm({
     <form action={action} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Programma attivo</CardTitle>
+          <CardTitle className="text-base">Piano attivo</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">{programLabel}</p>
@@ -139,7 +139,7 @@ export function SetupForm({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Cadenza ripasso</CardTitle>
+          <CardTitle className="text-base">Frequenza del ripasso</CardTitle>
         </CardHeader>
         <CardContent>
           <CadencePicker value={cadence} onChange={setCadence} />

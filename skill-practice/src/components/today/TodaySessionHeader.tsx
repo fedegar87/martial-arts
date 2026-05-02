@@ -15,7 +15,7 @@ export function TodaySessionHeader({
   gradeSummary,
 }: Props) {
   const planLabel =
-    planMode === "custom" ? "Piano personalizzato" : "Programma esame";
+    planMode === "custom" ? "Selezione personale" : "Programma esame";
 
   return (
     <header className="material-bar sticky top-0 z-30 -mx-4 border-b border-border px-4 py-3">

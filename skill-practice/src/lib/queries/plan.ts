@@ -33,14 +33,27 @@ export async function getUserPlanItemBySkill(
   userId: string,
   skillId: string,
 ): Promise<UserPlanItem | null> {
+  const items = await getUserPlanItemsBySkill(userId, skillId);
+  return (
+    items.find((i) => i.source === "manual" && !i.is_hidden) ??
+    items.find((i) => !i.is_hidden) ??
+    items.find((i) => i.source === "manual") ??
+    items[0] ??
+    null
+  );
+}
+
+export async function getUserPlanItemsBySkill(
+  userId: string,
+  skillId: string,
+): Promise<UserPlanItem[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("user_plan_items")
     .select("*")
     .eq("user_id", userId)
     .eq("skill_id", skillId);
-  const items = (data as UserPlanItem[] | null) ?? [];
-  return items.find((i) => i.source === "manual") ?? items[0] ?? null;
+  return (data as UserPlanItem[] | null) ?? [];
 }
 
 export async function getUserPlanCount(

@@ -36,9 +36,9 @@ export default async function PlanCustomPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Selezione libera</h1>
+        <h1 className="text-2xl font-semibold">Selezione personale</h1>
         <p className="text-muted-foreground text-sm">
-          {DISCIPLINE_LABELS[discipline]} — scegli forme e tecniche da tenere nel piano.
+          {DISCIPLINE_LABELS[discipline]} — scegli forme e tecniche da usare nel piano di allenamento.
         </p>
       </header>
 

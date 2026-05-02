@@ -6,22 +6,33 @@ import { Button } from "@/components/ui/button";
 import { markPracticeDone } from "@/lib/actions/practice";
 import { AddToPlanButton } from "@/components/skill/AddToPlanButton";
 import { PracticeNoteButton } from "@/components/today/PracticeNoteButton";
+import type { PlanMode } from "@/lib/types";
 
 type Props = {
   skillId: string;
-  inPlan: boolean;
+  inPersonalSelection: boolean;
   practicedToday: boolean;
+  planMode: PlanMode;
 };
 
 export function SkillPracticeActions({
   skillId,
-  inPlan,
+  inPersonalSelection,
   practicedToday,
+  planMode,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(practicedToday);
   const [noteOpen, setNoteOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const helperText =
+    planMode === "custom"
+      ? inPersonalSelection
+        ? "La pratica libera aggiorna lo storico. Questo contenuto è nella selezione personale e può comparire nelle sessioni."
+        : "La pratica libera aggiorna lo storico senza cambiare le sessioni. Aggiungi il contenuto alle sessioni se vuoi ripassarlo con cadenza regolare."
+      : inPersonalSelection
+        ? "La pratica libera aggiorna lo storico senza cambiare il programma esame. Questo contenuto è salvato nella selezione personale, che resta inattiva."
+        : "La pratica libera aggiorna lo storico senza cambiare il programma esame. Aggiungere il contenuto alla selezione personale non la rende attiva.";
 
   function handleFreePracticeDone() {
     startTransition(async () => {
@@ -55,7 +66,7 @@ export function SkillPracticeActions({
           ) : (
             <Dumbbell className="mr-2 h-4 w-4" />
           )}
-          {done ? "Praticato oggi" : pending ? "..." : "Pratica libera fatta"}
+          {done ? "Praticato oggi" : pending ? "..." : "Registra pratica libera"}
         </Button>
         <PracticeNoteButton
           skillId={skillId}
@@ -65,11 +76,14 @@ export function SkillPracticeActions({
         />
       </div>
 
-      <AddToPlanButton skillId={skillId} inPlan={inPlan} />
+      <AddToPlanButton
+        skillId={skillId}
+        inPersonalSelection={inPersonalSelection}
+        planMode={planMode}
+      />
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        La pratica libera aggiorna lo storico senza cambiare il programma.
-        Aggiungilo al piano se vuoi rivederlo nelle sessioni.
+        {helperText}
       </p>
 
       {message && (

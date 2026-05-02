@@ -10,7 +10,7 @@ type Props = {
 
 const TABS: { mode: PlanMode; label: string }[] = [
   { mode: "exam", label: "Esame" },
-  { mode: "custom", label: "Personalizzato" },
+  { mode: "custom", label: "Personale" },
 ];
 
 export function PlanTabsNav({ current, discipline, activeMode }: Props) {

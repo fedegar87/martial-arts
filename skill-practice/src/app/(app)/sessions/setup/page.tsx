@@ -16,16 +16,16 @@ export default async function SetupPage() {
 
   const programLabel =
     profile.plan_mode === "custom"
-      ? `Selezione personalizzata: ${items.length} esercizi`
-      : `Programma esame attivo · ${items.length} esercizi`;
+      ? `Selezione personale · ${items.length} esercizi`
+      : `Programma esame · ${items.length} esercizi`;
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold">Sessioni di allenamento</h1>
         <p className="text-muted-foreground text-sm">
-          Definisci giorni, durata e ripasso. Le sessioni vengono generate dal
-          programma attivo.
+          Definisci giorni, durata e frequenza del ripasso. Le sessioni vengono
+          generate dal piano di allenamento attivo.
         </p>
       </header>
       <SetupForm
