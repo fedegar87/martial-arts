@@ -33,3 +33,7 @@ npm-debug.log*
 
 # Claude Code local state
 .claude/
+
+# Screenshot artefatti (locali, non versionati)
+screenshots-mobile/
+.playwright-mcp/
