@@ -7,17 +7,23 @@ import { GradeSection } from "@/components/library/GradeSection";
 import { CategoryFilter } from "@/components/library/CategoryFilter";
 import { DISCIPLINE_LABELS, SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import { gradesForDiscipline } from "@/lib/grades";
+import { hasPlayableVideo } from "@/lib/youtube";
 import type { Discipline, PlanStatus, Skill, SkillCategory } from "@/lib/types";
 
-type Props = { searchParams: Promise<{ d?: string; category?: string }> };
+const ENABLE_LEVEL_LOCK = false;
+
+type Props = {
+  searchParams: Promise<{ d?: string; category?: string; withVideo?: string }>;
+};
 
 export default async function ScuolaChangPage({ searchParams }: Props) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  const { d, category } = await searchParams;
+  const { d, category, withVideo } = await searchParams;
   const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
   const selectedCategory = isSkillCategory(category) ? category : undefined;
+  const onlyWithVideo = withVideo === "1";
   const userLevel =
     discipline === "shaolin"
       ? profile.assigned_level_shaolin
@@ -32,9 +38,9 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
     Object.keys(SKILL_CATEGORY_LABELS) as SkillCategory[]
   ).filter((cat) => allSkills.some((s) => s.category === cat));
 
-  const filteredSkills = selectedCategory
-    ? allSkills.filter((s) => s.category === selectedCategory)
-    : allSkills;
+  const filteredSkills = allSkills
+    .filter((s) => (selectedCategory ? s.category === selectedCategory : true))
+    .filter((s) => (onlyWithVideo ? hasPlayableVideo(s.video_url) : true));
 
   const byGrade = filteredSkills.reduce<Record<number, Skill[]>>(
     (acc, skill) => {
@@ -71,6 +77,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
         discipline={discipline}
         current={selectedCategory}
         categories={availableCategories}
+        withVideo={onlyWithVideo}
       />
 
       <div className="space-y-6">
@@ -81,7 +88,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
               key={grade.value}
               title={grade.label}
               skills={byGrade[grade.value] ?? []}
-              locked={userLevel !== 0 && grade.value < userLevel}
+              locked={ENABLE_LEVEL_LOCK && userLevel !== 0 && grade.value < userLevel}
               planStatusBySkillId={statusBySkillId}
             />
           ))}
