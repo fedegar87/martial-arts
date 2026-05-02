@@ -1,4 +1,4 @@
-const CACHE_NAME = "skill-practice-v1";
+const CACHE_NAME = "kung-fu-practice-v1";
 const OFFLINE_URL = "/offline.html";
 const STATIC_ASSETS = [OFFLINE_URL, "/manifest.json", "/icon.svg"];
 

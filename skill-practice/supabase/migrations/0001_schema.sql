@@ -1,4 +1,4 @@
--- Skill Practice — schema iniziale
+-- Kung Fu Practice - schema iniziale
 -- Tutte le tabelle hanno RLS attiva. Statici: read pubblico per authenticated.
 -- Dinamici (per utente): solo proprietario via auth.uid().
 

@@ -24,7 +24,7 @@ export function LoginForm({ initialError }: { initialError?: string | null }) {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Skill Practice FESK</CardTitle>
+        <CardTitle>Kung Fu Practice FESK</CardTitle>
         <CardDescription>
           Accedi al tuo quaderno tecnico digitale.
         </CardDescription>

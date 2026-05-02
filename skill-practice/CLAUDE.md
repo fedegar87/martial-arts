@@ -1,4 +1,4 @@
-# skill-practice — regole di progetto
+# Kung Fu Practice - regole di progetto
 
 ## Fonte di verità
 
