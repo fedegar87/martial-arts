@@ -71,7 +71,7 @@ export default async function ProgrammaPage({ searchParams }: Props) {
         hiddenTaichi={profile.assigned_level_taichi === 0}
       />
 
-      <div className="grid grid-cols-[auto_1fr] gap-3 sm:gap-4">
+      <div className="program-layout">
         <PlanTabsNav
           current={tab}
           discipline={discipline}

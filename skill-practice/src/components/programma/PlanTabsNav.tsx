@@ -17,7 +17,7 @@ export function PlanTabsNav({ current, discipline, activeMode }: Props) {
   return (
     <nav
       aria-label="Modalità del piano"
-      className="flex shrink-0 flex-col self-start"
+      className="program-plan-tabs shrink-0 self-start"
     >
       {TABS.map(({ mode, label }) => (
         <TabLink
@@ -47,10 +47,10 @@ function TabLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`tap-feedback label-font relative flex min-h-12 items-center gap-2 border-r-2 px-3 text-sm font-medium transition-colors ${
+      className={`program-plan-tab tap-feedback label-font relative flex min-h-11 shrink-0 items-center gap-2 px-3 text-sm font-medium transition-colors ${
         active
           ? "border-primary bg-card text-foreground"
-          : "border-border text-muted-foreground hover:text-foreground"
+          : "text-muted-foreground hover:text-foreground"
       }`}
     >
       <span className="whitespace-nowrap">{label}</span>

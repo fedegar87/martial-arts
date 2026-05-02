@@ -23,7 +23,7 @@ export default async function HubPage() {
   return (
     <>
       <HubBackground />
-      <section className="relative z-10 mx-auto max-w-md">
+      <section className="hub-page relative z-10 mx-auto">
         <h1 className="hub-anim-heading mt-8 text-[22px] font-medium text-foreground">
           Dove vuoi praticare oggi?
         </h1>

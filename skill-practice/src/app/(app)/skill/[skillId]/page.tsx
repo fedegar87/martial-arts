@@ -82,7 +82,7 @@ export default async function SkillDetailPage({ params }: Props) {
 
       <PersonalNotesPanel notes={personalNotes} />
 
-      <div className="material-bar sticky bottom-24 z-40 -mx-4 border-t border-border px-4 py-3">
+      <div className="app-sticky-action material-bar">
         <SkillPracticeActions
           skillId={skillId}
           inPlan={inPlan}

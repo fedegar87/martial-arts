@@ -47,11 +47,11 @@ export function CustomSelectionForm({
   }
 
   return (
-    <form action={action} className="space-y-5 pb-24">
+    <form action={action} className="app-with-fixed-action space-y-5">
       <input type="hidden" name="discipline" value={discipline} />
 
       {gradeOptions.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="scroll-chips">
           <GradeChip
             label="Tutti"
             active={activeGrade === "all"}
@@ -90,8 +90,8 @@ export function CustomSelectionForm({
         <p className="text-muted-foreground text-sm">Selezione salvata.</p>
       )}
 
-      <div className="material-bar fixed inset-x-0 bottom-20 z-40 border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="mx-auto grid max-w-2xl grid-cols-[1fr_auto] items-center gap-3">
+      <div className="app-fixed-action material-bar">
+        <div className="app-fixed-action__inner grid grid-cols-[1fr_auto] items-center gap-3">
           <span className="text-muted-foreground text-sm">
             <strong className="text-foreground">{selectedCount}</strong>{" "}
             selezionati
@@ -119,7 +119,7 @@ function GradeChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`tap-feedback label-font min-h-10 shrink-0 rounded-md border px-3 text-sm ${
+      className={`tap-feedback label-font min-h-11 shrink-0 rounded-md border px-3 text-sm ${
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border text-muted-foreground hover:text-foreground"
