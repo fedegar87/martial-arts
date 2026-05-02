@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { login } from "@/lib/actions/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { requestPasswordReset } from "@/lib/actions/auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,18 +13,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-export function LoginForm({ initialError }: { initialError?: string | null }) {
-  const [state, action, pending] = useActionState(login, null);
-  const error =
-    (state && "error" in state ? state.error : null) ?? initialError ?? null;
+export function ForgotPasswordForm() {
+  const [state, action, pending] = useActionState(requestPasswordReset, null);
 
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Skill Practice FESK</CardTitle>
+        <CardTitle>Password dimenticata</CardTitle>
         <CardDescription>
-          Accedi al tuo quaderno tecnico digitale.
+          Inserisci la tua email per ricevere un link di reset.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -41,32 +39,30 @@ export function LoginForm({ initialError }: { initialError?: string | null }) {
               autoComplete="email"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-            />
-          </div>
-          {error && (
+
+          {state && "error" in state && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{state.error}</AlertDescription>
             </Alert>
           )}
+
+          {state && "success" in state && (
+            <Alert>
+              <AlertDescription>{state.success}</AlertDescription>
+            </Alert>
+          )}
+
           <Button type="submit" disabled={pending} className="w-full">
-            {pending ? "Accesso in corso..." : "Accedi"}
+            {pending ? "Invio in corso..." : "Invia link di reset"}
           </Button>
         </form>
       </CardContent>
       <CardFooter>
         <Link
-          href="/forgot-password"
+          href="/login"
           className="text-muted-foreground text-sm hover:underline"
         >
-          Password dimenticata?
+          Torna al login
         </Link>
       </CardFooter>
     </Card>

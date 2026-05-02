@@ -15,6 +15,8 @@ const PROTECTED_PREFIXES = [
   "/sessions",
 ];
 
+const AUTHENTICATED_ONLY = ["/auth/update-password"];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -48,11 +50,16 @@ export async function updateSession(request: NextRequest) {
   const isProtected = PROTECTED_PREFIXES.some(
     (prefix) => path === prefix || path.startsWith(prefix + "/"),
   );
+  const requiresAuth = AUTHENTICATED_ONLY.some(
+    (prefix) => path === prefix || path.startsWith(prefix + "/"),
+  );
 
-  if (!user && isProtected) {
+  if (!user && (isProtected || requiresAuth)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", path);
+    if (isProtected) {
+      url.searchParams.set("next", path);
+    }
     return NextResponse.redirect(url);
   }
 

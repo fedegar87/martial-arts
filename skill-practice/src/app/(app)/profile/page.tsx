@@ -4,6 +4,7 @@ import { CalendarDays, CalendarPlus } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { SignOutButton } from "@/components/profile/SignOutButton";
 import { GradeEditor } from "@/components/profile/GradeEditor";
+import { ChangePasswordSection } from "@/components/profile/ChangePasswordSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -48,6 +49,8 @@ export default async function ProfilePage() {
           </Button>
         </CardContent>
       </Card>
+
+      <ChangePasswordSection />
 
       <SignOutButton />
     </div>
