@@ -2,19 +2,29 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { LevelBadge } from "@/components/skill/LevelBadge";
 import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
+import { StatusBadge } from "@/components/skill/StatusBadge";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
+import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
 import { ChevronRight, Clock } from "lucide-react";
 import type { PlanStatus, Skill } from "@/lib/types";
 
 type Props = {
   skill: Skill;
   planStatus?: PlanStatus;
+  editableStatus?: boolean;
 };
 
-export function SkillListItem({ skill, planStatus }: Props) {
+export function SkillListItem({
+  skill,
+  planStatus,
+  editableStatus = false,
+}: Props) {
   return (
-    <Link href={`/skill/${skill.id}`}>
-      <Card className="tap-feedback hover:bg-muted/50 flex min-h-16 flex-row items-center gap-3 p-3 transition-colors">
+    <Card className="tap-feedback hover:bg-muted/50 flex min-h-16 flex-row items-center gap-3 p-3 transition-colors">
+      <Link
+        href={`/skill/${skill.id}`}
+        className="flex min-w-0 flex-1 items-center gap-3"
+      >
         <PlanStatusDot status={planStatus} />
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">{skill.name}</div>
@@ -28,9 +38,28 @@ export function SkillListItem({ skill, planStatus }: Props) {
             )}
           </div>
         </div>
-        <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
-        <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
-      </Card>
-    </Link>
+      </Link>
+      {planStatus && (
+        <span className="hidden sm:inline-flex">
+          <StatusBadge status={planStatus} />
+        </span>
+      )}
+      <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
+      {editableStatus && planStatus ? (
+        <SkillStatusMenu
+          skillId={skill.id}
+          currentStatus={planStatus}
+          showHide={false}
+        />
+      ) : (
+        <Link
+          href={`/skill/${skill.id}`}
+          aria-label={`Apri ${skill.name}`}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <ChevronRight className="h-4 w-4 shrink-0" />
+        </Link>
+      )}
+    </Card>
   );
 }

@@ -58,7 +58,11 @@ export function TodaySkillCard({
             <StatusBadge status={status} />
             <PracticeCompletionBadge completed={completedToday} />
             <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
-            <SkillStatusMenu skillId={skill.id} currentStatus={status} />
+            <SkillStatusMenu
+              skillId={skill.id}
+              currentStatus={status}
+              hideLabel="Nascondi da Oggi"
+            />
           </div>
         </div>
       </CardHeader>

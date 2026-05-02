@@ -2,13 +2,15 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { listSkillsForDiscipline } from "@/lib/queries/skills";
 import { getUserPlanItems } from "@/lib/queries/plan";
+import { getPracticedSkillIds } from "@/lib/queries/practice-log";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
 import { GradeSection } from "@/components/library/GradeSection";
 import { CategoryFilter } from "@/components/library/CategoryFilter";
+import { CatalogMarkerLegend } from "@/components/library/CatalogMarkerLegend";
 import { DISCIPLINE_LABELS, SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import { gradesForDiscipline } from "@/lib/grades";
 import { hasPlayableVideo } from "@/lib/youtube";
-import type { Discipline, PlanStatus, Skill, SkillCategory } from "@/lib/types";
+import type { Discipline, Skill, SkillCategory } from "@/lib/types";
 
 const ENABLE_LEVEL_LOCK = false;
 
@@ -28,10 +30,13 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
     discipline === "shaolin"
       ? profile.assigned_level_shaolin
       : profile.assigned_level_taichi;
+  const activeSource =
+    profile.plan_mode === "custom" ? "manual" : "exam_program";
 
-  const [allSkills, planItems] = await Promise.all([
+  const [allSkills, activePlanItems, practicedSkillIds] = await Promise.all([
     listSkillsForDiscipline(discipline),
-    getUserPlanItems(profile.id),
+    getUserPlanItems(profile.id, discipline, activeSource),
+    getPracticedSkillIds(profile.id),
   ]);
 
   const availableCategories = (
@@ -50,8 +55,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
     {},
   );
 
-  const statusBySkillId = new Map<string, PlanStatus>(
-    planItems.map((item) => [item.skill_id, item.status]),
+  const activePlanSkillIds = new Set(
+    activePlanItems.map((item) => item.skill_id),
   );
 
   return (
@@ -80,6 +85,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
         withVideo={onlyWithVideo}
       />
 
+      <CatalogMarkerLegend />
+
       <div className="space-y-6">
         {gradesForDiscipline(discipline)
           .filter((grade) => grade.value !== 0)
@@ -89,7 +96,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
               title={grade.label}
               skills={byGrade[grade.value] ?? []}
               locked={ENABLE_LEVEL_LOCK && userLevel !== 0 && grade.value < userLevel}
-              planStatusBySkillId={statusBySkillId}
+              activePlanSkillIds={activePlanSkillIds}
+              practicedSkillIds={practicedSkillIds}
             />
           ))}
       </div>

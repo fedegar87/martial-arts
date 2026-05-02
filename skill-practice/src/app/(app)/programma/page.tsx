@@ -11,6 +11,7 @@ import {
 import { SkillListItem } from "@/components/library/SkillListItem";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
 import { PlanTabsNav } from "@/components/programma/PlanTabsNav";
+import { PlanStatusLegend } from "@/components/skill/PlanStatusLegend";
 import { Button } from "@/components/ui/button";
 import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline, nextGradeValue } from "@/lib/grades";
@@ -34,20 +35,17 @@ export default async function ProgrammaPage({ searchParams }: Props) {
       : profile.assigned_level_taichi;
   const nextGrade = userLevel === 0 ? null : nextGradeValue(userLevel);
 
-  const activeSource = activeMode === "custom" ? "manual" : "exam_program";
-  const [examSkills, customItems, activePlanItems] = await Promise.all([
+  const tabSource = tab === "custom" ? "manual" : "exam_program";
+  const [examSkills, tabPlanItems] = await Promise.all([
     tab === "exam" && nextGrade !== null
       ? listSkillsAtGrade(discipline, nextGrade)
       : Promise.resolve([]),
-    tab === "custom"
-      ? getUserPlanItems(profile.id, discipline, "manual")
-      : Promise.resolve([]),
-    getUserPlanItems(profile.id, discipline, activeSource),
+    getUserPlanItems(profile.id, discipline, tabSource),
   ]);
 
-  const skills = tab === "exam" ? examSkills : customItems.map((item) => item.skill);
+  const skills = tab === "exam" ? examSkills : tabPlanItems.map((item) => item.skill);
   const planStatusBySkillId = new Map<string, PlanStatus>(
-    activePlanItems.map((item) => [item.skill_id, item.status]),
+    tabPlanItems.map((item) => [item.skill_id, item.status]),
   );
 
   const grouped = skills.reduce<Record<SkillCategory, Skill[]>>((acc, skill) => {
@@ -88,6 +86,7 @@ export default async function ProgrammaPage({ searchParams }: Props) {
             />
           ) : (
             <>
+              {planStatusBySkillId.size > 0 && <PlanStatusLegend />}
               <div className="space-y-6">
                 {(Object.keys(grouped) as SkillCategory[]).map((category) => (
                   <section key={category} className="space-y-2">
@@ -100,6 +99,7 @@ export default async function ProgrammaPage({ searchParams }: Props) {
                           key={skill.id}
                           skill={skill}
                           planStatus={planStatusBySkillId.get(skill.id)}
+                          editableStatus={tab === activeMode}
                         />
                       ))}
                     </div>

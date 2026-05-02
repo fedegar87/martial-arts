@@ -274,6 +274,7 @@ export async function updatePlanItemStatus(
 
   revalidatePath("/today");
   revalidatePath(`/skill/${skillId}`);
+  revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
   return { success: true };
@@ -289,6 +290,7 @@ export async function hidePlanItem(skillId: string): Promise<PlanFormState> {
 
   revalidatePath("/today");
   revalidatePath(`/skill/${skillId}`);
+  revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
   return { success: true };

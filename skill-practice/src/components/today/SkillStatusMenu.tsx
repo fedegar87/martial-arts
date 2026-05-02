@@ -24,6 +24,8 @@ import type { PlanStatus } from "@/lib/types";
 type Props = {
   skillId: string;
   currentStatus: PlanStatus;
+  hideLabel?: string;
+  showHide?: boolean;
 };
 
 const STATUS_OPTIONS: PlanStatus[] = ["focus", "review", "maintenance"];
@@ -34,7 +36,12 @@ const STATUS_ICONS: Record<PlanStatus, LucideIcon> = {
   maintenance: Wrench,
 };
 
-export function SkillStatusMenu({ skillId, currentStatus }: Props) {
+export function SkillStatusMenu({
+  skillId,
+  currentStatus,
+  hideLabel = "Nascondi dal piano attivo",
+  showHide = true,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -54,7 +61,7 @@ export function SkillStatusMenu({ skillId, currentStatus }: Props) {
       </SheetTrigger>
       <SheetContent side="bottom">
         <SheetHeader>
-          <SheetTitle>Stato nel piano</SheetTitle>
+          <SheetTitle>Stato nel piano attivo</SheetTitle>
         </SheetHeader>
         <div className="grid gap-2 px-4 pb-4">
           {STATUS_OPTIONS.map((status) => (
@@ -66,15 +73,17 @@ export function SkillStatusMenu({ skillId, currentStatus }: Props) {
               onClick={() => run(() => updatePlanItemStatus(skillId, status))}
             />
           ))}
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={pending}
-            onClick={() => run(() => hidePlanItem(skillId))}
-            className="justify-start text-muted-foreground"
-          >
-            Nascondi da Oggi
-          </Button>
+          {showHide && (
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={pending}
+              onClick={() => run(() => hidePlanItem(skillId))}
+              className="justify-start text-muted-foreground"
+            >
+              {hideLabel}
+            </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>

@@ -17,6 +17,7 @@ import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
 import { PracticeCompletionBadge } from "@/components/skill/PracticeCompletionBadge";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
+import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 
@@ -61,7 +62,16 @@ export default async function SkillDetailPage({ params }: Props) {
           </span>
           <LevelBadge level={skill.minimum_grade_value} />
           <PracticeModeBadge mode={skill.practice_mode} />
-          {activePlanItem && <StatusBadge status={activePlanItem.status} />}
+          {activePlanItem && (
+            <>
+              <StatusBadge status={activePlanItem.status} />
+              <SkillStatusMenu
+                skillId={skill.id}
+                currentStatus={activePlanItem.status}
+                showHide={false}
+              />
+            </>
+          )}
           <PracticeCompletionBadge completed={practicedToday} />
           <VideoAvailabilityBadge videoUrl={skill.video_url} />
         </div>

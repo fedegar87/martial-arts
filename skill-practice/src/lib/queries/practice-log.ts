@@ -68,3 +68,16 @@ export async function getTodayLogForSkill(
 
   return (data as PracticeLog | null) ?? null;
 }
+
+export async function getPracticedSkillIds(userId: string): Promise<Set<string>> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("practice_logs")
+    .select("skill_id")
+    .eq("user_id", userId)
+    .eq("completed", true);
+
+  return new Set(
+    ((data ?? []) as Array<{ skill_id: string }>).map((log) => log.skill_id),
+  );
+}

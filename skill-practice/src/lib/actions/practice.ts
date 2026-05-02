@@ -62,6 +62,7 @@ export async function markPracticeDone(
 
   revalidatePath("/today");
   revalidatePath(`/skill/${skillId}`);
+  revalidatePath("/library");
   revalidatePath("/progress");
   return { success: true };
 }
@@ -180,6 +181,7 @@ export async function incrementRep(skillId: string): Promise<PracticeFormState> 
 
   revalidatePath("/today");
   revalidatePath("/progress");
+  revalidatePath("/library");
   return { success: true };
 }
 
@@ -220,6 +222,7 @@ export async function decrementRep(skillId: string): Promise<PracticeFormState> 
 
   revalidatePath("/today");
   revalidatePath("/progress");
+  revalidatePath("/library");
   return { success: true };
 }
 
