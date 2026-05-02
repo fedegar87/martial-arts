@@ -1,17 +1,17 @@
 import {
   BarChart3,
   BookOpenText,
-  Home,
   Megaphone,
   Target,
   User,
 } from "lucide-react";
+import { TempleHomeIcon } from "@/components/shared/TempleHomeIcon";
 import { HubTile } from "./HubTile";
 
 const HUB_AREAS = [
   {
     href: "/today",
-    Icon: Home,
+    Icon: TempleHomeIcon,
     title: "Oggi",
     subtitle: "la tua pratica del giorno",
     anim: "hub-anim-tile-1",
@@ -27,7 +27,7 @@ const HUB_AREAS = [
     href: "/library",
     Icon: BookOpenText,
     title: "Scuola Chang",
-    subtitle: "libreria delle skill",
+    subtitle: "tecniche e forme",
     anim: "hub-anim-tile-3",
   },
   {
@@ -55,7 +55,7 @@ const HUB_AREAS = [
 
 export function HubGrid() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="hub-grid">
       {HUB_AREAS.map(({ href, Icon, title, subtitle, anim }) => (
         <HubTile
           key={href}

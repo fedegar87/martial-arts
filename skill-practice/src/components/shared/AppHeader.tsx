@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TempleHomeIcon } from "./TempleHomeIcon";
 
 export function AppHeader() {
   return (
@@ -6,10 +7,9 @@ export function AppHeader() {
       <Link
         href="/hub"
         aria-label="Torna alla home"
-        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-2xl font-bold text-accent transition-opacity hover:opacity-80 font-serif-tc"
-        lang="zh-Hant"
+        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-accent transition-opacity hover:opacity-80"
       >
-        丙午
+        <TempleHomeIcon className="h-6 w-6" aria-hidden />
       </Link>
     </header>
   );
