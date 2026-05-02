@@ -10,6 +10,7 @@ Goal: add a practical password lifecycle for school testers: admin invite, set p
 - Reset links use a configured origin (`NEXT_PUBLIC_SITE_URL` or `APP_ORIGIN`) before falling back to request headers.
 - `/auth/update-password` requires both a Supabase session and a short-lived app cookie set by `/auth/callback`.
 - `/auth/callback` defaults missing `next` to `/auth/update-password` so dashboard invite links still land in password setup.
+- `/auth/confirm` handles the SSR-safe `token_hash` invite/recovery links required by custom Supabase email templates. This is the real fix for dashboard invites that otherwise arrive with `#access_token=...` in the URL fragment.
 - Authenticated password change uses Supabase `updateUser({ password, current_password })` instead of a separate `signInWithPassword`, matching the locally installed SDK type.
 - Supabase built-in email/rate-limit assumptions are documented conservatively; custom SMTP is future work if testing volume needs it.
 
@@ -37,6 +38,7 @@ Update `npm run test` to include `src/lib/auth-validation.test.ts`.
 Modify:
 
 - `src/app/auth/callback/route.ts`
+- `src/app/auth/confirm/route.ts`
 - `src/lib/supabase/middleware.ts`
 
 Callback behavior:
@@ -46,6 +48,14 @@ Callback behavior:
 - If `next` is missing, route to `/auth/update-password` for dashboard invite compatibility.
 - If `next === "/auth/update-password"`, set `auth_password_update` HttpOnly cookie, path `/auth/update-password`, max-age 15 minutes.
 - Redirect to allowed destination.
+- On failure redirect to `/login?error=link_invalid`.
+
+Confirm route behavior:
+
+- Read `token_hash`, `type`, and optional `next`.
+- Accept only `type=invite` and `type=recovery`.
+- Call `supabase.auth.verifyOtp({ token_hash, type })`.
+- If verification succeeds, set `auth_password_update` HttpOnly cookie and redirect to allowed `next` path.
 - On failure redirect to `/login?error=link_invalid`.
 
 Middleware behavior:
@@ -125,7 +135,25 @@ Add:
 
 Production should set this to the canonical Vercel URL.
 
-### 9. Verification
+### 9. Supabase Email Templates
+
+In Supabase Dashboard -> Authentication -> Email Templates:
+
+Invite user link:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/auth/update-password">Accetta invito</a>
+```
+
+Reset password link:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/update-password">Reimposta password</a>
+```
+
+These links avoid the implicit-flow hash fragment (`#access_token=...`) that SSR middleware cannot read.
+
+### 10. Verification
 
 Run from `skill-practice`:
 
@@ -138,10 +166,10 @@ npm run build
 Manual checks after deploy:
 
 - `/login` -> `/forgot-password` flow.
-- Recovery email -> `/auth/update-password` -> password set -> correct landing.
-- Invite email -> `/auth/update-password` -> password set -> `/onboarding`.
+- Recovery email -> `/auth/confirm` -> `/auth/update-password` -> password set -> correct landing.
+- Invite email -> `/auth/confirm` -> `/auth/update-password` -> password set -> `/onboarding`.
 - Direct `/auth/update-password` does not allow password update.
 - `/profile` change password rejects wrong current password and accepts the correct one.
-- Open redirect attempt in callback falls back safely.
+- Open redirect attempts in callback/confirm fall back safely.
 
 No database migration is needed.

@@ -13,6 +13,7 @@ Current auth is intentionally small:
 
 - `/login` signs in with Supabase email/password.
 - `/auth/callback` exchanges Supabase email-link/OAuth codes for a session.
+- `/auth/confirm` verifies Supabase `token_hash` email links for SSR-safe invite/recovery flows.
 - `on_auth_user_created` creates a `user_profiles` row automatically.
 - There is no forgot-password, invite password setup, or authenticated password change.
 
@@ -29,7 +30,8 @@ The gap: Supabase recovery/invite links can create a session, but the app does n
 | AP5 | Public forgot-password route | `/forgot-password`, because `(auth)` is only a Next route group and does not add `/auth` to the URL. |
 | AP6 | Password update route | `/auth/update-password`, session-required and guarded by a short-lived callback cookie. |
 | AP7 | Reset URL origin | Prefer `NEXT_PUBLIC_SITE_URL`/`APP_ORIGIN`; fallback to request headers for local/dev. |
-| AP8 | CSP, 2FA, OAuth, admin UI | Future hardening/features, not part of this implementation. |
+| AP8 | Invite/recovery email links | Use custom Supabase email templates with `{{ .TokenHash }}` and `/auth/confirm`; do not rely on hash-fragment implicit links. |
+| AP9 | CSP, 2FA, OAuth, admin UI | Future hardening/features, not part of this implementation. |
 
 ## 2. Routes And Flows
 
@@ -37,6 +39,7 @@ The gap: Supabase recovery/invite links can create a session, but the app does n
 |---|---|---|
 | `/forgot-password` | Public, `(auth)` layout | User enters email. Server action calls `resetPasswordForEmail`. Response is always neutral. |
 | `/auth/callback` | Public route handler | Exchanges code for Supabase session. Allows only known explicit `next` paths. If `next` is missing, treats the link as invite/password setup and routes to `/auth/update-password`. Sets a short-lived password-update cookie for `/auth/update-password`. |
+| `/auth/confirm` | Public route handler | Verifies `token_hash` + `type=invite/recovery` with `verifyOtp`, sets session cookies and the password-update cookie, then redirects to `/auth/update-password`. |
 | `/auth/update-password` | Authenticated plus callback cookie | User sets password after recovery/invite link. |
 | `/profile` | Authenticated app route | Adds "Sicurezza" section for changing password. |
 | `/login` | Public | Adds forgot-password link and shows expired/invalid link errors. |
@@ -45,15 +48,21 @@ The gap: Supabase recovery/invite links can create a session, but the app does n
 
 ```text
 /login -> /forgot-password -> submit email
-Supabase email link -> /auth/callback?code=...&next=/auth/update-password
-/auth/callback exchanges code, creates session, sets auth_password_update cookie
+Supabase recovery email link -> /auth/confirm?token_hash=...&type=recovery&next=/auth/update-password
+/auth/confirm verifies token_hash, creates session, sets auth_password_update cookie
 /auth/update-password -> user enters new password -> updateUser({ password })
 redirect -> /hub or /onboarding
 ```
 
 ### Invite
 
-Admin sends invitation from Supabase Dashboard. If the dashboard invite link reaches `/auth/callback` without a `next` parameter, the callback defaults to `/auth/update-password` so the invited user still sets a password before entering the app. The final redirect uses `resolveLandingDestination(profile)`.
+Admin sends invitation from Supabase Dashboard. The invite template must point to:
+
+```html
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/auth/update-password
+```
+
+This avoids the old implicit-flow `#access_token=...` fragment, which is invisible to the server. The final redirect uses `resolveLandingDestination(profile)`.
 
 ### Change Password While Logged In
 
@@ -79,6 +88,8 @@ src/
         page.tsx
     auth/
       callback/
+        route.ts
+      confirm/
         route.ts
       update-password/
         layout.tsx
@@ -132,7 +143,8 @@ No database migration is required.
 | Concern | Handling |
 |---|---|
 | Account enumeration | Forgot-password action returns a neutral message for valid email syntax. |
-| Open redirect | Callback accepts only `/hub`, `/onboarding`, `/auth/update-password` when `next` is explicit. Missing `next` defaults to `/auth/update-password`. |
+| Hash-fragment invite links | Custom Supabase templates use `token_hash` and `/auth/confirm`, so the server can create cookies without reading URL fragments. |
+| Open redirect | Callback/confirm accept only `/hub`, `/onboarding`, `/auth/update-password` when `next` is explicit. Missing `next` defaults to `/auth/update-password`. |
 | Direct update-password visit | Middleware requires session; page/action also require the short-lived callback cookie. |
 | Authenticated password change | Native Supabase current-password verification. |
 | Password policy | 8-72 characters; Supabase enforces its configured minimum too. |
@@ -151,7 +163,19 @@ Before production testing:
 3. Email confirmation: `ON`.
 4. Site URL: production Vercel URL.
 5. Redirect URLs: include production URL wildcard and any preview/local URL used for manual testing.
-6. Consider custom SMTP if invite/recovery email volume exceeds Supabase built-in limits.
+6. Update the Invite user template link to:
+
+   ```html
+   <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/auth/update-password">Accetta invito</a>
+   ```
+
+7. Update the Reset password template link to:
+
+   ```html
+   <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/update-password">Reimposta password</a>
+   ```
+
+8. Consider custom SMTP if invite/recovery email volume exceeds Supabase built-in limits.
 
 ## 7. Testing
 
@@ -164,12 +188,13 @@ Manual production checklist:
 
 - `/login` shows "Password dimenticata?"
 - `/forgot-password` returns the same neutral message for registered and unregistered emails.
-- Recovery link lands on `/auth/update-password`.
+- Recovery link uses `/auth/confirm?...type=recovery...` and lands on `/auth/update-password`.
 - Direct `/auth/update-password` without callback/session does not allow password update.
-- Invite link lands on `/auth/update-password` and then redirects new user to `/onboarding`.
+- Invite link uses `/auth/confirm?...type=invite...`, lands on `/auth/update-password`, and then redirects new user to `/onboarding`.
 - `/profile` password change rejects wrong current password and accepts the correct one.
 - Old password no longer works after a successful change.
 - `/auth/callback?next=https://evil.example&code=...` never redirects off-site.
+- `/auth/confirm?token_hash=bad&type=invite&next=https://evil.example` never redirects off-site.
 
 ## 8. Out Of Scope
 
@@ -177,7 +202,7 @@ Manual production checklist:
 - In-app admin user management.
 - 2FA/TOTP.
 - OAuth/social login.
-- Custom branded email templates.
+- Custom branded email templates beyond the required auth links above.
 - Custom rate limiting/CAPTCHA.
 - CSP hardening.
 - E2E automation.
