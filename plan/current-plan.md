@@ -54,6 +54,8 @@ Per il razionale completo vedi `archive/`:
 | **D3** | Kill metric personale | **Valutazione soggettiva.** Nessun numero rigido — il founder giudica dopo qualche settimana di uso se l'app è utile. L'utilità si sente (vedi §11.1) |
 | **D4** | Bacheca/News | **Implementata localmente.** Route `/news`, banner unread in Today, migration `0006_news_reflections.sql` con seed demo e read-state |
 | **D6** | Note post-pratica + reflection settimanale | **Implementata localmente.** Note opzionali dopo pratica, note nello skill detail, weekly reflection in Progress |
+| **D8** | Provisioning utenti | **Solo admin.** Niente self-signup pubblico. Admin invita via Supabase dashboard "Send invitation". Coerente con modello federazione (§1.1). Self-signup riapribile in futuro se serve |
+| **D9** | Min password length | **8 caratteri** (NIST 2024 baseline). Niente regex complex (es. una maiuscola + un numero) — NIST le ha rimosse |
 
 ### 2.2 Decisioni aperte ⚠️
 
@@ -464,6 +466,7 @@ PIANO LIBERO
 - **1.7 — UX Programma + Modalità di studio:** schema `0005_plan_mode.sql`, `/library/program`, `/plan/exam`, `/plan/custom` e azioni RPC atomiche implementate; richiede migrations applicate per walkthrough reale.
 - **1.8 — Tab Progresso:** `/progress` e BottomNav a 4 tab implementati con SVG/Tailwind, senza dipendenze chart.
 - **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup` e `/sessions/calendar`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Design: `plan/2026-04-26-training-schedule-design.md`. Plan: `plan/2026-04-26-training-schedule-plan.md`.
+- **1.10 — Auth password management:** flow completo per recovery, invite e change password. Pagine `/auth/forgot-password`, `/auth/update-password`, sezione "Sicurezza" su `/profile`. Server actions `requestPasswordReset` / `updatePassword` / `changePassword`. Modifica `auth/callback/route.ts` con allowlist `next` (anti open redirect) e middleware con lista `AUTHENTICATED_ONLY`. Logica pura testabile in `lib/auth-validation.ts`. Provisioning solo admin (D8), invito via Supabase dashboard "Send invitation". Min password length 8 (D9). Design: `plan/2026-05-02-auth-password-management-design.md`.
 - **Visual identity FESK:** tema dark/gold applicato in `globals.css`, con overlay grain e componenti core meno arrotondati.
 
 1. Setup: Next.js + Tailwind + shadcn/ui + PWA + Supabase
