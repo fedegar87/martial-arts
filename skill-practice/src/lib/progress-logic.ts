@@ -1,4 +1,11 @@
-import type { Discipline, PlanStatus, PracticeLog, Skill } from "./types";
+import type {
+  Discipline,
+  PlanItemSource,
+  PlanMode,
+  PlanStatus,
+  PracticeLog,
+  Skill,
+} from "./types";
 import { addDaysToDateKey, dateKeyDaysAgo, localDateKey } from "./date.ts";
 
 export type CurriculumCell = {
@@ -11,10 +18,32 @@ export type PracticeDay = {
   count: number;
 };
 
-export type CategoryAxis = {
-  label: string;
-  percent: number;
+export type PlanProgressSummary = {
+  discipline: Discipline;
+  mode: PlanMode;
+  title: string;
+  readinessPercent: number;
+  practicedRecent: number;
+  practicedTotal: number;
+  covered: number;
+  total: number;
+  missing: Skill[];
+  statusCounts: Record<PlanStatus, number>;
 };
+
+type ComputePlanProgressInput = {
+  discipline: Discipline;
+  mode: PlanMode;
+  title: string;
+  requiredSkills: Skill[];
+  planBySkillId: Map<string, PlanStatus>;
+  logs: PracticeLog[];
+  today?: Date;
+};
+
+export function activePlanSource(planMode: PlanMode): PlanItemSource {
+  return planMode === "custom" ? "manual" : "exam_program";
+}
 
 export function buildCurriculumCells(
   skills: Skill[],
@@ -27,36 +56,80 @@ export function buildCurriculumCells(
     .map((skill) => ({
       skill,
       status:
-        userLevel !== 0 && skill.minimum_grade_value < userLevel
+        planBySkillId.get(skill.id) ??
+        (userLevel !== 0 && skill.minimum_grade_value < userLevel
           ? "locked"
-          : planBySkillId.get(skill.id) ?? "available",
+          : "available"),
     }));
 }
 
-export function computeCategoryProgress(
-  cells: CurriculumCell[],
-): CategoryAxis[] {
-  const grouped = new Map<string, { total: number; active: number }>();
+export function computePlanProgress({
+  discipline,
+  mode,
+  title,
+  requiredSkills,
+  planBySkillId,
+  logs,
+  today = new Date(),
+}: ComputePlanProgressInput): PlanProgressSummary {
+  const total = requiredSkills.length;
+  const recentCutoff = dateDaysAgo(29, today);
+  const requiredIds = new Set(requiredSkills.map((skill) => skill.id));
+  const completedLogs = logs.filter(
+    (log) => log.completed && requiredIds.has(log.skill_id),
+  );
+  const practicedSkillIds = new Set(completedLogs.map((log) => log.skill_id));
+  const recentPracticedSkillIds = new Set(
+    completedLogs
+      .filter((log) => log.date >= recentCutoff)
+      .map((log) => log.skill_id),
+  );
 
-  for (const cell of cells.filter((item) => item.status !== "locked")) {
-    const key = radarCategory(cell.skill);
-    const prev = grouped.get(key) ?? { total: 0, active: 0 };
-    prev.total += 1;
-    if (
-      cell.status === "focus" ||
-      cell.status === "review" ||
-      cell.status === "maintenance"
-    ) {
-      prev.active += 1;
+  const statusCounts: Record<PlanStatus, number> = {
+    focus: 0,
+    review: 0,
+    maintenance: 0,
+  };
+  let maturityScore = 0;
+  const covered: Skill[] = [];
+  const missing: Skill[] = [];
+
+  for (const skill of requiredSkills) {
+    const status = planBySkillId.get(skill.id);
+    if (!status) {
+      missing.push(skill);
+      continue;
     }
-    grouped.set(key, prev);
+
+    covered.push(skill);
+    statusCounts[status] += 1;
+    maturityScore += statusMaturityScore(status);
   }
 
-  return [...grouped.entries()].map(([label, value]) => ({
-    label,
-    percent:
-      value.total === 0 ? 0 : Math.round((value.active / value.total) * 100),
-  }));
+  const recentCoverage = total === 0 ? 0 : recentPracticedSkillIds.size / total;
+  const statusMaturity = total === 0 ? 0 : maturityScore / total;
+  const requirementPresence = total === 0 ? 0 : covered.length / total;
+
+  return {
+    discipline,
+    mode,
+    title,
+    readinessPercent:
+      total === 0
+        ? 0
+        : Math.round(
+            (recentCoverage * 0.4 +
+              statusMaturity * 0.4 +
+              requirementPresence * 0.2) *
+              100,
+          ),
+    practicedRecent: recentPracticedSkillIds.size,
+    practicedTotal: practicedSkillIds.size,
+    covered: covered.length,
+    total,
+    missing,
+    statusCounts,
+  };
 }
 
 export function buildPracticeCalendar(
@@ -109,15 +182,8 @@ export function toDateString(date: Date): string {
   return localDateKey(date);
 }
 
-function radarCategory(skill: Skill): string {
-  if (skill.category === "armi_forma" || skill.category === "armi_combattimento") {
-    return "Armi";
-  }
-  if (skill.category === "chi_kung") return "Forme";
-  if (skill.category === "tui_fa") return "Tui Fa";
-  if (skill.category === "po_chi") return "Po Chi";
-  if (skill.category === "chin_na") return "Chin Na";
-  if (skill.category === "tue_shou") return "Tue Shou";
-  if (skill.category === "ta_lu") return "Ta Lu";
-  return "Forme";
+function statusMaturityScore(status: PlanStatus): number {
+  if (status === "maintenance") return 1;
+  if (status === "review") return 0.75;
+  return 0.35;
 }

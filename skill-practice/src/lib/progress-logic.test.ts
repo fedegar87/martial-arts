@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  activePlanSource,
   buildCurriculumCells,
   buildPracticeCalendar,
   computeBestStreak,
-  computeCategoryProgress,
   computeCurrentStreak,
+  computePlanProgress,
 } from "./progress-logic.ts";
 import type { Skill } from "./types.ts";
 
@@ -47,25 +48,70 @@ test("buildCurriculumCells marks future grades as locked", () => {
   );
 });
 
-test("computeCategoryProgress groups active curriculum coverage", () => {
+test("buildCurriculumCells keeps active next-grade plan items unlocked", () => {
   const cells = buildCurriculumCells(
-    [
-      skill("forme-active", 7, "forme"),
-      skill("forme-empty", 7, "forme"),
-      skill("weapon", 7, "armi_forma"),
-    ],
-    new Map([
-      ["forme-active", "review" as const],
-      ["weapon", "maintenance" as const],
-    ]),
+    [skill("next-exam-skill", 7, "forme")],
+    new Map([["next-exam-skill", "focus" as const]]),
     "shaolin",
-    7,
+    8,
   );
 
-  assert.deepEqual(computeCategoryProgress(cells), [
-    { label: "Forme", percent: 50 },
-    { label: "Armi", percent: 100 },
-  ]);
+  assert.equal(cells[0].status, "focus");
+});
+
+test("activePlanSource follows the same active plan rule as the app", () => {
+  assert.equal(activePlanSource("custom"), "manual");
+  assert.equal(activePlanSource("exam"), "exam_program");
+});
+
+test("computePlanProgress is not complete just because an exam plan exists", () => {
+  const requiredSkills = [
+    skill("form", 7, "forme"),
+    skill("kick", 7, "tui_fa"),
+  ];
+  const progress = computePlanProgress({
+    discipline: "shaolin",
+    mode: "exam",
+    title: "Shaolin 7 Chi",
+    requiredSkills,
+    planBySkillId: new Map([
+      ["form", "focus" as const],
+      ["kick", "focus" as const],
+    ]),
+    logs: [],
+    today: new Date("2026-05-01T12:00:00.000Z"),
+  });
+
+  assert.equal(progress.covered, 2);
+  assert.equal(progress.total, 2);
+  assert.equal(progress.practicedRecent, 0);
+  assert.equal(progress.readinessPercent, 34);
+});
+
+test("computePlanProgress rewards recent practice and mature statuses", () => {
+  const requiredSkills = [
+    skill("form", 7, "forme"),
+    skill("kick", 7, "tui_fa"),
+  ];
+  const progress = computePlanProgress({
+    discipline: "shaolin",
+    mode: "exam",
+    title: "Shaolin 7 Chi",
+    requiredSkills,
+    planBySkillId: new Map([
+      ["form", "maintenance" as const],
+      ["kick", "review" as const],
+    ]),
+    logs: [
+      log("2026-04-28", "form"),
+      log("2026-03-10", "kick"),
+    ],
+    today: new Date("2026-05-01T12:00:00.000Z"),
+  });
+
+  assert.equal(progress.practicedRecent, 1);
+  assert.equal(progress.practicedTotal, 2);
+  assert.equal(progress.readinessPercent, 75);
 });
 
 test("practice calendar computes current and best streak", () => {
@@ -84,11 +130,11 @@ test("practice calendar computes current and best streak", () => {
   assert.equal(computeBestStreak(calendar), 3);
 });
 
-function log(date: string) {
+function log(date: string, skillId = "skill-1") {
   return {
     id: date,
     user_id: "user-1",
-    skill_id: "skill-1",
+    skill_id: skillId,
     date,
     completed: true,
     personal_note: null,

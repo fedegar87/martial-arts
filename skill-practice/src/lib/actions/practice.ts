@@ -62,6 +62,7 @@ export async function markPracticeDone(
 
   revalidatePath("/today");
   revalidatePath(`/skill/${skillId}`);
+  revalidatePath("/progress");
   return { success: true };
 }
 
@@ -94,6 +95,7 @@ export async function savePracticeNote(
     if (normalizedNote === null) {
       revalidatePath("/today");
       revalidatePath(`/skill/${skillId}`);
+      revalidatePath("/progress");
       return { success: true };
     }
 
@@ -116,6 +118,7 @@ export async function savePracticeNote(
 
   revalidatePath("/today");
   revalidatePath(`/skill/${skillId}`);
+  revalidatePath("/progress");
   return { success: true };
 }
 
@@ -176,6 +179,7 @@ export async function incrementRep(skillId: string): Promise<PracticeFormState> 
     .eq("skill_id", skillId);
 
   revalidatePath("/today");
+  revalidatePath("/progress");
   return { success: true };
 }
 
@@ -199,6 +203,7 @@ export async function decrementRep(skillId: string): Promise<PracticeFormState> 
   if (selectError) return { error: selectError.message };
   if (!existing) {
     revalidatePath("/today");
+    revalidatePath("/progress");
     return { success: true };
   }
 
@@ -214,6 +219,7 @@ export async function decrementRep(skillId: string): Promise<PracticeFormState> 
   if (error) return { error: error.message };
 
   revalidatePath("/today");
+  revalidatePath("/progress");
   return { success: true };
 }
 

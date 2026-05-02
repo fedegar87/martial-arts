@@ -2,24 +2,18 @@
 
 import { useState } from "react";
 import { CurriculumMap } from "@/components/progress/CurriculumMap";
-import { CompetenceRadar } from "@/components/progress/CompetenceRadar";
-import { ExamProgress } from "@/components/progress/ExamProgress";
-import { JourneyTimeline } from "@/components/progress/JourneyTimeline";
-import { gradesForDiscipline } from "@/lib/grades";
+import { PlanProgress } from "@/components/progress/PlanProgress";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import type {
-  CategoryAxis,
   CurriculumCell,
-  ExamProgressInfo,
+  PlanProgressInfo,
 } from "@/lib/queries/progress";
 import type { Discipline } from "@/lib/types";
 
 export type ProgressDisciplineView = {
   discipline: Discipline;
-  userLevel: number;
   cells: CurriculumCell[];
-  axes: CategoryAxis[];
-  examProgress: ExamProgressInfo | null;
+  planProgress: PlanProgressInfo | null;
 };
 
 type Props = {
@@ -40,7 +34,7 @@ export function ProgressDisciplineSections({
     <div className="space-y-6">
       {views.length > 1 && (
         <div
-          className="inline-flex rounded-lg bg-muted p-1 shadow-[inset_0_0_0_0.5px_var(--separator)]"
+          className="inline-flex max-w-full overflow-x-auto rounded-lg bg-muted p-1 shadow-[inset_0_0_0_0.5px_var(--separator)]"
           role="tablist"
           aria-label="Disciplina progressi"
         >
@@ -50,7 +44,7 @@ export function ProgressDisciplineSections({
               type="button"
               role="tab"
               aria-selected={item.discipline === view.discipline}
-              className={`tap-feedback label-font min-h-10 min-w-24 rounded-md px-3 text-sm ${
+              className={`tap-feedback label-font min-h-11 min-w-24 rounded-md px-3 text-sm ${
                 item.discipline === view.discipline
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -63,13 +57,8 @@ export function ProgressDisciplineSections({
         </div>
       )}
 
-      {view.examProgress && <ExamProgress progress={view.examProgress} />}
+      {view.planProgress && <PlanProgress progress={view.planProgress} />}
       <CurriculumMap cells={view.cells} />
-      <CompetenceRadar axes={view.axes} />
-      <JourneyTimeline
-        grades={gradesForDiscipline(view.discipline)}
-        currentLevel={view.userLevel}
-      />
     </div>
   );
 }

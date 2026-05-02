@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import {
   buildCurriculumCells,
-  computeCategoryProgress,
   getProgressData,
 } from "@/lib/queries/progress";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
@@ -42,18 +41,13 @@ export default async function ProgressPage() {
     );
     return {
       discipline,
-      userLevel,
       cells,
-      axes: computeCategoryProgress(cells),
-      examProgress: data.examProgressByDiscipline[discipline] ?? null,
+      planProgress: data.planProgressByDiscipline[discipline] ?? null,
     };
   });
   const weeklyReflection = await getCurrentWeekReflection(profile.id);
   const daysThisMonth = data.calendar.slice(-30).filter((day) => day.count > 0).length;
   const activePlanCount = data.planBySkillId.size;
-  const activeExamPercent =
-    views.find((view) => view.discipline === defaultActive)?.examProgress?.percent ??
-    0;
 
   return (
     <div className="space-y-6">
@@ -70,9 +64,9 @@ export default async function ProgressPage() {
       <MetricStrip
         metrics={[
           { label: "Streak", value: data.currentStreak },
-          { label: "30 giorni", value: daysThisMonth },
-          { label: "Esame", value: `${activeExamPercent}%` },
-          { label: "Piano", value: activePlanCount },
+          { label: "Giorni 30gg", value: daysThisMonth },
+          { label: "Praticati 30gg", value: data.recentPracticedSkillCount },
+          { label: "Piano attivo", value: activePlanCount },
         ]}
       />
       <PracticeCalendar

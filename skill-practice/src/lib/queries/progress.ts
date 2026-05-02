@@ -1,30 +1,23 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import {
+  activePlanSource,
   buildPracticeCalendar,
+  computePlanProgress,
   computeBestStreak,
   computeCurrentStreak,
   dateDaysAgo,
+  type PlanProgressSummary,
   type PracticeDay,
 } from "@/lib/progress-logic";
 import type { Discipline, PlanStatus, PracticeLog, Skill, UserProfile } from "@/lib/types";
 
 export {
   buildCurriculumCells,
-  computeCategoryProgress,
-  type CategoryAxis,
   type CurriculumCell,
+  type PlanProgressSummary as PlanProgressInfo,
   type PracticeDay,
 } from "@/lib/progress-logic";
-
-export type ExamProgressInfo = {
-  discipline: Discipline;
-  title: string;
-  percent: number;
-  covered: number;
-  total: number;
-  missing: Skill[];
-};
 
 export type ProgressData = {
   skills: Skill[];
@@ -33,7 +26,8 @@ export type ProgressData = {
   calendar: PracticeDay[];
   currentStreak: number;
   bestStreak: number;
-  examProgressByDiscipline: Partial<Record<Discipline, ExamProgressInfo>>;
+  recentPracticedSkillCount: number;
+  planProgressByDiscipline: Partial<Record<Discipline, PlanProgressSummary>>;
 };
 
 export async function getProgressData(
@@ -41,6 +35,7 @@ export async function getProgressData(
   profile: UserProfile,
 ): Promise<ProgressData> {
   const supabase = await createClient();
+  const source = activePlanSource(profile.plan_mode);
 
   const [{ data: skillsData }, { data: planData }, { data: logsData }] =
     await Promise.all([
@@ -49,7 +44,8 @@ export async function getProgressData(
         .from("user_plan_items")
         .select("*")
         .eq("user_id", userId)
-        .eq("is_hidden", false),
+        .eq("is_hidden", false)
+        .eq("source", source),
       supabase
         .from("practice_logs")
         .select("*")
@@ -64,6 +60,12 @@ export async function getProgressData(
     (planData as Array<{ skill_id: string; status: PlanStatus }> | null) ?? [];
   const planBySkillId = new Map(planRows.map((row) => [row.skill_id, row.status]));
   const calendar = buildPracticeCalendar(logs);
+  const recentCutoff = dateDaysAgo(29);
+  const recentPracticedSkillCount = new Set(
+    logs
+      .filter((log) => log.completed && log.date >= recentCutoff)
+      .map((log) => log.skill_id),
+  ).size;
 
   return {
     skills,
@@ -72,19 +74,41 @@ export async function getProgressData(
     calendar,
     currentStreak: computeCurrentStreak(calendar),
     bestStreak: computeBestStreak(calendar),
-    examProgressByDiscipline: await getExamProgressByDiscipline(
+    recentPracticedSkillCount,
+    planProgressByDiscipline: await getPlanProgressByDiscipline(
       profile,
       skills,
       planBySkillId,
+      logs,
     ),
   };
 }
 
-async function getExamProgressByDiscipline(
+async function getPlanProgressByDiscipline(
   profile: UserProfile,
   skills: Skill[],
   planBySkillId: Map<string, PlanStatus>,
-): Promise<ProgressData["examProgressByDiscipline"]> {
+  logs: PracticeLog[],
+): Promise<ProgressData["planProgressByDiscipline"]> {
+  if (profile.plan_mode === "custom") {
+    const result: ProgressData["planProgressByDiscipline"] = {};
+    for (const discipline of activeDisciplines(profile.assigned_level_taichi)) {
+      const requiredSkills = skills.filter(
+        (skill) => skill.discipline === discipline && planBySkillId.has(skill.id),
+      );
+      if (requiredSkills.length === 0) continue;
+      result[discipline] = computePlanProgress({
+        discipline,
+        mode: "custom",
+        title: "Selezione personalizzata",
+        requiredSkills,
+        planBySkillId,
+        logs,
+      });
+    }
+    return result;
+  }
+
   const examRefs: Array<{ discipline: Discipline; id: string }> = [
     profile.preparing_exam_id
       ? { discipline: "shaolin", id: profile.preparing_exam_id }
@@ -118,25 +142,25 @@ async function getExamProgressByDiscipline(
     reqsByExamId.set(row.exam_id, reqs);
   }
 
-  const result: ProgressData["examProgressByDiscipline"] = {};
+  const result: ProgressData["planProgressByDiscipline"] = {};
   for (const examRef of examRefs) {
     const reqIds = reqsByExamId.get(examRef.id) ?? new Set<string>();
     const requiredSkills = skills.filter((skill) => reqIds.has(skill.id));
-    const covered = requiredSkills.filter((skill) => planBySkillId.has(skill.id));
-    const missing = requiredSkills.filter((skill) => !planBySkillId.has(skill.id));
+    if (requiredSkills.length === 0) continue;
 
-    result[examRef.discipline] = {
+    result[examRef.discipline] = computePlanProgress({
       discipline: examRef.discipline,
+      mode: "exam",
       title: examsById.get(examRef.id)?.level_name ?? "Esame",
-      percent:
-        requiredSkills.length === 0
-          ? 0
-          : Math.round((covered.length / requiredSkills.length) * 100),
-      covered: covered.length,
-      total: requiredSkills.length,
-      missing,
-    };
+      requiredSkills,
+      planBySkillId,
+      logs,
+    });
   }
 
   return result;
+}
+
+function activeDisciplines(taichiLevel: number): Discipline[] {
+  return taichiLevel > 0 ? ["shaolin", "taichi"] : ["shaolin"];
 }

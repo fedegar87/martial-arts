@@ -51,7 +51,7 @@ export function CurriculumMap({ cells }: Props) {
               cell.status === "maintenance",
           ).length
         }{" "}
-        nel piano.
+        nel piano attivo.
       </div>
     </section>
   );
