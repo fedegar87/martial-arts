@@ -74,6 +74,26 @@ export async function setupTrainingSchedule(
   redirect("/today");
 }
 
+export async function resetTrainingSchedule(): Promise<
+  { error: string } | { success: true }
+> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth?.user) return { error: "Non autenticato." };
+
+  const { error } = await supabase
+    .from("training_schedule")
+    .delete()
+    .eq("user_id", auth.user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/today");
+  revalidatePath("/sessions/calendar");
+  revalidatePath("/sessions/setup");
+  return { success: true };
+}
+
 function parseExamScope(value: FormDataEntryValue | null): ExamDisciplineScope | null {
   const raw = String(value ?? "both");
   if (raw === "both" || raw === "shaolin" || raw === "taichi") return raw;

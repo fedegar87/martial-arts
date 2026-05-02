@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { SetupForm } from "@/components/sessions/SetupForm";
+import { ResetScheduleSection } from "@/components/sessions/ResetScheduleSection";
 import type { Discipline } from "@/lib/types";
 
 export default async function SetupPage() {
@@ -34,6 +35,7 @@ export default async function SetupPage() {
         planMode={profile.plan_mode}
         disciplineCounts={disciplineCounts}
       />
+      {schedule && <ResetScheduleSection />}
     </div>
   );
 }

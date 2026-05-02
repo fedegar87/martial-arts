@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CategoryIcon } from "@/components/skill/CategoryIcon";
 import { CatalogSkillMarkers } from "@/components/library/CatalogSkillMarkers";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import type { Skill } from "@/lib/types";
@@ -23,7 +22,6 @@ export function ProgramSkillRow({
         locked ? "text-muted-foreground opacity-60" : "hover:bg-muted"
       }`}
     >
-      <CategoryIcon category={skill.category} className="text-muted-foreground h-4 w-4" />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{skill.name}</span>
         {skill.name_italian && (

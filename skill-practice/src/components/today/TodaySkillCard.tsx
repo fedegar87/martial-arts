@@ -61,7 +61,7 @@ export function TodaySkillCard({
             <SkillStatusMenu
               skillId={skill.id}
               currentStatus={status}
-              hideLabel="Nascondi da Oggi"
+              hideLabel="Nascondi da Allenamento"
             />
           </div>
         </div>
@@ -70,7 +70,6 @@ export function TodaySkillCard({
         <VideoPlayer
           videoUrl={skill.video_url}
           title={skill.name}
-          category={skill.category}
           practiceMode={skill.practice_mode}
         />
         <TeacherNote note={skill.teacher_notes} compact />

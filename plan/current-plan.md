@@ -372,13 +372,15 @@ Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi 
 
 Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
 
-In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile che riporta a `/hub`. È non-sticky di design: l'AppHeader scrolla via per non collidere con sticky pre-esistenti su `/today` e `/sessions/calendar`. Vedi `plan/2026-05-01-hub-page-design.md`.
+In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile (sinistra → torna a `/hub`) e icona utente (destra → `/profile`). È non-sticky di design: l'AppHeader scrolla via per non collidere con sticky pre-esistenti su `/today` e `/sessions/calendar`. Vedi `plan/2026-05-01-hub-page-design.md`.
 
 ### 7.1 Bottom navigation
 
 ```
-[ 🥋 Oggi ]    [ 📚 Libreria ]    [ 👤 Profilo ]
+[ Allenamento ]  [ Programma ]  [ Scuola ]  [ Progressi ]  [ Bacheca ]
 ```
+
+5 slot riservati alle aree ad alta frequenza di pratica. Il **Profilo non occupa uno slot**: si raggiunge via icona utente in alto a destra in `AppHeader` (oltre che dalla tile `/hub`). Razionale: gradi/sessions setup/password/logout sono destinazioni rare rispetto alla pratica giornaliera, e Bacheca (notifiche scuola) merita la promozione in nav permanente.
 
 ### 7.2 Tab "Oggi"
 

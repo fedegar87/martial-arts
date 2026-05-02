@@ -14,7 +14,7 @@ import { TodaySessionHeader } from "@/components/today/TodaySessionHeader";
 import { TodaySessionSummary } from "@/components/today/TodaySessionSummary";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline } from "@/lib/grades";
-import type { PlanMode, UserProfile } from "@/lib/types";
+import type { PlanMode, TrainingSchedule, UserProfile } from "@/lib/types";
 
 export default async function TodayPage() {
   const profile = await getCurrentProfile();
@@ -35,6 +35,7 @@ export default async function TodayPage() {
     { weekday: "long" },
   );
   const gradeSummary = buildGradeSummary(profile);
+  const scopeLabel = buildScopeLabel(profile, schedule);
   const todayLogs = logs.filter((log) => log.date === todayStr);
 
   if (items.length === 0) {
@@ -43,6 +44,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
         <TodayEmptyState
@@ -59,6 +61,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        scopeLabel={null}
         unreadNewsCount={unreadNewsCount}
       >
         <TodayEmptyState reason="no_schedule" />
@@ -73,6 +76,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
         <TodayEmptyState reason="empty_session" />
@@ -88,6 +92,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        scopeLabel={null}
         unreadNewsCount={unreadNewsCount}
       >
         <TodayEmptyState reason="no_schedule" />
@@ -101,6 +106,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
         <TodayEmptyState reason="expired" />
@@ -114,6 +120,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
         <RestDayCard nextTrainingDate={session.nextTrainingDate} />
@@ -150,6 +157,7 @@ export default async function TodayPage() {
       dayName={dayName}
       planMode={profile.plan_mode}
       gradeSummary={gradeSummary}
+      scopeLabel={scopeLabel}
       unreadNewsCount={unreadNewsCount}
     >
       <TodaySessionSummary
@@ -173,12 +181,14 @@ function TodayShell({
   dayName,
   planMode,
   gradeSummary,
+  scopeLabel,
   unreadNewsCount,
   children,
 }: {
   dayName: string;
   planMode: PlanMode;
   gradeSummary: string;
+  scopeLabel: string | null;
   unreadNewsCount: number;
   children: React.ReactNode;
 }) {
@@ -188,11 +198,29 @@ function TodayShell({
         dayName={dayName}
         planMode={planMode}
         gradeSummary={gradeSummary}
+        scopeLabel={scopeLabel}
       />
       <NewsBanner unreadCount={unreadNewsCount} />
       {children}
     </section>
   );
+}
+
+function buildScopeLabel(
+  profile: UserProfile,
+  schedule: TrainingSchedule | null,
+): string | null {
+  if (!schedule) return null;
+  if (profile.plan_mode !== "exam") return null;
+
+  const hasShaolinGrade = profile.assigned_level_shaolin > 0;
+  const hasTaichiGrade = profile.assigned_level_taichi > 0;
+  if (!hasShaolinGrade || !hasTaichiGrade) return null;
+
+  const disciplines = schedule.exam_disciplines ?? [];
+  if (disciplines.length !== 1) return null;
+
+  return `Solo ${DISCIPLINE_LABELS[disciplines[0]]}`;
 }
 
 function buildGradeSummary(profile: UserProfile): string {

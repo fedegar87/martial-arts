@@ -80,7 +80,6 @@ export default async function SkillDetailPage({ params }: Props) {
       <VideoPlayer
         videoUrl={skill.video_url}
         title={skill.name}
-        category={skill.category}
         practiceMode={skill.practice_mode}
       />
 

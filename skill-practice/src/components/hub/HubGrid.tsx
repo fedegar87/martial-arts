@@ -12,7 +12,7 @@ const HUB_AREAS = [
   {
     href: "/today",
     Icon: CalendarDays,
-    title: "Oggi",
+    title: "Allenamento",
     subtitle: "la tua pratica del giorno",
     anim: "hub-anim-tile-1",
   },
