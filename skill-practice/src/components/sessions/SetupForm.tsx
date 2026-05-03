@@ -66,7 +66,9 @@ export function SetupForm({
   const [reps, setReps] = useState<number>(current?.reps_per_form ?? 3);
 
   const showExamScope =
-    planMode === "exam" && availableExamDisciplines.length > 1;
+    planMode === "exam" && availableExamDisciplines.length > 0;
+  const isSingleDiscipline =
+    showExamScope && availableExamDisciplines.length === 1;
   const selectedItemCount =
     planMode === "exam"
       ? countForScope(examScope, disciplineCounts)
@@ -98,11 +100,18 @@ export function SetupForm({
             <CardTitle className="text-base">Ambito sessioni</CardTitle>
           </CardHeader>
           <CardContent>
-            <ExamScopePicker
-              value={examScope}
-              onChange={setExamScope}
-              disciplineCounts={disciplineCounts}
-            />
+            {isSingleDiscipline ? (
+              <SingleDisciplineNotice
+                discipline={availableExamDisciplines[0]}
+                count={disciplineCounts[availableExamDisciplines[0]]}
+              />
+            ) : (
+              <ExamScopePicker
+                value={examScope}
+                onChange={setExamScope}
+                disciplineCounts={disciplineCounts}
+              />
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -170,6 +179,36 @@ export function SetupForm({
         {pending ? "Salvataggio..." : "Genera sessioni"}
       </Button>
     </form>
+  );
+}
+
+function SingleDisciplineNotice({
+  discipline,
+  count,
+}: {
+  discipline: Discipline;
+  count: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <input
+        type="hidden"
+        name="exam_discipline_scope"
+        value={discipline}
+      />
+      <div className="border-border bg-muted/40 flex min-h-11 items-center justify-between gap-3 rounded-lg border px-4 py-2 text-sm">
+        <span className="font-medium">
+          Solo {DISCIPLINE_LABELS[discipline]}
+        </span>
+        <span className="text-muted-foreground text-xs">
+          {count} esercizi
+        </span>
+      </div>
+      <p className="text-muted-foreground text-xs">
+        Il piano d&apos;esame attivo contiene solo {DISCIPLINE_LABELS[discipline]}.
+        Aggiungi l&apos;altra disciplina da Programma esame per cambiare ambito.
+      </p>
+    </div>
   );
 }
 
