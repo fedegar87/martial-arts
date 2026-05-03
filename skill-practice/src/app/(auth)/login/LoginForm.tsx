@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 
 export function LoginForm({ initialError }: { initialError?: string | null }) {
   const [state, action, pending] = useActionState(login, null);
@@ -61,13 +62,14 @@ export function LoginForm({ initialError }: { initialError?: string | null }) {
           </Button>
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col items-start gap-3">
         <Link
           href="/forgot-password"
           className="text-muted-foreground text-sm hover:underline"
         >
           Password dimenticata?
         </Link>
+        <LegalLinks />
       </CardFooter>
     </Card>
   );

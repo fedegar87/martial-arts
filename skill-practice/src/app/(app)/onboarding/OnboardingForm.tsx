@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import type { ExamProgram } from "@/lib/types";
 import { nextGradeValue, SHAOLIN_GRADES, TAICHI_GRADES } from "@/lib/grades";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
@@ -201,6 +202,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
           >
             {pending ? "Creazione piano..." : "Inizia"}
           </Button>
+          <LegalLinks className="justify-center" />
         </form>
       </CardContent>
     </Card>

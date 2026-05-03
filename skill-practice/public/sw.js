@@ -1,4 +1,4 @@
-const CACHE_NAME = "kung-fu-practice-v1";
+const CACHE_NAME = "kung-fu-practice-v2";
 const OFFLINE_URL = "/offline.html";
 const STATIC_ASSETS = [OFFLINE_URL, "/manifest.json", "/icon.svg"];
 
@@ -33,7 +33,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (request.mode === "navigate") {
-    event.respondWith(networkFirst(request));
+    event.respondWith(networkOnlyWithOffline(request));
   }
 });
 
@@ -47,13 +47,11 @@ async function cacheFirst(request) {
   return response;
 }
 
-async function networkFirst(request) {
-  const cache = await caches.open(CACHE_NAME);
+async function networkOnlyWithOffline(request) {
   try {
-    const response = await fetch(request);
-    cache.put(request, response.clone());
-    return response;
+    return await fetch(request);
   } catch {
-    return (await cache.match(request)) ?? (await cache.match(OFFLINE_URL));
+    const cache = await caches.open(CACHE_NAME);
+    return (await cache.match(OFFLINE_URL)) ?? Response.error();
   }
 }

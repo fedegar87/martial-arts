@@ -48,7 +48,7 @@ const HUB_AREAS = [
     href: "/profile",
     Icon: User,
     title: "Profilo",
-    subtitle: "livello, esame, settings",
+    subtitle: "account, livelli, privacy",
     anim: "hub-anim-tile-6",
   },
 ];

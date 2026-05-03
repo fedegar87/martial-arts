@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Versione brief:** v3
-**Ultimo aggiornamento:** 2026-04-25
+**Ultimo aggiornamento:** 2026-05-03
 **Sostituisce:** `archive/05-brief-v1-superseded.md`
 
 ---
@@ -56,6 +56,7 @@ Per il razionale completo vedi `archive/`:
 | **D6** | Note post-pratica + reflection settimanale | **Implementata localmente.** Note opzionali dopo pratica, note nello skill detail, weekly reflection in Progress |
 | **D8** | Provisioning utenti | **Solo admin.** Niente self-signup pubblico. Admin invita via Supabase dashboard "Send invitation". Coerente con modello federazione (§1.1). Self-signup riapribile in futuro se serve |
 | **D9** | Min password length | **8 caratteri** (NIST 2024 baseline). Niente regex complex (es. una maiuscola + un numero) — NIST le ha rimosse |
+| **D10** | Documenti legali (privacy/terms/cookies/disclaimer) | **Pagine custom in-app, non iubenda.** Deviazione esplicita rispetto al §15.3 v3 (che suggeriva iubenda generator a €29/anno). Razionale: (a) MVP single-user non ha budget legale ricorrente; (b) i contenuti devono essere specifici per pratica fisica/scuola e non generici da generator; (c) tutto il testo non derivabile è marcato `[PLACEHOLDER: ...]` per revisione legale prima di apertura a utenti terzi. iubenda resta opzione di fallback se la federazione richiederà policy generata da fonte certificata |
 
 ### 2.2 Decisioni aperte ⚠️
 
@@ -206,6 +207,27 @@ type NewsItem = {
 }
 ```
 
+### 4.4 Account / privacy (Sprint 1.11)
+
+```typescript
+type AccountDeletionRequest = {
+  id: string
+  userId: string
+  status: "pending" | "resolved" | "cancelled"
+  requestedAt: Date
+  resolvedAt?: Date
+  note?: string
+}
+```
+
+Tabella `account_deletion_requests` (migration `0016_profile_account_privacy.sql`):
+
+- RLS: l'utente può `INSERT`/`SELECT` solo le proprie richieste; gli admin (`user_profiles.role = 'admin'`) possono `SELECT`/`UPDATE` tutte le richieste.
+- Indice unique parziale su `(user_id) WHERE status = 'pending'`: massimo una richiesta pendente per utente.
+- Cancellazione effettiva non automatica: la richiesta è un evento auditabile, l'admin esegue la pulizia manualmente.
+
+La stessa migration aggiunge un trigger `prevent_user_profile_privilege_changes` su `user_profiles` che blocca l'aggiornamento di `role` e `school_id` quando il chiamante è il proprietario autenticato. **Limite noto:** il trigger blocca anche un admin loggato che tenti di modificare il proprio `role`/`school_id` dalla UI. Per cambi privilegi serve operatività via service role (Supabase dashboard / SQL Editor). Accettabile finché l'admin è il founder; da rivedere quando arriveranno admin di scuola.
+
 ---
 
 ## 5. STRUTTURA CARTELLE PROGETTO
@@ -224,6 +246,11 @@ skill-practice/
 │   │   ├── page.tsx                    # Redirect → /today o /onboarding
 │   │   ├── (auth)/
 │   │   │   └── login/page.tsx
+│   │   ├── (legal)/                    # Pagine pubbliche legali (Sprint 1.11)
+│   │   │   ├── privacy/page.tsx
+│   │   │   ├── terms/page.tsx
+│   │   │   ├── cookies/page.tsx
+│   │   │   └── disclaimer/page.tsx
 │   │   ├── (app)/                      # Route group protetto da middleware
 │   │   │   ├── layout.tsx              # Layout app + BottomNav
 │   │   │   ├── onboarding/page.tsx
@@ -234,7 +261,9 @@ skill-practice/
 │   │   │   │   ├── exam/[examId]/page.tsx
 │   │   │   │   └── all/page.tsx
 │   │   │   ├── skill/[skillId]/page.tsx
-│   │   │   ├── profile/page.tsx
+│   │   │   ├── profile/
+│   │   │   │   ├── page.tsx            # Account, gradi, programma, sicurezza, privacy
+│   │   │   │   └── export/route.ts     # Export JSON dati utente (Sprint 1.11)
 │   │   │   ├── sessions/
 │   │   │   │   ├── setup/page.tsx
 │   │   │   │   └── calendar/page.tsx
@@ -271,7 +300,15 @@ skill-practice/
 │   │   │   ├── LevelBadge.tsx
 │   │   │   └── StatusBadge.tsx
 │   │   ├── profile/
-│   │   │   └── ExamSelector.tsx
+│   │   │   ├── ExamSelector.tsx
+│   │   │   ├── ChangePasswordSection.tsx
+│   │   │   ├── GradeEditor.tsx
+│   │   │   ├── PlanModeSection.tsx
+│   │   │   ├── PrivacyDataSection.tsx  # Export, deletion request, link legali (1.11)
+│   │   │   └── SignOutButton.tsx
+│   │   ├── legal/                      # Sprint 1.11
+│   │   │   ├── LegalLinks.tsx
+│   │   │   └── LegalPage.tsx
 │   │   └── shared/
 │   │       ├── AppHeader.tsx
 │   │       ├── AppHeaderConditional.tsx
@@ -287,12 +324,14 @@ skill-practice/
 │   │   │   ├── plan.ts
 │   │   │   ├── practice-log.ts
 │   │   │   ├── training-schedule.ts
-│   │   │   └── user-profile.ts
+│   │   │   ├── user-profile.ts
+│   │   │   └── account.ts              # Deletion request (Sprint 1.11)
 │   │   ├── actions/                    # Mutation: Next.js Server Actions
 │   │   │   ├── plan.ts                 # add / hide / change-status
 │   │   │   ├── practice.ts             # mark done
 │   │   │   ├── training-schedule.ts
-│   │   │   └── onboarding.ts
+│   │   │   ├── onboarding.ts
+│   │   │   └── account.ts              # Richiesta cancellazione (Sprint 1.11)
 │   │   ├── practice-logic.ts           # Algoritmo "oggi fai questo" (puro)
 │   │   ├── session-scheduler.ts        # Logica pura "sessione del giorno X"
 │   │   ├── plan-manager.ts             # Genera UserPlanItem da ExamProgram
@@ -308,7 +347,8 @@ skill-practice/
 │   ├── migrations/
 │   │   ├── 0001_schema.sql             # Tabelle + RLS
 │   │   ├── 0002_seed_school_skills.sql # Seed scuola, skill, esami
-│   │   └── 0012_training_schedule.sql  # Schedulazione sessioni + reps tracking
+│   │   ├── 0012_training_schedule.sql  # Schedulazione sessioni + reps tracking
+│   │   └── 0016_profile_account_privacy.sql  # Trigger anti-privilege-change + account_deletion_requests (1.11)
 │   └── seed.sql                        # Per `supabase db seed` locale
 ├── .env.local.example
 ├── next.config.js                      # + next-pwa wrapping
@@ -469,6 +509,7 @@ PIANO LIBERO
 - **1.8 — Tab Progresso:** `/progress` e BottomNav a 4 tab implementati con SVG/Tailwind, senza dipendenze chart.
 - **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup` e `/sessions/calendar`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Design: `plan/2026-04-26-training-schedule-design.md`. Plan: `plan/2026-04-26-training-schedule-plan.md`.
 - **1.10 — Auth password management:** flow completo per recovery, invite e change password. Pagine `/auth/forgot-password`, `/auth/update-password`, sezione "Sicurezza" su `/profile`. Server actions `requestPasswordReset` / `updatePassword` / `changePassword`. Modifica `auth/callback/route.ts` con allowlist `next` (anti open redirect) e middleware con lista `AUTHENTICATED_ONLY`. Logica pura testabile in `lib/auth-validation.ts`. Provisioning solo admin (D8), invito via Supabase dashboard "Send invitation". Min password length 8 (D9). Design: `plan/2026-05-02-auth-password-management-design.md`.
+- **1.11 — Profilo, account, privacy e documenti legali:** `/profile` esteso con card Account (email, scuola, ruolo, member date), Programma, Allenamento, Sicurezza, Privacy/dati. Migration `0016_profile_account_privacy.sql` con trigger immutabile su `role`/`school_id` (vedi §4.4 limite admin) e tabella `account_deletion_requests`. Export JSON dati utente via `/profile/export`. Pagine pubbliche `/privacy`, `/terms`, `/cookies`, `/disclaimer` con `[PLACEHOLDER: ...]` espliciti per dati titolare/DPO/retention/sub-processor (decisione D10). Logout client-side ora pulisce localStorage/sessionStorage/Cache best-effort; service worker non cachea navigazioni autenticate. Plan completo + missing items: `plan/2026-05-03-profile-account-privacy-settings-plan.md`.
 - **Visual identity FESK:** tema dark/gold applicato in `globals.css`, con overlay grain e componenti core meno arrotondati.
 
 1. Setup: Next.js + Tailwind + shadcn/ui + PWA + Supabase
@@ -843,33 +884,37 @@ Verifica grade A su securityheaders.com dopo deploy.
 
 ## 15. COMPLIANCE E LEGALI (gating progressivo)
 
-### 15.1 Stato attuale: zero requisiti
+### 15.1 Stato attuale (Sprint 1.11)
 
-MVP personale, founder unico utente. Nessun dato di terzi raccolto. Nessuna obbligazione GDPR. Nessuna landing page necessaria.
+MVP personale, founder unico utente, ma le **scaffolding legali sono già in app** in vista dell'apertura a utenti terzi. Pagine pubbliche disponibili senza login:
 
-### 15.2 Trigger di attivazione
+- `/privacy` — informativa GDPR Art. 13
+- `/terms` — termini di servizio
+- `/cookies` — cookie/storage policy
+- `/disclaimer` — avvertenze pratica fisica
 
-Aggiungere documenti legali appena si verifica uno di questi:
+Tutto il testo non derivabile dal codice (titolare, DPO, retention, sub-processor, contatti, dati fiscali) è marcato con `[PLACEHOLDER: ...]`. **Le pagine non sono valide come documento legale finché i placeholder non vengono compilati e revisionati**, vedi `plan/2026-05-03-profile-account-privacy-settings-plan.md` §"Explicit Missing Items To Complete".
 
-- Primo utente non-founder accede all'app (anche solo per test)
+In `/profile` esiste la sezione **Privacy e dati** con:
+
+- Export JSON dei dati personali (`/profile/export`).
+- Richiesta cancellazione account → record auditable in `account_deletion_requests` (vedi §4.4), pulizia eseguita manualmente da admin.
+- Link alle pagine legali.
+
+### 15.2 Trigger per completare i placeholder
+
+I `[PLACEHOLDER: ...]` vanno compilati **prima** del primo di questi eventi:
+
+- Primo utente non-founder accede all'app (anche solo per test interno alla scuola)
 - Si parla con federazione di pre-adozione
 - Si raccolgono email per waiting list
-- Si pubblica una landing page promozionale
+- Si pubblica una landing page promozionale o si attiva indicizzazione SEO
 
-### 15.3 Quando arriva il primo utente terzo
+### 15.3 Decisione documenti legali (vedi D10)
 
-Documenti minimi:
+Pagine custom in-app, non iubenda. Costo zero ricorrente, contenuti specifici per pratica fisica e scuola. Trade-off: la conformità formale richiede una revisione da DPO/avvocato prima del lancio pubblico, mentre iubenda fornirebbe testo pre-validato. Rivedibile se la federazione richiede policy generata da fonte certificata.
 
-| Documento | Strumento consigliato | Costo | Tempo setup |
-|-----------|----------------------|-------|-------------|
-| Privacy Policy | iubenda generator | €29/anno | 1 ora |
-| Terms of Service | iubenda | incluso | 1 ora |
-| Cookie banner | iubenda Cookie Solution | incluso | 30 min |
-| Informativa GDPR partecipanti | testo custom italiano | 0 | 2 ore |
-
-Alternative gratuite: termsfeed.com, termly.io (con limiti).
-
-Cookie banner serve **solo** se usi cookie non strettamente necessari (analytics, tracking). Se non aggiungi GA/Plausible, nessun banner.
+Cookie banner serve **solo** se vengono introdotti cookie non strettamente necessari (analytics, tracking, marketing). Allo stato attuale `/cookies` documenta solo cookie tecnici Supabase + cache PWA + YouTube no-cookie on demand → nessun banner consenso.
 
 ### 15.4 Quando arrivano allievi minorenni (federazione)
 

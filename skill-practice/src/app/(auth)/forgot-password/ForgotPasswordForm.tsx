@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 
 export function ForgotPasswordForm() {
   const [state, action, pending] = useActionState(requestPasswordReset, null);
@@ -57,13 +58,14 @@ export function ForgotPasswordForm() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col items-start gap-3">
         <Link
           href="/login"
           className="text-muted-foreground text-sm hover:underline"
         >
           Torna al login
         </Link>
+        <LegalLinks />
       </CardFooter>
     </Card>
   );
