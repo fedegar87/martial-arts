@@ -2,8 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { generatePlanItemsFromExam } from "@/lib/plan-manager";
-import { getExamProgramRequirements } from "@/lib/queries/exam-programs";
 import { nextGradeValue } from "@/lib/grades";
 
 export type OnboardingFormState = { error: string } | null;
@@ -68,9 +66,6 @@ export async function selectExam(
   }
 
   const profileUpdate: Record<string, unknown> = {
-    preparing_exam_id: exam.discipline === "shaolin" ? examId : null,
-    preparing_exam_taichi_id: exam.discipline === "taichi" ? examId : null,
-    plan_mode: "exam",
     assigned_level_shaolin: assignedLevelShaolin,
     assigned_level_taichi: assignedLevelTaichi,
   };
@@ -81,17 +76,11 @@ export async function selectExam(
     .eq("id", user.id);
   if (profileError) return { error: profileError.message };
 
-  const requirements = await getExamProgramRequirements(examId);
-  const newItems = generatePlanItemsFromExam(user.id, requirements);
-
-  await supabase.from("user_plan_items").delete().eq("user_id", user.id);
-
-  if (newItems.length > 0) {
-    const { error: insertError } = await supabase
-      .from("user_plan_items")
-      .upsert(newItems, { onConflict: "user_id,skill_id,source" });
-    if (insertError) return { error: insertError.message };
-  }
+  const { error: planError } = await supabase.rpc("activate_exam_mode", {
+    p_exam_shaolin_id: exam.discipline === "shaolin" ? examId : null,
+    p_exam_taichi_id: exam.discipline === "taichi" ? examId : null,
+  });
+  if (planError) return { error: planError.message };
 
   redirect("/hub");
 }
