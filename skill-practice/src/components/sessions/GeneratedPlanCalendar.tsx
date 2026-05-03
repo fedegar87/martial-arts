@@ -460,17 +460,6 @@ function SelectedDaySession({
     ...row.session.review,
     ...row.session.maintenance,
   ];
-  const estimatedMinutes = Math.max(
-    1,
-    Math.round(
-      (dailyItems.reduce(
-        (total, item) => total + (item.skill.estimated_duration_seconds ?? 180),
-        0,
-      ) *
-        repsPerForm) /
-        60,
-    ),
-  );
 
   return (
     <section className="space-y-4 rounded-lg border border-border p-4">
@@ -478,8 +467,7 @@ function SelectedDaySession({
         <div>
           <h2 className="text-lg font-semibold capitalize">{formattedDate}</h2>
           <p className="text-sm text-muted-foreground">
-            {dailyItems.length} esercizi · {repsPerForm}x · circa{" "}
-            {estimatedMinutes} min
+            {dailyItems.length} esercizi - {repsPerForm}x
           </p>
         </div>
         <Badge variant="outline">

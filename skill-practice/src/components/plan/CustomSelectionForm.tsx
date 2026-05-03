@@ -1,8 +1,23 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { saveCustomSelectionFromForm } from "@/lib/actions/plan";
+import { useActionState, useMemo, useState, useTransition } from "react";
+import { Trash2 } from "lucide-react";
+import {
+  deleteCustomSelection,
+  saveCustomSelectionFromForm,
+} from "@/lib/actions/plan";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import { gradeLabel } from "@/lib/grades";
@@ -81,6 +96,11 @@ export function CustomSelectionForm({
         />
       ))}
 
+      <DeleteCustomSelectionSection
+        disabled={selectedCount === 0}
+        onDeleted={() => setSelected(new Set())}
+      />
+
       {state && "error" in state && (
         <Alert variant="destructive">
           <AlertDescription>{state.error}</AlertDescription>
@@ -102,6 +122,87 @@ export function CustomSelectionForm({
         </div>
       </div>
     </form>
+  );
+}
+
+function DeleteCustomSelectionSection({
+  disabled,
+  onDeleted,
+}: {
+  disabled: boolean;
+  onDeleted: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function handleConfirm() {
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteCustomSelection();
+      if (result && "error" in result) {
+        setError(result.error);
+        return;
+      }
+      onDeleted();
+      setOpen(false);
+    });
+  }
+
+  return (
+    <section className="space-y-3 border-t border-border pt-5">
+      <div className="space-y-1">
+        <h2 className="label-font text-muted-foreground text-sm">
+          Gestione selezione
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Cancella il programma personale senza eliminare storico, note o
+          programma esame.
+        </p>
+      </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger asChild>
+          <Button
+            type="button"
+            variant="destructive"
+            className="h-10 gap-2"
+            disabled={disabled}
+          >
+            <Trash2 className="h-4 w-4" />
+            Cancella programma personale
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancellare il programma personale?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Rimuoverai tutte le tecniche dalla selezione personale. Lo storico
+              delle pratiche, le note e il programma esame restano invariati.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                handleConfirm();
+              }}
+              disabled={pending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {pending ? "Cancellazione..." : "Cancella"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </section>
   );
 }
 

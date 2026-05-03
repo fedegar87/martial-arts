@@ -64,8 +64,8 @@ export function ExamModeForm({
         <div className="font-medium">Anteprima piano</div>
         <p className="text-muted-foreground mt-1">
           {selectedLabels.length > 0
-            ? `Attiverai: ${selectedLabels.join(" + ")}. Il piano contiene solo i contenuti nuovi del grado selezionato.`
-            : "Nessun prossimo esame selezionato."}
+            ? `Attiverai: ${selectedLabels.join(" + ")}. Il piano contiene solo i contenuti del programma selezionato.`
+            : "Nessun esame selezionato."}
         </p>
       </div>
 
@@ -116,7 +116,7 @@ function ExamSelect({
       </select>
       {exams.length === 0 && (
         <p className="text-muted-foreground text-xs">
-          Nessun prossimo esame disponibile.
+          Nessun esame disponibile per il livello del profilo.
         </p>
       )}
     </label>

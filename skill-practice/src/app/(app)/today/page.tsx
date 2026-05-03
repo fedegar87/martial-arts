@@ -137,17 +137,6 @@ export default async function TodayPage() {
   const completedCount = dailyItems.filter((item) =>
     todayLogs.some((log) => log.skill_id === item.skill_id && log.completed),
   ).length;
-  const estimatedMinutes = Math.max(
-    1,
-    Math.round(
-      (dailyItems.reduce(
-        (total, item) => total + (item.skill.estimated_duration_seconds ?? 180),
-        0,
-      ) *
-        schedule.reps_per_form) /
-        60,
-    ),
-  );
   const weekDoneCount = new Set(
     logs.filter((log) => log.completed).map((log) => log.date),
   ).size;
@@ -163,7 +152,6 @@ export default async function TodayPage() {
       <TodaySessionSummary
         exerciseCount={dailyCount}
         completedCount={completedCount}
-        estimatedMinutes={estimatedMinutes}
         repsPerForm={schedule.reps_per_form}
         cadenceWeeks={schedule.cadence_weeks}
         weekDoneCount={weekDoneCount}

@@ -3,7 +3,10 @@ import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
 import { ExamModeForm } from "@/components/plan/ExamModeForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { nextGradeValue } from "@/lib/grades";
+import {
+  isSelectableExamGrade,
+  minimumSelectableExamGradeValue,
+} from "@/lib/grades";
 import type { ExamProgram } from "@/lib/types";
 
 export default async function PlanExamPage() {
@@ -14,11 +17,11 @@ export default async function PlanExamPage() {
     listExamProgramsForSchool(profile.school_id, "shaolin"),
     listExamProgramsForSchool(profile.school_id, "taichi"),
   ]);
-  const shaolinExams = nextExamCandidates(
+  const shaolinExams = selectableExamCandidates(
     allShaolinExams,
     profile.assigned_level_shaolin,
   );
-  const taichiExams = nextExamCandidates(
+  const taichiExams = selectableExamCandidates(
     allTaichiExams,
     profile.assigned_level_taichi,
   );
@@ -28,7 +31,7 @@ export default async function PlanExamPage() {
       <header>
         <h1 className="text-2xl font-semibold">Programma esame</h1>
         <p className="text-muted-foreground text-sm">
-          Scegli gli esami da preparare e rigenera il piano.
+          Scegli il programma dell&apos;esame corrente o di un esame precedente.
         </p>
       </header>
 
@@ -56,13 +59,22 @@ export default async function PlanExamPage() {
   );
 }
 
-function nextExamCandidates(
+function selectableExamCandidates(
   exams: ExamProgram[],
   currentGrade: number,
 ): ExamProgram[] {
-  const nextGrade = nextGradeValue(currentGrade);
-  if (nextGrade === null) return [];
-  return exams.filter((exam) => exam.grade_value === nextGrade);
+  const currentExamGrade = minimumSelectableExamGradeValue(currentGrade);
+  if (currentExamGrade === null) return [];
+
+  return exams.filter(
+    (exam) =>
+      exam.grade_from !== null &&
+      isSelectableExamGrade(currentGrade, exam.grade_value),
+  ).sort(
+    (a, b) =>
+      Math.abs(a.grade_value - currentExamGrade) -
+      Math.abs(b.grade_value - currentExamGrade),
+  );
 }
 
 function selectedExamId(

@@ -4,9 +4,9 @@ import {
   CalendarDays,
   Megaphone,
   Target,
-  User,
 } from "lucide-react";
 import { HubTile } from "./HubTile";
+import { MartialArtistIcon } from "@/components/shared/MartialArtistIcon";
 
 const HUB_AREAS = [
   {
@@ -46,7 +46,7 @@ const HUB_AREAS = [
   },
   {
     href: "/profile",
-    Icon: User,
+    Icon: MartialArtistIcon,
     title: "Profilo",
     subtitle: "account, livelli, privacy",
     anim: "hub-anim-tile-6",

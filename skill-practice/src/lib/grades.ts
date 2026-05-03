@@ -60,6 +60,23 @@ export function nextGradeValue(current: number): number | null {
   return SHAOLIN_GRADES[idx + 1].value;
 }
 
+export function minimumSelectableExamGradeValue(current: number): number | null {
+  if (current === 0) return null;
+
+  const idx = SHAOLIN_GRADES.findIndex((g) => g.value === current);
+  if (idx < 0) return null;
+
+  return nextGradeValue(current) ?? current;
+}
+
+export function isSelectableExamGrade(
+  currentGrade: number,
+  examGrade: number,
+): boolean {
+  const minimum = minimumSelectableExamGradeValue(currentGrade);
+  return minimum !== null && examGrade >= minimum;
+}
+
 export function gradesAtOrBelow(value: number): Grade[] {
   // Ritorna i gradi accessibili (per scegliere quale esame preparare)
   return SHAOLIN_GRADES.filter((g) => g.value < value);

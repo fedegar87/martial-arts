@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listAccessibleSkills } from "@/lib/queries/skills";
+import { listSkillsForDiscipline } from "@/lib/queries/skills";
 import { getSelectedSkillIds } from "@/lib/queries/plan";
 import { CustomSelectionForm } from "@/components/plan/CustomSelectionForm";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
@@ -15,13 +15,9 @@ export default async function PlanCustomPage({ searchParams }: Props) {
 
   const { d } = await searchParams;
   const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
-  const userGrade =
-    discipline === "shaolin"
-      ? profile.assigned_level_shaolin
-      : profile.assigned_level_taichi;
 
   const [skills, selectedSkillIds] = await Promise.all([
-    userGrade === 0 ? [] : listAccessibleSkills(discipline, userGrade),
+    listSkillsForDiscipline(discipline),
     getSelectedSkillIds(profile.id, "manual"),
   ]);
 
@@ -45,7 +41,6 @@ export default async function PlanCustomPage({ searchParams }: Props) {
       <DisciplineToggle
         current={discipline}
         basePath="/plan/custom"
-        hiddenTaichi={profile.assigned_level_taichi === 0}
       />
 
       <CustomSelectionForm

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { buildManualPlanItem } from "@/lib/plan-manager";
-import { nextGradeValue } from "@/lib/grades";
+import { isSelectableExamGrade, nextGradeValue } from "@/lib/grades";
 import type { Discipline, PlanStatus, UserProfile } from "@/lib/types";
 
 export type PlanFormState = { error: string } | { success: true } | null;
@@ -260,6 +260,30 @@ export async function saveCustomSelectionFromForm(
   redirect(`/programma?d=${discipline}&t=custom`);
 }
 
+export async function deleteCustomSelection(): Promise<PlanFormState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sessione scaduta" };
+
+  const { error } = await supabase
+    .from("user_plan_items")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("source", "manual");
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/today");
+  revalidatePath("/profile");
+  revalidatePath("/plan/custom");
+  revalidatePath("/programma");
+  revalidatePath("/library");
+  revalidatePath("/progress");
+  return { success: true };
+}
+
 export async function updatePlanItemStatus(
   skillId: string,
   status: PlanStatus,
@@ -312,7 +336,7 @@ async function validateSelectedExams(
   );
   const { data, error } = await supabase
     .from("exam_programs")
-    .select("id, discipline, grade_value")
+    .select("id, discipline, grade_value, grade_from")
     .in("id", examIds);
 
   if (error) return error.message;
@@ -322,6 +346,7 @@ async function validateSelectedExams(
       id: string;
       discipline: Discipline;
       grade_value: number;
+      grade_from: string | null;
     }>).map((exam) => [exam.id, exam]),
   );
 
@@ -347,7 +372,12 @@ async function validateSelectedExams(
 function validateExamForDiscipline(
   examsById: Map<
     string,
-    { id: string; discipline: Discipline; grade_value: number }
+    {
+      id: string;
+      discipline: Discipline;
+      grade_value: number;
+      grade_from: string | null;
+    }
   >,
   examId: string | null,
   discipline: Discipline,
@@ -360,9 +390,11 @@ function validateExamForDiscipline(
     return "Esame non valido per la disciplina selezionata";
   }
 
-  const nextGrade = nextGradeValue(currentGrade);
-  if (nextGrade === null || exam.grade_value !== nextGrade) {
-    return "L'esame selezionato non corrisponde al prossimo grado";
+  if (
+    exam.grade_from === null ||
+    !isSelectableExamGrade(currentGrade, exam.grade_value)
+  ) {
+    return "L'esame selezionato non è disponibile per il livello del profilo";
   }
 
   return null;

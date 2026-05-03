@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listSkillsAtGrade } from "@/lib/queries/skills";
+import { getExamProgramById } from "@/lib/queries/exam-programs";
+import { listSkillsAtGrade, listSkillsForExam } from "@/lib/queries/skills";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import {
   activateCustomFormAction,
@@ -15,7 +16,15 @@ import { PlanStatusLegend } from "@/components/skill/PlanStatusLegend";
 import { Button } from "@/components/ui/button";
 import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline, nextGradeValue } from "@/lib/grades";
-import type { Discipline, PlanMode, PlanStatus, Skill, SkillCategory } from "@/lib/types";
+import type {
+  Discipline,
+  ExamProgram,
+  PlanMode,
+  PlanStatus,
+  Skill,
+  SkillCategory,
+  UserProfile,
+} from "@/lib/types";
 
 type Props = { searchParams: Promise<{ d?: string; t?: string }> };
 
@@ -34,16 +43,28 @@ export default async function ProgrammaPage({ searchParams }: Props) {
       ? profile.assigned_level_shaolin
       : profile.assigned_level_taichi;
   const nextGrade = userLevel === 0 ? null : nextGradeValue(userLevel);
+  const selectedExamId =
+    tab === "exam" ? selectedExamIdForDiscipline(profile, discipline) : null;
 
   const tabSource = tab === "custom" ? "manual" : "exam_program";
-  const [examSkills, tabPlanItems] = await Promise.all([
-    tab === "exam" && nextGrade !== null
-      ? listSkillsAtGrade(discipline, nextGrade)
+  const [selectedExam, examSkills, tabPlanItems] = await Promise.all([
+    selectedExamId ? getExamProgramById(selectedExamId) : Promise.resolve(null),
+    tab === "exam"
+      ? selectedExamId
+        ? listSkillsForExam(selectedExamId)
+        : nextGrade !== null
+          ? listSkillsAtGrade(discipline, nextGrade)
+          : Promise.resolve([])
       : Promise.resolve([]),
     getUserPlanItems(profile.id, discipline, tabSource),
   ]);
 
-  const skills = tab === "exam" ? examSkills : tabPlanItems.map((item) => item.skill);
+  const selectedExamForDiscipline =
+    selectedExam?.discipline === discipline ? selectedExam : null;
+  const skills =
+    tab === "exam"
+      ? examSkills.filter((skill) => skill.discipline === discipline)
+      : tabPlanItems.map((item) => item.skill);
   const planStatusBySkillId = new Map<string, PlanStatus>(
     tabPlanItems.map((item) => [item.skill_id, item.status]),
   );
@@ -53,7 +74,12 @@ export default async function ProgrammaPage({ searchParams }: Props) {
     return acc;
   }, {} as Record<SkillCategory, Skill[]>);
 
-  const subtitle = buildSubtitle(tab, discipline, nextGrade);
+  const subtitle = buildSubtitle(
+    tab,
+    discipline,
+    selectedExamForDiscipline,
+    nextGrade,
+  );
   const showBanner = tab !== activeMode && skills.length > 0;
 
   return (
@@ -66,7 +92,8 @@ export default async function ProgrammaPage({ searchParams }: Props) {
       <DisciplineToggle
         current={discipline}
         basePath="/programma"
-        hiddenTaichi={profile.assigned_level_taichi === 0}
+        hiddenTaichi={tab === "exam" && profile.assigned_level_taichi === 0}
+        extraParams={{ t: tab }}
       />
 
       <div className="program-layout">
@@ -118,15 +145,27 @@ export default async function ProgrammaPage({ searchParams }: Props) {
 function buildSubtitle(
   tab: PlanMode,
   discipline: Discipline,
+  selectedExam: ExamProgram | null,
   nextGrade: number | null,
 ): string {
   const disciplineLabel = DISCIPLINE_LABELS[discipline];
   if (tab === "exam") {
+    if (selectedExam)
+      return `${disciplineLabel} — programma selezionato: ${selectedExam.level_name}.`;
     if (nextGrade === null)
       return `${disciplineLabel} — nessun esame in preparazione.`;
     return `${disciplineLabel} — prossimo esame: ${gradeLabelForDiscipline(discipline, nextGrade)}.`;
   }
   return `${disciplineLabel} — selezione personale.`;
+}
+
+function selectedExamIdForDiscipline(
+  profile: UserProfile,
+  discipline: Discipline,
+): string | null {
+  return discipline === "shaolin"
+    ? profile.preparing_exam_id
+    : profile.preparing_exam_taichi_id;
 }
 
 function ActivateModeBanner({ tab }: { tab: PlanMode }) {
@@ -159,7 +198,8 @@ function ModifyLink({
 }) {
   const href =
     tab === "exam" ? "/plan/exam" : `/plan/custom?d=${discipline}`;
-  const label = tab === "exam" ? "Cambia esame" : "Modifica selezione";
+  const label =
+    tab === "exam" ? "Scegli programma esame" : "Modifica selezione";
   return (
     <div className="pt-2">
       <Button asChild variant="ghost" size="sm">
