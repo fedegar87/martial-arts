@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useCallback, useState } from "react";
 import { setupTrainingSchedule } from "@/lib/actions/training-schedule";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
@@ -15,9 +15,18 @@ import {
 import { WeekdayChips } from "./WeekdayChips";
 import { DurationPicker } from "./DurationPicker";
 import { CadencePicker } from "./CadencePicker";
+import { PlanFormsSection } from "./PlanFormsSection";
 import { RepsStepper } from "./RepsStepper";
 import { SessionPreview } from "./SessionPreview";
-import type { Discipline, PlanMode, TrainingSchedule } from "@/lib/types";
+import type {
+  Discipline,
+  PlanMode,
+  Skill,
+  TrainingSchedule,
+  UserPlanItem,
+} from "@/lib/types";
+
+type ItemWithSkill = UserPlanItem & { skill: Skill };
 
 type ExamDisciplineScope = "both" | Discipline;
 
@@ -43,6 +52,7 @@ type Props = {
   programLabel: string;
   planMode: PlanMode;
   disciplineCounts: Record<Discipline, number>;
+  items: ItemWithSkill[];
 };
 
 export function SetupForm({
@@ -50,6 +60,7 @@ export function SetupForm({
   programLabel,
   planMode,
   disciplineCounts,
+  items,
 }: Props) {
   const [state, action, pending] = useActionState(setupTrainingSchedule, null);
   const availableExamDisciplines = availableDisciplines(disciplineCounts);
@@ -64,16 +75,25 @@ export function SetupForm({
     current?.cadence_weeks ?? 2,
   );
   const [reps, setReps] = useState<number>(current?.reps_per_form ?? 3);
+  const [planCounts, setPlanCounts] = useState(() =>
+    countsForScope(items, examScope),
+  );
+
+  const handleCountsChange = useCallback(
+    (counts: { focus: number; maintenance: number }) => {
+      setPlanCounts(counts);
+    },
+    [],
+  );
 
   const showExamScope =
     planMode === "exam" && availableExamDisciplines.length > 0;
   const isSingleDiscipline =
     showExamScope && availableExamDisciplines.length === 1;
-  const selectedItemCount =
-    planMode === "exam"
-      ? countForScope(examScope, disciplineCounts)
-      : totalCount(disciplineCounts);
-  const previewCount = Math.max(1, Math.min(selectedItemCount, 6));
+  const totalOcc = planCounts.focus * 2 + planCounts.maintenance * 1;
+  const cycleDays = weekdays.length * cadence;
+  const previewCount =
+    cycleDays > 0 ? Math.max(1, Math.ceil(totalOcc / cycleDays)) : 1;
   const canSubmit = weekdays.length > 0;
   const endDate = new Date();
   endDate.setUTCDate(endDate.getUTCDate() + duration * 7);
@@ -154,6 +174,12 @@ export function SetupForm({
           <CadencePicker value={cadence} onChange={setCadence} />
         </CardContent>
       </Card>
+
+      <PlanFormsSection
+        items={items}
+        scope={examScope}
+        onCountsChange={handleCountsChange}
+      />
 
       <Card>
         <CardHeader>
@@ -289,14 +315,19 @@ function hiddenExamScope(
   return available.length === 1 ? available[0] : "both";
 }
 
-function countForScope(
-  scope: ExamDisciplineScope,
-  counts: Record<Discipline, number>,
-): number {
-  if (scope === "both") return totalCount(counts);
-  return counts[scope];
-}
-
 function totalCount(counts: Record<Discipline, number>): number {
   return counts.shaolin + counts.taichi;
+}
+
+function countsForScope(
+  items: ItemWithSkill[],
+  scope: ExamDisciplineScope,
+): { focus: number; maintenance: number } {
+  const filtered = items.filter(
+    (it) => scope === "both" || it.skill.discipline === scope,
+  );
+  return {
+    focus: filtered.filter((i) => i.status === "focus").length,
+    maintenance: filtered.filter((i) => i.status === "maintenance").length,
+  };
 }

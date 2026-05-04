@@ -34,6 +34,7 @@ export default async function SetupPage() {
         programLabel={programLabel}
         planMode={profile.plan_mode}
         disciplineCounts={disciplineCounts}
+        items={items}
       />
       {schedule && <ResetScheduleSection />}
     </div>
