@@ -1,25 +1,22 @@
 -- 0019_simplify_plan_status.sql
--- Collassa enum plan_status da 3 a 2 valori: 'focus' | 'maintenance'.
+-- Collassa enum plan_status a 2 valori: 'focus' | 'maintenance'.
 -- Tutti i record con status='review' diventano 'maintenance' (scelta conservativa).
--- Postgres non supporta DROP VALUE su enum: ricreazione del tipo.
 --
--- Dipendenze sull'enum da gestire prima del DROP TYPE:
+-- Robusta a stati DB già parzialmente migrati: cast colonne a text PRIMA
+-- degli UPDATE, così il confronto `WHERE status = 'review'` funziona sempre
+-- (su colonna text, non sull'enum). Se l'enum non contiene 'review',
+-- l'UPDATE è no-op senza errore. DROP TYPE ... CASCADE libera tutte le
+-- funzioni dipendenti (firma o body) in un colpo solo, e poi ricreiamo:
 --
--- 1. RPC update_plan_item_status (definita in 0011): la firma include
---    `p_status plan_status`, quindi Postgres la traccia come hard dependency
---    sull'enum. Senza DROP FUNCTION esplicita, `DROP TYPE plan_status`
---    fallisce con "cannot drop type plan_status because other objects
---    depend on it". Va droppata prima e ricreata dopo con la stessa
---    signature/body, ora vincolata al nuovo enum.
---
--- 2. RPC save_custom_selection (definita in 0011): la firma NON dipende
---    dall'enum, ma il body contiene il letterale `'review'::plan_status`
---    come default per gli skill aggiunti al piano custom. Dopo il
---    re-create del tipo senza 'review', la prossima invocazione
---    fallirebbe con "invalid input value for enum plan_status".
---    Va ricreata per usare 'maintenance'.
+-- 1. RPC update_plan_item_status: ha `p_status plan_status` nella firma
+-- 2. RPC save_custom_selection: ha letterale 'review'::plan_status nel body
 
 BEGIN;
+
+ALTER TABLE user_plan_items
+  ALTER COLUMN status TYPE text USING status::text;
+ALTER TABLE exam_skill_requirements
+  ALTER COLUMN default_status TYPE text USING default_status::text;
 
 UPDATE user_plan_items
 SET status = 'maintenance'
@@ -29,14 +26,7 @@ UPDATE exam_skill_requirements
 SET default_status = 'maintenance'
 WHERE default_status = 'review';
 
-ALTER TABLE user_plan_items
-  ALTER COLUMN status TYPE text USING status::text;
-ALTER TABLE exam_skill_requirements
-  ALTER COLUMN default_status TYPE text USING default_status::text;
-
-DROP FUNCTION IF EXISTS public.update_plan_item_status(UUID, plan_status);
-
-DROP TYPE plan_status;
+DROP TYPE IF EXISTS plan_status CASCADE;
 CREATE TYPE plan_status AS ENUM ('focus', 'maintenance');
 
 ALTER TABLE user_plan_items
