@@ -25,7 +25,7 @@ function makeSchedule(over: Partial<TrainingSchedule> = {}): TrainingSchedule {
 
 function item(
   id: string,
-  status: "focus" | "review" | "maintenance",
+  status: "focus" | "maintenance",
   discipline: Discipline = "shaolin",
 ): ItemWithSkill {
   return {
@@ -57,15 +57,31 @@ function item(
   };
 }
 
-function isoWeekdayForTest(d: string): number {
-  const dt = new Date(`${d}T00:00:00Z`).getUTCDay();
-  return dt === 0 ? 7 : dt;
-}
-
-function addDaysForTest(d: string, n: number): string {
+function addDaysIso(d: string, n: number): string {
   const dt = new Date(`${d}T00:00:00Z`);
   dt.setUTCDate(dt.getUTCDate() + n);
   return dt.toISOString().slice(0, 10);
+}
+
+function countOccurrencesInCycle(
+  schedule: TrainingSchedule,
+  items: ItemWithSkill[],
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  const totalDays = schedule.weekdays.length * schedule.cadence_weeks;
+  let cur = schedule.start_date;
+  let scheduled = 0;
+  while (scheduled < totalDays) {
+    const s = getScheduledSession(cur, schedule, items);
+    if (s.kind === "training") {
+      [...s.focus, ...s.maintenance].forEach((it) => {
+        counts.set(it.skill_id, (counts.get(it.skill_id) ?? 0) + 1);
+      });
+      scheduled++;
+    }
+    cur = addDaysIso(cur, 1);
+  }
+  return counts;
 }
 
 test("returns no_schedule when schedule is null", () => {
@@ -114,64 +130,19 @@ test("nextTrainingDate skips dates before start_date even if they fall on a week
   }
 });
 
-test("training day returns all focus items sorted by display_order", () => {
+test("training day returns a training kind session with focus/maintenance arrays", () => {
   const schedule = makeSchedule({ start_date: "2026-04-27", weekdays: [1, 3, 5] });
   const items: ItemWithSkill[] = [
     item("a", "focus"),
     item("b", "focus"),
-    item("c", "review"),
+    item("c", "maintenance"),
   ];
   const result = getScheduledSession("2026-04-27", schedule, items);
   assert.equal(result.kind, "training");
   if (result.kind === "training") {
-    assert.deepEqual(result.focus.map((i) => i.skill_id).sort(), ["a", "b"]);
+    assert.ok(Array.isArray(result.focus));
+    assert.ok(Array.isArray(result.maintenance));
   }
-});
-
-test("review items distributed across cycle, each appears once", () => {
-  const schedule = makeSchedule({
-    start_date: "2026-04-27",
-    weekdays: [1, 3, 5],
-    cadence_weeks: 2,
-  });
-  const reviews = ["r1", "r2", "r3", "r4", "r5", "r6"].map((id) =>
-    item(id, "review"),
-  );
-  const dates = [
-    "2026-04-27",
-    "2026-04-29",
-    "2026-05-01",
-    "2026-05-04",
-    "2026-05-06",
-    "2026-05-08",
-  ];
-  const seen = new Set<string>();
-  for (const d of dates) {
-    const r = getScheduledSession(d, schedule, reviews);
-    if (r.kind === "training") for (const it of r.review) seen.add(it.skill_id);
-  }
-  assert.equal(seen.size, 6);
-});
-
-test("maintenance uses cadence_weeks * 2 cycle", () => {
-  const schedule = makeSchedule({
-    start_date: "2026-04-27",
-    weekdays: [1, 3, 5],
-    cadence_weeks: 2,
-  });
-  const maint = Array.from({ length: 12 }, (_, i) =>
-    item(`m${i.toString().padStart(2, "0")}`, "maintenance"),
-  );
-  const seen = new Set<string>();
-  let cur = "2026-04-27";
-  for (let i = 0; i < 12; i++) {
-    const r = getScheduledSession(cur, schedule, maint);
-    if (r.kind === "training") for (const it of r.maintenance) seen.add(it.skill_id);
-    do {
-      cur = addDaysForTest(cur, 1);
-    } while (![1, 3, 5].includes(isoWeekdayForTest(cur)));
-  }
-  assert.equal(seen.size, 12);
 });
 
 test("listSessionsInRange labels training/rest correctly", () => {
@@ -187,46 +158,6 @@ test("listSessionsInRange labels training/rest correctly", () => {
     .filter((s) => s.session.kind === "training")
     .map((s) => s.date);
   assert.deepEqual(trainingDates, ["2026-04-27", "2026-04-29", "2026-05-01"]);
-});
-
-test("bucket handles fewer items than cycle slots without duplicates", () => {
-  const schedule = makeSchedule({
-    start_date: "2026-04-27",
-    weekdays: [1, 3, 5],
-    cadence_weeks: 2,
-  });
-  const reviews = [item("r1", "review"), item("r2", "review")];
-  const counts = new Map<string, number>();
-  let cur = "2026-04-27";
-  for (let i = 0; i < 6; i++) {
-    const r = getScheduledSession(cur, schedule, reviews);
-    if (r.kind === "training") {
-      for (const it of r.review) {
-        counts.set(it.skill_id, (counts.get(it.skill_id) ?? 0) + 1);
-      }
-    }
-    do {
-      cur = addDaysForTest(cur, 1);
-    } while (![1, 3, 5].includes(isoWeekdayForTest(cur)));
-  }
-  assert.equal(counts.get("r1"), 1);
-  assert.equal(counts.get("r2"), 1);
-});
-
-test("cadence_weeks=1 with daily training collapses cycle", () => {
-  const schedule = makeSchedule({
-    start_date: "2026-04-27",
-    weekdays: [1, 2, 3, 4, 5, 6, 7],
-    cadence_weeks: 1,
-  });
-  const reviews = Array.from({ length: 7 }, (_, i) => item(`r${i}`, "review"));
-  const seen = new Set<string>();
-  for (let i = 0; i < 7; i++) {
-    const date = addDaysForTest("2026-04-27", i);
-    const r = getScheduledSession(date, schedule, reviews);
-    if (r.kind === "training") for (const it of r.review) seen.add(it.skill_id);
-  }
-  assert.equal(seen.size, 7);
 });
 
 test("nextTrainingDate is null when no training day before end_date", () => {
@@ -248,7 +179,6 @@ test("empty items list yields empty buckets on training day", () => {
   assert.equal(result.kind, "training");
   if (result.kind === "training") {
     assert.deepEqual(result.focus, []);
-    assert.deepEqual(result.review, []);
     assert.deepEqual(result.maintenance, []);
     assert.equal(result.sessionIndex, 0);
   }
@@ -272,14 +202,71 @@ test("getScheduledPlanItems filters exam items by schedule disciplines", () => {
 test("getScheduledPlanItems keeps all custom items regardless of schedule disciplines", () => {
   const schedule = makeSchedule({ exam_disciplines: ["shaolin"] });
   const items = [
-    item("shaolin-review", "review", "shaolin"),
-    item("taichi-review", "review", "taichi"),
+    item("shaolin-maint", "maintenance", "shaolin"),
+    item("taichi-maint", "maintenance", "taichi"),
   ];
 
   const result = getScheduledPlanItems(items, schedule, "custom");
 
   assert.deepEqual(
     result.map((entry) => entry.skill_id),
-    ["shaolin-review", "taichi-review"],
+    ["shaolin-maint", "taichi-maint"],
   );
+});
+
+test("nuova distribuzione: ogni focus skill compare 2 volte nel ciclo, ogni maint 1 volta", () => {
+  const schedule = makeSchedule({ weekdays: [1, 2, 3, 4, 5], cadence_weeks: 1 });
+  const items = [
+    item("f1", "focus"),
+    item("f2", "focus"),
+    item("m1", "maintenance"),
+    item("m2", "maintenance"),
+    item("m3", "maintenance"),
+  ];
+  const counts = countOccurrencesInCycle(schedule, items);
+  assert.equal(counts.get("f1"), 2);
+  assert.equal(counts.get("f2"), 2);
+  assert.equal(counts.get("m1"), 1);
+  assert.equal(counts.get("m2"), 1);
+  assert.equal(counts.get("m3"), 1);
+});
+
+test("nuova distribuzione: forme/sessione = ceil(occorrenze_totali / giorni_pratica_ciclo)", () => {
+  const schedule = makeSchedule({ weekdays: [1, 3, 5], cadence_weeks: 2 });
+  const items = [
+    ...Array.from({ length: 4 }, (_, i) => item(`f${i}`, "focus")),
+    ...Array.from({ length: 6 }, (_, i) => item(`m${i}`, "maintenance")),
+  ];
+  // 4*2 + 6*1 = 14 occ; giorni = 3*2 = 6; ceil(14/6) = 3 forme/sessione max
+  // Sessioni con almeno 1 forma; total su tutto il ciclo = 14 occorrenze
+  let total = 0;
+  let maxPerSession = 0;
+  // Itera sulle 6 sessioni del ciclo a partire dalla start_date
+  for (let day = 0; day < 14; day++) {
+    const date = addDaysIso(schedule.start_date, day);
+    const s = getScheduledSession(date, schedule, items);
+    if (s.kind !== "training") continue;
+    const sessionTotal = s.focus.length + s.maintenance.length;
+    total += sessionTotal;
+    maxPerSession = Math.max(maxPerSession, sessionTotal);
+    if (total >= 14) break;
+  }
+  assert.equal(total, 14);
+  assert.ok(maxPerSession <= 3, `expected <=3 forme/sessione, got ${maxPerSession}`);
+});
+
+test("nuova distribuzione: stessa skill non compare due volte nella stessa sessione", () => {
+  const schedule = makeSchedule({ weekdays: [1, 2, 3, 4, 5], cadence_weeks: 1 });
+  const items = [
+    item("f1", "focus"),
+    item("f2", "focus"),
+    item("m1", "maintenance"),
+  ];
+  for (let day = 0; day < 5; day++) {
+    const date = addDaysIso(schedule.start_date, day);
+    const s = getScheduledSession(date, schedule, items);
+    if (s.kind !== "training") continue;
+    const ids = [...s.focus, ...s.maintenance].map((i) => i.skill_id);
+    assert.equal(new Set(ids).size, ids.length, `duplicate skill in session ${date}: ${ids.join(",")}`);
+  }
 });

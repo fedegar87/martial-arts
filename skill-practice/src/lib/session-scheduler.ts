@@ -8,6 +8,8 @@ import type {
 
 const MAX_GAP_BETWEEN_TRAINING_DAYS = 7;
 const ALL_DISCIPLINES: Discipline[] = ["shaolin", "taichi"];
+const FOCUS_WEIGHT = 2;
+const MAINTENANCE_WEIGHT = 1;
 
 export type ItemWithSkill = UserPlanItem & { skill: Skill };
 
@@ -19,7 +21,6 @@ export type ScheduledSession =
       kind: "training";
       sessionIndex: number;
       focus: ItemWithSkill[];
-      review: ItemWithSkill[];
       maintenance: ItemWithSkill[];
     };
 
@@ -29,48 +30,31 @@ export function getScheduledSession(
   items: ItemWithSkill[],
 ): ScheduledSession {
   if (schedule == null) return { kind: "no_schedule" };
-
-  if (date > schedule.end_date) {
-    return { kind: "expired", endDate: schedule.end_date };
-  }
-
+  if (date > schedule.end_date) return { kind: "expired", endDate: schedule.end_date };
   if (date < schedule.start_date) {
     return {
       kind: "rest_day",
       nextTrainingDate: findNextTrainingDate(addDays(schedule.start_date, -1), schedule),
     };
   }
-
   if (!schedule.weekdays.includes(isoWeekday(date))) {
-    return {
-      kind: "rest_day",
-      nextTrainingDate: findNextTrainingDate(date, schedule),
-    };
+    return { kind: "rest_day", nextTrainingDate: findNextTrainingDate(date, schedule) };
   }
 
   const sessionIndex =
     countTrainingDaysInclusive(schedule.start_date, date, schedule.weekdays) - 1;
+  const cycleSize = schedule.cadence_weeks * schedule.weekdays.length;
+  const slotInCycle = ((sessionIndex % cycleSize) + cycleSize) % cycleSize;
 
-  const focus = items
-    .filter((i) => i.status === "focus")
-    .sort((a, b) => a.skill.display_order - b.skill.display_order);
+  const sortedItems = [...items].sort(stableItemOrder);
+  const tokens = expandTokens(sortedItems);
+  const slots = distributeTokensToSlots(tokens, cycleSize);
 
-  const cycleSizeReview = schedule.cadence_weeks * schedule.weekdays.length;
-  const review = bucket(
-    items.filter((i) => i.status === "review"),
-    sessionIndex,
-    cycleSizeReview,
-  );
+  const todays = slots[slotInCycle] ?? [];
+  const focus = todays.filter((it) => it.status === "focus");
+  const maintenance = todays.filter((it) => it.status === "maintenance");
 
-  const cycleSizeMaintenance =
-    schedule.cadence_weeks * 2 * schedule.weekdays.length;
-  const maintenance = bucket(
-    items.filter((i) => i.status === "maintenance"),
-    sessionIndex,
-    cycleSizeMaintenance,
-  );
-
-  return { kind: "training", sessionIndex, focus, review, maintenance };
+  return { kind: "training", sessionIndex, focus, maintenance };
 }
 
 export function listSessionsInRange(
@@ -94,29 +78,58 @@ export function getScheduledPlanItems(
   planMode: PlanMode,
 ): ItemWithSkill[] {
   if (planMode !== "exam") return items;
-
   const allowedDisciplines = new Set(normalizeExamDisciplines(schedule));
   return items.filter((item) => allowedDisciplines.has(item.skill.discipline));
 }
 
 function normalizeExamDisciplines(schedule: TrainingSchedule): Discipline[] {
   const selected = schedule.exam_disciplines ?? ALL_DISCIPLINES;
-  const unique = ALL_DISCIPLINES.filter((discipline) =>
-    selected.includes(discipline),
-  );
+  const unique = ALL_DISCIPLINES.filter((d) => selected.includes(d));
   return unique.length > 0 ? unique : ALL_DISCIPLINES;
 }
 
-function bucket<T extends { skill_id: string }>(
-  items: T[],
-  sessionIndex: number,
-  cycleSize: number,
-): T[] {
-  if (items.length === 0 || cycleSize <= 0) return [];
-  const sorted = [...items].sort((a, b) => a.skill_id.localeCompare(b.skill_id));
-  const formsPerSession = Math.ceil(sorted.length / cycleSize);
-  const slot = ((sessionIndex % cycleSize) + cycleSize) % cycleSize;
-  return sorted.slice(slot * formsPerSession, (slot + 1) * formsPerSession);
+function expandTokens(items: ItemWithSkill[]): ItemWithSkill[] {
+  const out: ItemWithSkill[] = [];
+  for (const it of items) {
+    const weight = it.status === "focus" ? FOCUS_WEIGHT : MAINTENANCE_WEIGHT;
+    for (let i = 0; i < weight; i++) out.push(it);
+  }
+  return out;
+}
+
+function distributeTokensToSlots(
+  tokens: ItemWithSkill[],
+  slotCount: number,
+): ItemWithSkill[][] {
+  const slots: ItemWithSkill[][] = Array.from({ length: slotCount }, () => []);
+  if (tokens.length === 0 || slotCount === 0) return slots;
+  for (let i = 0; i < tokens.length; i++) {
+    const ideal = Math.floor((i * slotCount) / tokens.length);
+    let target = ideal;
+    let attempts = 0;
+    while (
+      attempts < slotCount &&
+      slots[target].some((s) => s.skill_id === tokens[i].skill_id)
+    ) {
+      target = (target + 1) % slotCount;
+      attempts++;
+    }
+    slots[target].push(tokens[i]);
+  }
+  return slots;
+}
+
+function stableItemOrder(a: ItemWithSkill, b: ItemWithSkill): number {
+  if (a.skill.discipline !== b.skill.discipline) {
+    return a.skill.discipline.localeCompare(b.skill.discipline);
+  }
+  if (a.skill.category !== b.skill.category) {
+    return a.skill.category.localeCompare(b.skill.category);
+  }
+  if (a.skill.display_order !== b.skill.display_order) {
+    return a.skill.display_order - b.skill.display_order;
+  }
+  return a.skill_id.localeCompare(b.skill_id);
 }
 
 function isoWeekday(dateStr: string): number {
