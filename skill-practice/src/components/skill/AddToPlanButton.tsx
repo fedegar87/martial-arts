@@ -25,7 +25,7 @@ export function AddToPlanButton({
       if (inPersonalSelection) {
         await removeSkillFromPlan(skillId);
       } else {
-        await addSkillToPlan(skillId, "review");
+        await addSkillToPlan(skillId, "maintenance");
       }
     });
   }

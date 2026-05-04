@@ -46,9 +46,7 @@ export function CurriculumMap({ cells }: Props) {
         {
           cells.filter(
             (cell) =>
-              cell.status === "focus" ||
-              cell.status === "review" ||
-              cell.status === "maintenance",
+              cell.status === "focus" || cell.status === "maintenance",
           ).length
         }{" "}
         nel piano attivo.
@@ -60,7 +58,6 @@ export function CurriculumMap({ cells }: Props) {
 
 function statusClass(status: CurriculumCell["status"]): string {
   if (status === "focus") return PLAN_STATUS_VISUALS.focus.mapClassName;
-  if (status === "review") return PLAN_STATUS_VISUALS.review.mapClassName;
   if (status === "maintenance") {
     return PLAN_STATUS_VISUALS.maintenance.mapClassName;
   }
@@ -70,7 +67,6 @@ function statusClass(status: CurriculumCell["status"]): string {
 
 function statusLabel(status: CurriculumCell["status"]): string {
   if (status === "focus") return PLAN_STATUS_VISUALS.focus.label;
-  if (status === "review") return PLAN_STATUS_VISUALS.review.label;
   if (status === "maintenance") return PLAN_STATUS_VISUALS.maintenance.label;
   if (status === "locked") return CURRICULUM_MARKER_VISUALS.locked.label;
   return CURRICULUM_MARKER_VISUALS.available.label;
@@ -86,10 +82,6 @@ function MapLegend() {
         <LegendSwatch
           className={PLAN_STATUS_VISUALS.focus.mapClassName}
           label={PLAN_STATUS_VISUALS.focus.label}
-        />
-        <LegendSwatch
-          className={PLAN_STATUS_VISUALS.review.mapClassName}
-          label={PLAN_STATUS_VISUALS.review.label}
         />
         <LegendSwatch
           className={PLAN_STATUS_VISUALS.maintenance.mapClassName}

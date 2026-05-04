@@ -1,4 +1,4 @@
-import { Flame, Repeat, Wrench } from "lucide-react";
+import { Flame, Wrench } from "lucide-react";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
 
 export function PlanStatusLegend() {
@@ -7,7 +7,7 @@ export function PlanStatusLegend() {
       <summary className="cursor-pointer text-muted-foreground">
         Legenda stati
       </summary>
-      <div className="mt-2 grid gap-2 text-muted-foreground sm:grid-cols-3">
+      <div className="mt-2 grid gap-2 text-muted-foreground sm:grid-cols-2">
         <LegendItem
           icon={
             <Flame
@@ -16,15 +16,6 @@ export function PlanStatusLegend() {
           }
           label={PLAN_STATUS_VISUALS.focus.label}
           description="apprendimento attivo"
-        />
-        <LegendItem
-          icon={
-            <Repeat
-              className={`h-3.5 w-3.5 ${PLAN_STATUS_VISUALS.review.textClassName}`}
-            />
-          }
-          label={PLAN_STATUS_VISUALS.review.label}
-          description="consolidamento"
         />
         <LegendItem
           icon={

@@ -7,7 +7,6 @@ import {
   Dumbbell,
   Flame,
   Moon,
-  Repeat,
   Wrench,
 } from "lucide-react";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
@@ -42,7 +41,6 @@ const WEEKDAY_LABELS = ["L", "M", "M", "G", "V", "S", "D"];
 
 const STATUS_ICONS: Record<PlanStatus, typeof Flame> = {
   focus: Flame,
-  review: Repeat,
   maintenance: Wrench,
 };
 
@@ -392,7 +390,7 @@ function DayCellBody({
         {view === "week" ? " esercizi" : ""}
       </span>
       <span className="flex gap-1" aria-hidden="true">
-        {(["focus", "review", "maintenance"] as PlanStatus[]).map((status) =>
+        {(["focus", "maintenance"] as PlanStatus[]).map((status) =>
           stats[status] > 0 ? (
             <span
               key={status}
@@ -457,7 +455,6 @@ function SelectedDaySession({
 
   const dailyItems = [
     ...row.session.focus,
-    ...row.session.review,
     ...row.session.maintenance,
   ];
 
@@ -483,7 +480,6 @@ function SelectedDaySession({
       ) : (
         <div className="space-y-5">
           <SessionSection status="focus" items={row.session.focus} />
-          <SessionSection status="review" items={row.session.review} />
           <SessionSection status="maintenance" items={row.session.maintenance} />
         </div>
       )}
@@ -554,7 +550,6 @@ type SessionStats =
       kind: "training";
       total: number;
       focus: number;
-      review: number;
       maintenance: number;
     };
 
@@ -565,12 +560,8 @@ function sessionStats(session: ScheduledSession): SessionStats {
 
   return {
     kind: "training",
-    total:
-      session.focus.length +
-      session.review.length +
-      session.maintenance.length,
+    total: session.focus.length + session.maintenance.length,
     focus: session.focus.length,
-    review: session.review.length,
     maintenance: session.maintenance.length,
   };
 }

@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Flame,
   MoreVertical,
-  Repeat,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -28,11 +27,10 @@ type Props = {
   showHide?: boolean;
 };
 
-const STATUS_OPTIONS: PlanStatus[] = ["focus", "review", "maintenance"];
+const STATUS_OPTIONS: PlanStatus[] = ["focus", "maintenance"];
 
 const STATUS_ICONS: Record<PlanStatus, LucideIcon> = {
   focus: Flame,
-  review: Repeat,
   maintenance: Wrench,
 };
 
