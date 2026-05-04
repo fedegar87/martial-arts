@@ -18,7 +18,7 @@ export type SkillCategory =
   | "chi_kung"
   | "preparatori";
 
-export type PlanStatus = "focus" | "review" | "maintenance";
+export type PlanStatus = "focus" | "maintenance";
 
 export type PlanItemSource = "exam_program" | "manual";
 
