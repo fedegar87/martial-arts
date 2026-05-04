@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { resetTrainingSchedule } from "@/lib/actions/training-schedule";
 
 export function ResetScheduleSection() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -31,6 +33,7 @@ export function ResetScheduleSection() {
         return;
       }
       setOpen(false);
+      router.replace("/today");
     });
   }
 
