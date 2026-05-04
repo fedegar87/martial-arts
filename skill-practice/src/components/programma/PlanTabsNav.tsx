@@ -46,6 +46,7 @@ function TabLink({
   return (
     <Link
       href={href}
+      prefetch
       aria-current={active ? "page" : undefined}
       className={`program-plan-tab tap-feedback label-font relative flex min-h-11 shrink-0 items-center gap-2 px-3 text-sm font-medium transition-colors ${
         active

@@ -161,6 +161,11 @@
   textarea {
     -webkit-tap-highlight-color: transparent;
   }
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
   select,
   textarea,
   input[data-slot="input"] {
