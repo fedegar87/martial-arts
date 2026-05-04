@@ -383,26 +383,10 @@ function DayCellBody({
   }
 
   return (
-    <span className="space-y-1">
-      <span className="flex items-center gap-1 text-[0.65rem] text-foreground">
-        <Dumbbell className="h-3 w-3" />
-        {stats.total}
-        {view === "week" ? " esercizi" : ""}
-      </span>
-      <span className="flex gap-1" aria-hidden="true">
-        {(["focus", "maintenance"] as PlanStatus[]).map((status) =>
-          stats[status] > 0 ? (
-            <span
-              key={status}
-              className={cn(
-                "h-1.5 min-w-1.5 rounded-full",
-                PLAN_STATUS_VISUALS[status].dotClassName,
-              )}
-              style={{ width: `${Math.min(18, 6 + stats[status] * 3)}px` }}
-            />
-          ) : null,
-        )}
-      </span>
+    <span className="flex items-center gap-1 text-[0.65rem] text-foreground">
+      <Dumbbell className="h-3 w-3" />
+      {stats.total}
+      {view === "week" ? " esercizi" : ""}
     </span>
   );
 }
