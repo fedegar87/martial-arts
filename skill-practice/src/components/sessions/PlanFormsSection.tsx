@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useTransition, useOptimistic } from "react";
-import { Anchor, Flame } from "lucide-react";
+import { Flame, RefreshCw } from "lucide-react";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import {
@@ -15,7 +15,7 @@ import type { Discipline, PlanStatus, Skill, UserPlanItem } from "@/lib/types";
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
 
-const TOGGLE_WIDTH_CLASS = "w-[68px]";
+const STATUS_SELECTOR_WIDTH_CLASS = "w-[164px] sm:w-[176px]";
 
 type Props = {
   items: ItemWithSkill[];
@@ -79,17 +79,15 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
                   {cat.items.map((it) => (
                     <li
                       key={it.id}
-                      className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2"
+                      className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2"
                     >
                       <span className="min-w-0 truncate text-sm">
                         {it.skill.name}
                       </span>
-                      <StatusToggle
+                      <StatusSelector
                         status={it.status}
+                        skillName={it.skill.name}
                         onChange={(next) => applyStatus(it.skill_id, next)}
-                        ariaLabel={`${it.skill.name}: ${
-                          it.status === "focus" ? "focus" : "mantenimento"
-                        }, premi per cambiare`}
                       />
                     </li>
                   ))}
@@ -110,59 +108,93 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
 
 function PolarHeader() {
   return (
-    <div className="border-border flex items-center justify-between gap-3 border-b px-3 pb-2 text-xs font-semibold tracking-widest uppercase">
-      <span className="text-primary flex items-center gap-1.5">
-        <Flame className="h-3.5 w-3.5" />
-        Focus
-      </span>
-      <span className="text-muted-foreground flex items-center gap-1.5">
-        Mantenimento
-        <Anchor className="h-3.5 w-3.5" />
-      </span>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 px-3">
+      <span aria-hidden="true" />
+      <div
+        className={cn(
+          STATUS_SELECTOR_WIDTH_CLASS,
+          "grid grid-cols-2 text-[9px] font-semibold uppercase leading-none tracking-wide sm:text-[10px]",
+        )}
+      >
+        <span className="text-primary flex items-center gap-0.5">
+          <Flame className="h-3 w-3" />
+          Focus
+        </span>
+        <span className="flex items-center justify-end gap-0.5 text-[var(--status-info)]">
+          Mantenimento
+          <RefreshCw className="h-3 w-3" />
+        </span>
+      </div>
     </div>
   );
 }
 
-function StatusToggle({
+function StatusSelector({
   status,
+  skillName,
   onChange,
-  ariaLabel,
 }: {
   status: PlanStatus;
+  skillName: string;
   onChange: (next: PlanStatus) => void;
-  ariaLabel: string;
 }) {
   const isFocus = status === "focus";
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={!isFocus}
-      aria-label={ariaLabel}
-      onClick={() => onChange(isFocus ? "maintenance" : "focus")}
+    <div
+      role="radiogroup"
+      aria-label={`Stato nel piano per ${skillName}`}
       className={cn(
-        TOGGLE_WIDTH_CLASS,
-        "relative inline-flex h-7 shrink-0 items-center rounded-full border transition-colors",
-        isFocus
-          ? "border-primary/50 bg-primary/20"
-          : "border-border bg-muted",
+        STATUS_SELECTOR_WIDTH_CLASS,
+        "bg-muted/70 relative grid h-8 shrink-0 grid-cols-2 rounded-full border p-0.5 shadow-inner transition-colors",
+        isFocus ? "border-primary/40" : "border-[color:var(--status-info)]",
       )}
     >
       <span
+        aria-hidden="true"
         className={cn(
-          "absolute top-0.5 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-all duration-200",
+          "absolute inset-y-0.5 w-[calc(50%-0.125rem)] rounded-full shadow-sm transition-all duration-200",
           isFocus
-            ? "left-0.5 bg-primary text-primary-foreground"
-            : "left-[calc(100%-1.625rem)] bg-muted-foreground/30 text-muted-foreground",
+            ? "left-0.5 bg-primary"
+            : "left-[50%] bg-[var(--status-info)]",
+        )}
+      />
+      <button
+        type="button"
+        role="radio"
+        aria-checked={isFocus}
+        aria-label={`${skillName}: focus`}
+        onClick={() => onChange("focus")}
+        className={cn(
+          "relative z-10 flex min-w-0 items-center justify-center gap-0.5 rounded-full px-1 text-[10px] font-semibold leading-none transition-colors sm:text-[11px]",
+          isFocus
+            ? "text-primary-foreground"
+            : "text-muted-foreground hover:text-primary",
         )}
       >
-        {isFocus ? (
-          <Flame className="h-3.5 w-3.5" />
-        ) : (
-          <Anchor className="h-3.5 w-3.5" />
+        <Flame className="h-3.5 w-3.5 shrink-0" />
+        <span>Focus</span>
+      </button>
+      <span
+        aria-hidden="true"
+        className="bg-border/70 absolute left-1/2 top-2 h-4 w-px -translate-x-1/2"
+      />
+      <button
+        type="button"
+        role="radio"
+        aria-checked={!isFocus}
+        aria-label={`${skillName}: mantenimento`}
+        onClick={() => onChange("maintenance")}
+        className={cn(
+          "relative z-10 flex min-w-0 items-center justify-center gap-0.5 rounded-full px-1 text-[9px] font-semibold leading-none transition-colors sm:text-[10px]",
+          isFocus
+            ? "text-muted-foreground hover:text-[var(--status-info)]"
+            : "text-background",
         )}
-      </span>
-    </button>
+      >
+        <span>Mantenimento</span>
+        <RefreshCw className="h-3.5 w-3.5 shrink-0" />
+      </button>
+    </div>
   );
 }
 

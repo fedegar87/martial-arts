@@ -307,6 +307,7 @@ function DayCell({
   const date = new Date(`${row.date}T00:00:00Z`);
   const dayNumber = date.getUTCDate();
   const weekdayLabel = date.toLocaleDateString("it-IT", { weekday: "short" });
+  const cellLabel = dayCellLabel(date, stats, available);
   const content = (
     <>
       <span className="flex items-center justify-between gap-1">
@@ -337,14 +338,25 @@ function DayCell({
   );
 
   if (!available) {
-    return <span className={className}>{content}</span>;
+    return (
+      <span
+        role="group"
+        className={className}
+        aria-label={cellLabel}
+        title={cellLabel}
+      >
+        {content}
+      </span>
+    );
   }
 
   return (
     <Link
       href={calendarHref(view, row.date)}
+      aria-label={cellLabel}
       aria-current={selected ? "date" : undefined}
       className={className}
+      title={cellLabel}
     >
       {content}
     </Link>
@@ -364,10 +376,7 @@ function DayCellBody({
 
   if (stats.kind !== "training") {
     return (
-      <span
-        className="flex items-center gap-1 text-[0.65rem] text-muted-foreground"
-        aria-label="riposo"
-      >
+      <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
         <Moon className="h-3 w-3" />
       </span>
     );
@@ -375,20 +384,14 @@ function DayCellBody({
 
   if (stats.total === 0) {
     return (
-      <span
-        className="flex items-center gap-1 text-[0.65rem] text-muted-foreground"
-        aria-label="nessun esercizio"
-      >
+      <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
         <Circle className="h-3 w-3" />
       </span>
     );
   }
 
   return (
-    <span
-      className="flex items-center gap-1 text-[0.65rem] text-foreground"
-      aria-label={`${stats.total} esercizi`}
-    >
+    <span className="flex items-center gap-1 text-[0.65rem] text-foreground">
       <Dumbbell className="h-3 w-3" />
       {stats.total}
     </span>
@@ -534,12 +537,7 @@ function SessionSkillRow({
 
 type SessionStats =
   | { kind: "rest_day" | "expired" | "no_schedule"; total: 0 }
-  | {
-      kind: "training";
-      total: number;
-      focus: number;
-      maintenance: number;
-    };
+  | { kind: "training"; total: number };
 
 function sessionStats(session: ScheduledSession): SessionStats {
   if (session.kind !== "training") {
@@ -549,9 +547,35 @@ function sessionStats(session: ScheduledSession): SessionStats {
   return {
     kind: "training",
     total: session.focus.length + session.maintenance.length,
-    focus: session.focus.length,
-    maintenance: session.maintenance.length,
   };
+}
+
+function dayCellLabel(
+  date: Date,
+  stats: SessionStats,
+  available: boolean,
+): string {
+  const formattedDate = date.toLocaleDateString("it-IT", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
+  if (!available) {
+    return `${formattedDate}: fuori periodo`;
+  }
+
+  if (stats.kind !== "training") {
+    return `${formattedDate}: riposo`;
+  }
+
+  if (stats.total === 0) {
+    return `${formattedDate}: nessun esercizio`;
+  }
+
+  return `${formattedDate}: ${stats.total} ${
+    stats.total === 1 ? "esercizio" : "esercizi"
+  }`;
 }
 
 function calendarHref(view: CalendarView, date: string): string {
