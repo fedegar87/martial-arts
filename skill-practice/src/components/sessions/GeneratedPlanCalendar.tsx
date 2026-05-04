@@ -324,7 +324,7 @@ function DayCell({
           </span>
         )}
       </span>
-      <DayCellBody stats={stats} view={view} available={available} />
+      <DayCellBody stats={stats} available={available} />
     </>
   );
   const className = cn(
@@ -353,11 +353,9 @@ function DayCell({
 
 function DayCellBody({
   stats,
-  view,
   available,
 }: {
   stats: SessionStats;
-  view: CalendarView;
   available: boolean;
 }) {
   if (!available) {
@@ -366,27 +364,33 @@ function DayCellBody({
 
   if (stats.kind !== "training") {
     return (
-      <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+      <span
+        className="flex items-center gap-1 text-[0.65rem] text-muted-foreground"
+        aria-label="riposo"
+      >
         <Moon className="h-3 w-3" />
-        {view === "week" ? "riposo" : ""}
       </span>
     );
   }
 
   if (stats.total === 0) {
     return (
-      <span className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+      <span
+        className="flex items-center gap-1 text-[0.65rem] text-muted-foreground"
+        aria-label="nessun esercizio"
+      >
         <Circle className="h-3 w-3" />
-        vuoto
       </span>
     );
   }
 
   return (
-    <span className="flex items-center gap-1 text-[0.65rem] text-foreground">
+    <span
+      className="flex items-center gap-1 text-[0.65rem] text-foreground"
+      aria-label={`${stats.total} esercizi`}
+    >
       <Dumbbell className="h-3 w-3" />
       {stats.total}
-      {view === "week" ? " esercizi" : ""}
     </span>
   );
 }
