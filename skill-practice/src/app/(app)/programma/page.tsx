@@ -12,7 +12,6 @@ import {
 import { SkillListItem } from "@/components/library/SkillListItem";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
 import { PlanTabsNav } from "@/components/programma/PlanTabsNav";
-import { PlanStatusLegend } from "@/components/skill/PlanStatusLegend";
 import { Button } from "@/components/ui/button";
 import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline, nextGradeValue } from "@/lib/grades";
@@ -20,7 +19,6 @@ import type {
   Discipline,
   ExamProgram,
   PlanMode,
-  PlanStatus,
   Skill,
   SkillCategory,
   UserProfile,
@@ -65,9 +63,6 @@ export default async function ProgrammaPage({ searchParams }: Props) {
     tab === "exam"
       ? examSkills.filter((skill) => skill.discipline === discipline)
       : tabPlanItems.map((item) => item.skill);
-  const planStatusBySkillId = new Map<string, PlanStatus>(
-    tabPlanItems.map((item) => [item.skill_id, item.status]),
-  );
 
   const grouped = skills.reduce<Record<SkillCategory, Skill[]>>((acc, skill) => {
     (acc[skill.category] ??= []).push(skill);
@@ -113,7 +108,6 @@ export default async function ProgrammaPage({ searchParams }: Props) {
             />
           ) : (
             <>
-              {planStatusBySkillId.size > 0 && <PlanStatusLegend />}
               <div className="space-y-6">
                 {(Object.keys(grouped) as SkillCategory[]).map((category) => (
                   <section key={category} className="space-y-2">
@@ -122,12 +116,7 @@ export default async function ProgrammaPage({ searchParams }: Props) {
                     </h2>
                     <div className="space-y-2">
                       {grouped[category].map((skill) => (
-                        <SkillListItem
-                          key={skill.id}
-                          skill={skill}
-                          planStatus={planStatusBySkillId.get(skill.id)}
-                          editableStatus={tab === activeMode}
-                        />
+                        <SkillListItem key={skill.id} skill={skill} />
                       ))}
                     </div>
                   </section>
