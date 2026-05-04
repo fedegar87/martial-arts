@@ -5,11 +5,16 @@ import type { PlanStatus } from "@/lib/types";
 type Props = {
   status?: PlanStatus;
   className?: string;
+  activeLabelPrefix?: string;
 };
 
-export function PlanStatusDot({ status, className }: Props) {
+export function PlanStatusDot({
+  status,
+  className,
+  activeLabelPrefix = "Nel piano",
+}: Props) {
   const label = status
-    ? `Nel piano: ${PLAN_STATUS_VISUALS[status].label}`
+    ? `${activeLabelPrefix}: ${PLAN_STATUS_VISUALS[status].label}`
     : "Non nel piano";
 
   return (

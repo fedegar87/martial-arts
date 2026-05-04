@@ -1,20 +1,20 @@
 import Link from "next/link";
-import { CatalogSkillMarkers } from "@/components/library/CatalogSkillMarkers";
+import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
-import type { Skill } from "@/lib/types";
+import type { PlanStatus, Skill } from "@/lib/types";
 
 type Props = {
   skill: Skill;
   locked: boolean;
-  practiced: boolean;
-  inActivePlan: boolean;
+  planStatus?: PlanStatus;
+  planStatusLabelPrefix: string;
 };
 
 export function ProgramSkillRow({
   skill,
   locked,
-  practiced,
-  inActivePlan,
+  planStatus,
+  planStatusLabelPrefix,
 }: Props) {
   const content = (
     <div
@@ -22,6 +22,14 @@ export function ProgramSkillRow({
         locked ? "text-muted-foreground opacity-60" : "hover:bg-muted"
       }`}
     >
+      {planStatus ? (
+        <PlanStatusDot
+          status={planStatus}
+          activeLabelPrefix={planStatusLabelPrefix}
+        />
+      ) : (
+        <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0" />
+      )}
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{skill.name}</span>
         {skill.name_italian && (
@@ -30,10 +38,6 @@ export function ProgramSkillRow({
           </span>
         )}
       </span>
-      <CatalogSkillMarkers
-        practiced={practiced}
-        inActivePlan={inActivePlan}
-      />
       <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
     </div>
   );

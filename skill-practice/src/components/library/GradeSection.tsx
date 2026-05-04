@@ -1,21 +1,21 @@
 import { Lock } from "lucide-react";
 import { ProgramSkillRow } from "@/components/library/ProgramSkillRow";
-import type { Skill } from "@/lib/types";
+import type { PlanStatus, Skill } from "@/lib/types";
 
 type Props = {
   title: string;
   skills: Skill[];
   locked: boolean;
-  activePlanSkillIds: Set<string>;
-  practicedSkillIds: Set<string>;
+  planStatusBySkillId: Map<string, PlanStatus>;
+  planStatusLabelPrefix: string;
 };
 
 export function GradeSection({
   title,
   skills,
   locked,
-  activePlanSkillIds,
-  practicedSkillIds,
+  planStatusBySkillId,
+  planStatusLabelPrefix,
 }: Props) {
   if (skills.length === 0) return null;
 
@@ -34,8 +34,8 @@ export function GradeSection({
             key={skill.id}
             skill={skill}
             locked={locked}
-            inActivePlan={activePlanSkillIds.has(skill.id)}
-            practiced={practicedSkillIds.has(skill.id)}
+            planStatus={planStatusBySkillId.get(skill.id)}
+            planStatusLabelPrefix={planStatusLabelPrefix}
           />
         ))}
       </div>

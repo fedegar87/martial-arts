@@ -2,7 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { getExamProgramById } from "@/lib/queries/exam-programs";
+import {
+  getExamProgramById,
+  getExamProgramRequirements,
+} from "@/lib/queries/exam-programs";
 import { listSkillsAtGrade, listSkillsForExam } from "@/lib/queries/skills";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import {
@@ -19,6 +22,7 @@ import type {
   Discipline,
   ExamProgram,
   PlanMode,
+  PlanStatus,
   Skill,
   SkillCategory,
   UserProfile,
@@ -45,17 +49,23 @@ export default async function ProgrammaPage({ searchParams }: Props) {
     tab === "exam" ? selectedExamIdForDiscipline(profile, discipline) : null;
 
   const tabSource = tab === "custom" ? "manual" : "exam_program";
-  const [selectedExam, examSkills, tabPlanItems] = await Promise.all([
-    selectedExamId ? getExamProgramById(selectedExamId) : Promise.resolve(null),
-    tab === "exam"
-      ? selectedExamId
-        ? listSkillsForExam(selectedExamId)
-        : nextGrade !== null
-          ? listSkillsAtGrade(discipline, nextGrade)
-          : Promise.resolve([])
-      : Promise.resolve([]),
-    getUserPlanItems(profile.id, discipline, tabSource),
-  ]);
+  const [selectedExam, examSkills, tabPlanItems, examRequirements] =
+    await Promise.all([
+      selectedExamId
+        ? getExamProgramById(selectedExamId)
+        : Promise.resolve(null),
+      tab === "exam"
+        ? selectedExamId
+          ? listSkillsForExam(selectedExamId)
+          : nextGrade !== null
+            ? listSkillsAtGrade(discipline, nextGrade)
+            : Promise.resolve([])
+        : Promise.resolve([]),
+      getUserPlanItems(profile.id, discipline, tabSource),
+      tab === "exam" && selectedExamId
+        ? getExamProgramRequirements(selectedExamId)
+        : Promise.resolve([]),
+    ]);
 
   const selectedExamForDiscipline =
     selectedExam?.discipline === discipline ? selectedExam : null;
@@ -68,6 +78,17 @@ export default async function ProgrammaPage({ searchParams }: Props) {
     (acc[skill.category] ??= []).push(skill);
     return acc;
   }, {} as Record<SkillCategory, Skill[]>);
+  const planStatusBySkillId = new Map<string, PlanStatus>();
+  for (const requirement of examRequirements) {
+    planStatusBySkillId.set(requirement.skill_id, requirement.default_status);
+  }
+  for (const item of tabPlanItems) {
+    planStatusBySkillId.set(item.skill_id, item.status);
+  }
+  const planStatusLabelPrefix =
+    tab === "exam"
+      ? "Nel programma selezionato"
+      : "Nella selezione personale";
 
   const subtitle = buildSubtitle(
     tab,
@@ -116,7 +137,13 @@ export default async function ProgrammaPage({ searchParams }: Props) {
                     </h2>
                     <div className="space-y-2">
                       {grouped[category].map((skill) => (
-                        <SkillListItem key={skill.id} skill={skill} />
+                        <SkillListItem
+                          key={skill.id}
+                          skill={skill}
+                          planStatus={planStatusBySkillId.get(skill.id)}
+                          statusLabelPrefix={planStatusLabelPrefix}
+                          showEmptyStatusDot={false}
+                        />
                       ))}
                     </div>
                   </section>

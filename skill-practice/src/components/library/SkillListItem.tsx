@@ -11,12 +11,16 @@ import type { PlanStatus, Skill } from "@/lib/types";
 type Props = {
   skill: Skill;
   planStatus?: PlanStatus;
+  statusLabelPrefix?: string;
+  showEmptyStatusDot?: boolean;
   editableStatus?: boolean;
 };
 
 export function SkillListItem({
   skill,
   planStatus,
+  statusLabelPrefix = "Nel piano",
+  showEmptyStatusDot = true,
   editableStatus = false,
 }: Props) {
   return (
@@ -25,7 +29,14 @@ export function SkillListItem({
         href={`/skill/${skill.id}`}
         className="flex min-w-0 flex-1 items-center gap-3"
       >
-        <PlanStatusDot status={planStatus} />
+        {planStatus || showEmptyStatusDot ? (
+          <PlanStatusDot
+            status={planStatus}
+            activeLabelPrefix={statusLabelPrefix}
+          />
+        ) : (
+          <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0" />
+        )}
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">{skill.name}</div>
           <div className="text-muted-foreground mt-1 flex items-center gap-2 text-xs">

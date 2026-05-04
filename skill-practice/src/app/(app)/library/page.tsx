@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { listSkillsForDiscipline } from "@/lib/queries/skills";
 import { getUserPlanItems } from "@/lib/queries/plan";
-import { getPracticedSkillIds } from "@/lib/queries/practice-log";
+import { getExamProgramRequirements } from "@/lib/queries/exam-programs";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
 import { GradeSection } from "@/components/library/GradeSection";
 import { CategoryFilter } from "@/components/library/CategoryFilter";
@@ -10,7 +10,7 @@ import { CatalogMarkerLegend } from "@/components/library/CatalogMarkerLegend";
 import { DISCIPLINE_LABELS, SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import { gradesForDiscipline } from "@/lib/grades";
 import { hasPlayableVideo } from "@/lib/youtube";
-import type { Discipline, Skill, SkillCategory } from "@/lib/types";
+import type { Discipline, PlanStatus, Skill, SkillCategory } from "@/lib/types";
 
 const ENABLE_LEVEL_LOCK = false;
 
@@ -32,11 +32,25 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       : profile.assigned_level_taichi;
   const activeSource =
     profile.plan_mode === "custom" ? "manual" : "exam_program";
+  const selectedExamId =
+    discipline === "shaolin"
+      ? profile.preparing_exam_id
+      : profile.preparing_exam_taichi_id;
+  const planStatusLabelPrefix =
+    profile.plan_mode === "custom"
+      ? "Nella selezione personale"
+      : "Nel programma selezionato";
+  const emptyPlanStatusLabel =
+    profile.plan_mode === "custom"
+      ? "Nessun pallino: fuori dalla selezione personale"
+      : "Nessun pallino: fuori dal programma selezionato";
 
-  const [allSkills, activePlanItems, practicedSkillIds] = await Promise.all([
+  const [allSkills, activePlanItems, examRequirements] = await Promise.all([
     listSkillsForDiscipline(discipline),
     getUserPlanItems(profile.id, discipline, activeSource),
-    getPracticedSkillIds(profile.id),
+    profile.plan_mode === "exam" && selectedExamId
+      ? getExamProgramRequirements(selectedExamId)
+      : Promise.resolve([]),
   ]);
 
   const availableCategories = (
@@ -55,9 +69,13 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
     {},
   );
 
-  const activePlanSkillIds = new Set(
-    activePlanItems.map((item) => item.skill_id),
-  );
+  const planStatusBySkillId = new Map<string, PlanStatus>();
+  for (const requirement of examRequirements) {
+    planStatusBySkillId.set(requirement.skill_id, requirement.default_status);
+  }
+  for (const item of activePlanItems) {
+    planStatusBySkillId.set(item.skill_id, item.status);
+  }
 
   return (
     <div className="space-y-6">
@@ -85,7 +103,10 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
         withVideo={onlyWithVideo}
       />
 
-      <CatalogMarkerLegend />
+      <CatalogMarkerLegend
+        planStatusLabelPrefix={planStatusLabelPrefix}
+        emptyLabel={emptyPlanStatusLabel}
+      />
 
       <div className="space-y-6">
         {gradesForDiscipline(discipline)
@@ -96,8 +117,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
               title={grade.label}
               skills={byGrade[grade.value] ?? []}
               locked={ENABLE_LEVEL_LOCK && userLevel !== 0 && grade.value < userLevel}
-              activePlanSkillIds={activePlanSkillIds}
-              practicedSkillIds={practicedSkillIds}
+              planStatusBySkillId={planStatusBySkillId}
+              planStatusLabelPrefix={planStatusLabelPrefix}
             />
           ))}
       </div>
