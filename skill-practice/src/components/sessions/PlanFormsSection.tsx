@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useTransition, useOptimistic } from "react";
+import { Flame, Wrench } from "lucide-react";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import {
@@ -9,10 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import type { Discipline, PlanStatus, Skill, UserPlanItem } from "@/lib/types";
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
+
+const TOGGLE_WIDTH_CLASS = "w-[68px]";
 
 type Props = {
   items: ItemWithSkill[];
@@ -42,11 +45,10 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
 
   const grouped = groupByDisciplineAndCategory(filtered);
 
-  function toggle(item: ItemWithSkill, nextChecked: boolean) {
-    const next: PlanStatus = nextChecked ? "maintenance" : "focus";
+  function applyStatus(skillId: string, next: PlanStatus) {
     startTransition(async () => {
-      setOptimistic({ skillId: item.skill_id, status: next });
-      const result = await updatePlanItemStatus(item.skill_id, next);
+      setOptimistic({ skillId, status: next });
+      const result = await updatePlanItemStatus(skillId, next);
       if (result && "error" in result) {
         console.error("Errore aggiornamento status:", result.error);
       }
@@ -82,11 +84,10 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
                       <span className="min-w-0 truncate text-sm">
                         {it.skill.name}
                       </span>
-                      <Switch
-                        checked={it.status === "maintenance"}
-                        onCheckedChange={(checked) => toggle(it, checked)}
-                        className="data-checked:bg-[var(--status-info)] data-unchecked:bg-primary"
-                        aria-label={`${it.skill.name}: ${
+                      <StatusToggle
+                        status={it.status}
+                        onChange={(next) => applyStatus(it.skill_id, next)}
+                        ariaLabel={`${it.skill.name}: ${
                           it.status === "focus" ? "focus" : "mantenimento"
                         }, premi per cambiare`}
                       />
@@ -109,13 +110,61 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
 
 function PolarHeader() {
   return (
-    <div className="border-border flex items-center justify-between gap-3 border-b px-3 pb-2 text-[11px] font-semibold tracking-widest uppercase">
-      <span className="text-primary">⚡ Focus</span>
-      <span className="text-muted-foreground/50 hidden text-[10px] sm:inline">
-        ←─ scegli per ogni forma ─→
-      </span>
-      <span className="text-[var(--status-info)]">Mantenimento ●</span>
+    <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-3">
+      <span aria-hidden="true" />
+      <div
+        className={cn(
+          TOGGLE_WIDTH_CLASS,
+          "flex justify-between text-[10px] font-semibold tracking-widest uppercase",
+        )}
+      >
+        <span className="text-primary">Focus</span>
+        <span className="text-[#4f91d8]">Mant.</span>
+      </div>
     </div>
+  );
+}
+
+function StatusToggle({
+  status,
+  onChange,
+  ariaLabel,
+}: {
+  status: PlanStatus;
+  onChange: (next: PlanStatus) => void;
+  ariaLabel: string;
+}) {
+  const isFocus = status === "focus";
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={!isFocus}
+      aria-label={ariaLabel}
+      onClick={() => onChange(isFocus ? "maintenance" : "focus")}
+      className={cn(
+        TOGGLE_WIDTH_CLASS,
+        "relative inline-flex h-7 shrink-0 items-center rounded-full border transition-colors",
+        isFocus
+          ? "border-primary/40 bg-primary/15"
+          : "border-[#4f91d8]/40 bg-[#4f91d8]/15",
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-all duration-200",
+          isFocus
+            ? "left-0.5 bg-primary text-primary-foreground"
+            : "left-[calc(100%-1.625rem)] bg-[#4f91d8] text-background",
+        )}
+      >
+        {isFocus ? (
+          <Flame className="h-3.5 w-3.5" />
+        ) : (
+          <Wrench className="h-3.5 w-3.5" />
+        )}
+      </span>
+    </button>
   );
 }
 
