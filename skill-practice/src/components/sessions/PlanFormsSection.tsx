@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useTransition, useOptimistic } from "react";
-import { Flame, Wrench } from "lucide-react";
+import { Anchor, Flame } from "lucide-react";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import {
@@ -118,8 +118,8 @@ function PolarHeader() {
           "flex justify-between text-[10px] font-semibold tracking-widest uppercase",
         )}
       >
+        <span className="text-muted-foreground">Mant.</span>
         <span className="text-primary">Focus</span>
-        <span className="text-[#4f91d8]">Mant.</span>
       </div>
     </div>
   );
@@ -139,29 +139,29 @@ function StatusToggle({
     <button
       type="button"
       role="switch"
-      aria-checked={!isFocus}
+      aria-checked={isFocus}
       aria-label={ariaLabel}
       onClick={() => onChange(isFocus ? "maintenance" : "focus")}
       className={cn(
         TOGGLE_WIDTH_CLASS,
         "relative inline-flex h-7 shrink-0 items-center rounded-full border transition-colors",
         isFocus
-          ? "border-primary/40 bg-primary/15"
-          : "border-[#4f91d8]/40 bg-[#4f91d8]/15",
+          ? "border-primary/50 bg-primary/20"
+          : "border-border bg-muted",
       )}
     >
       <span
         className={cn(
           "absolute top-0.5 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-all duration-200",
           isFocus
-            ? "left-0.5 bg-primary text-primary-foreground"
-            : "left-[calc(100%-1.625rem)] bg-[#4f91d8] text-background",
+            ? "left-[calc(100%-1.625rem)] bg-primary text-primary-foreground"
+            : "left-0.5 bg-muted-foreground/30 text-muted-foreground",
         )}
       >
         {isFocus ? (
           <Flame className="h-3.5 w-3.5" />
         ) : (
-          <Wrench className="h-3.5 w-3.5" />
+          <Anchor className="h-3.5 w-3.5" />
         )}
       </span>
     </button>
