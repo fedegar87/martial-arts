@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import type { Discipline, PlanStatus, Skill, UserPlanItem } from "@/lib/types";
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
@@ -42,8 +42,8 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
 
   const grouped = groupByDisciplineAndCategory(filtered);
 
-  function toggle(item: ItemWithSkill) {
-    const next: PlanStatus = item.status === "focus" ? "maintenance" : "focus";
+  function toggle(item: ItemWithSkill, nextChecked: boolean) {
+    const next: PlanStatus = nextChecked ? "maintenance" : "focus";
     startTransition(async () => {
       setOptimistic({ skillId: item.skill_id, status: next });
       const result = await updatePlanItemStatus(item.skill_id, next);
@@ -62,6 +62,7 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {filtered.length > 0 && <PolarHeader />}
         {grouped.map((group) => (
           <div key={group.discipline} className="space-y-2">
             <h3 className="text-muted-foreground text-xs font-semibold uppercase">
@@ -76,22 +77,19 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
                   {cat.items.map((it) => (
                     <li
                       key={it.id}
-                      className="flex items-center justify-between gap-3 px-3 py-2"
+                      className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2"
                     >
-                      <span className="text-sm">{it.skill.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => toggle(it)}
-                        className={cn(
-                          "rounded-md border px-2 py-1 text-xs font-medium",
-                          it.status === "focus"
-                            ? "border-primary text-primary"
-                            : "border-border text-muted-foreground",
-                        )}
-                        aria-label={`Cambia stato di ${it.skill.name}`}
-                      >
-                        {it.status === "focus" ? "Focus" : "Mantenimento"}
-                      </button>
+                      <span className="min-w-0 truncate text-sm">
+                        {it.skill.name}
+                      </span>
+                      <Switch
+                        checked={it.status === "maintenance"}
+                        onCheckedChange={(checked) => toggle(it, checked)}
+                        className="data-checked:bg-[var(--status-info)] data-unchecked:bg-primary"
+                        aria-label={`${it.skill.name}: ${
+                          it.status === "focus" ? "focus" : "mantenimento"
+                        }, premi per cambiare`}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -106,6 +104,18 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function PolarHeader() {
+  return (
+    <div className="border-border flex items-center justify-between gap-3 border-b px-3 pb-2 text-[11px] font-semibold tracking-widest uppercase">
+      <span className="text-primary">⚡ Focus</span>
+      <span className="text-muted-foreground/50 hidden text-[10px] sm:inline">
+        ←─ scegli per ogni forma ─→
+      </span>
+      <span className="text-[var(--status-info)]">Mantenimento ●</span>
+    </div>
   );
 }
 
