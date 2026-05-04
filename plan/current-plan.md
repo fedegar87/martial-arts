@@ -62,7 +62,7 @@ Per il razionale completo vedi `archive/`:
 
 | # | Decisione | Opzioni | Impatto | Priorità |
 |---|-----------|---------|---------|----------|
-| **D5** | **SRS "vero" per review/maintenance** | A) Rotazione semplice (ultima pratica). B) Intervalli crescenti tipo Anki/Chessable | Letteratura supporta SR per skill motorie. B = differenziatore reale ma più complesso. Sprint 3 corretto | 🟢 Sprint 3 o oltre |
+| **D5** | **SRS "vero" per review/maintenance** | A) Rotazione semplice (ultima pratica). B) Intervalli crescenti tipo Anki/Chessable | Letteratura supporta SR per skill motorie. B = differenziatore reale ma più complesso. Sprint 3 corretto. **Sprint 1.12:** i 3 livelli (focus/review/maintenance) sono stati semplificati a 2 (focus/maintenance) — vedi `plan/2026-05-04-plan-status-simplification-design.md`. SRS reale resta come decisione futura | 🟢 Sprint 3 o oltre |
 | **D7** | **Player video** | YouTube embed accettato in v3. Verificare se loop/slow-mo diventano frustranti dopo 30 giorni di uso personale. Eventuale switch a MP4 self-hosted con player custom | Se uso personale rivela frustrazione → riapertura decisione | 🟢 Dopo 30 giorni di uso |
 
 ---
@@ -137,7 +137,7 @@ type ExamProgram = {
 
 type ExamSkillRequirement = {
   skillId: string
-  defaultStatus: "focus" | "review" | "maintenance"
+  defaultStatus: "focus" | "maintenance"
 }
 ```
 
@@ -160,7 +160,7 @@ type UserPlanItem = {
   id: string
   userId: string
   skillId: string
-  status: "focus" | "review" | "maintenance"
+  status: "focus" | "maintenance"
   source: "exam_program" | "manual"
   isHidden: boolean
   lastPracticedAt?: Date
@@ -182,7 +182,7 @@ type PracticeLog = {
 type TrainingSchedule = {
   userId: string
   weekdays: number[]                  // ISO 1=Lun ... 7=Dom
-  cadenceWeeks: 1 | 2 | 4              // Frequenza review/maintenance
+  cadenceWeeks: 1 | 2 | 4              // Lunghezza ciclo (Sprint 1.12)
   repsPerForm: number                  // 1-10, snapshot del valore attuale
   startDate: string                    // YYYY-MM-DD
   endDate: string                      // YYYY-MM-DD
@@ -377,10 +377,9 @@ Input: tutte le `UserPlanItem` non nascoste dell'utente.
 
 Algoritmo:
 1. Tutte le skill con `status = "focus"` → mostrate **ogni giorno**
-2. Skill con `status = "review"` → mostrate **2-3 al giorno** in rotazione, ordinate per `lastPracticedAt` ascendente
-3. Skill con `status = "maintenance"` → mostrata **1 ogni 3-4 giorni** in rotazione
+2. Skill con `status = "maintenance"` → **rotazione**, le 4 meno praticate (`sortByOldestPractice` + `slice(0, 4)`)
 
-**⚠️ D5:** la rotazione è "ultima pratica meno recente". Non è SRS vero. Da rivisitare in Sprint 3 con intervalli crescenti.
+**Nota:** questo è il fallback per utenti senza schedule attivo. La distribuzione "vera" (con cicli, pesi e algoritmo deterministico) è in §6.4 (`session-scheduler.ts`).
 
 ### 6.2 Generazione piano da esame (`plan-manager.ts`)
 
@@ -396,13 +395,15 @@ Tutti i query lato client filtrano: `skill.minimumLevel <= user.assignedLevel`. 
 
 ### 6.4 Schedulazione sessioni (`session-scheduler.ts`)
 
-Quando l'utente completa il setup in `/sessions/setup`, una riga in `training_schedule` definisce giorni della settimana, durata, cadenza e ripetizioni. La funzione pura `getScheduledSession(date, schedule, items)` distribuisce le forme:
+Quando l'utente completa il setup in `/sessions/setup`, una riga in `training_schedule` definisce giorni della settimana, durata, cadenza e ripetizioni. La funzione pura `getScheduledSession(date, schedule, items)` distribuisce le forme con **distribuzione pesata 2:1**:
 
-- **Focus**: tutte ogni sessione (ordinate per `display_order`)
-- **Review**: bucket deterministico, ciclo `cadence_weeks * weekdays.length`
-- **Maintenance**: bucket deterministico, ciclo `cadence_weeks * 2 * weekdays.length`
+- Ogni skill **focus** compare 2 volte nel ciclo, ogni **maintenance** 1 volta
+- Algoritmo Bresenham-like per spaziare le occorrenze ed evitare cluster e duplicati nella stessa sessione
+- Clamp del peso a `slotCount` per gestire il caso edge `cycle_weeks=1` con `weekdays=[1]`
+- Forme per sessione = `ceil((N_focus * 2 + N_maint * 1) / (weekdays.length * cycle_weeks))`
+- `cadence_weeks` rappresenta ora la "lunghezza ciclo" (label rinominata in UI come **"Lunghezza ciclo"**)
 
-Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi `plan/2026-04-26-training-schedule-design.md` per i dettagli di algoritmo e UX.
+Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi `plan/2026-04-26-training-schedule-design.md` per la storia originale e `plan/2026-05-04-plan-status-simplification-design.md` per il design corrente con 2 stati.
 
 ---
 
@@ -510,6 +511,9 @@ PIANO LIBERO
 - **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup` e `/sessions/calendar`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Design: `plan/2026-04-26-training-schedule-design.md`. Plan: `plan/2026-04-26-training-schedule-plan.md`.
 - **1.10 — Auth password management:** flow completo per recovery, invite e change password. Pagine `/auth/forgot-password`, `/auth/update-password`, sezione "Sicurezza" su `/profile`. Server actions `requestPasswordReset` / `updatePassword` / `changePassword`. Modifica `auth/callback/route.ts` con allowlist `next` (anti open redirect) e middleware con lista `AUTHENTICATED_ONLY`. Logica pura testabile in `lib/auth-validation.ts`. Provisioning solo admin (D8), invito via Supabase dashboard "Send invitation". Min password length 8 (D9). Design: `plan/2026-05-02-auth-password-management-design.md`.
 - **1.11 — Profilo, account, privacy e documenti legali:** `/profile` esteso con card Account (email, scuola, ruolo, member date), Programma, Allenamento, Sicurezza, Privacy/dati. Migration `0016_profile_account_privacy.sql` con trigger immutabile su `role`/`school_id` (vedi §4.4 limite admin) e tabella `account_deletion_requests`. Export JSON dati utente via `/profile/export`. Pagine pubbliche `/privacy`, `/terms`, `/cookies`, `/disclaimer` con `[PLACEHOLDER: ...]` espliciti per dati titolare/DPO/retention/sub-processor (decisione D10). Logout client-side ora pulisce localStorage/sessionStorage/Cache best-effort; service worker non cachea navigazioni autenticate. Plan completo + missing items: `plan/2026-05-03-profile-account-privacy-settings-plan.md`.
+- **1.12 — Semplificazione PlanStatus (2 stati):** collassati `review` e `maintenance` in un singolo stato `maintenance`. Nuovo algoritmo distribuzione pesata 2:1 in `session-scheduler.ts`, formula deterministica per forme/sessione, nuova UI `PlanFormsSection` in `/sessions/setup` con toggle binario, label "Frequenza del ripasso" rinominata "Lunghezza ciclo". Migration `0019_simplify_plan_status.sql`. Design: `plan/2026-05-04-plan-status-simplification-design.md`. Plan: `plan/2026-05-04-plan-status-simplification-plan.md`.
+
+  **Behavior change**: gli item che prima erano `review` (peso `0.75` in `progress-logic.ts statusMaturityScore`) ora sono `maintenance` (peso `1.0`). Risultato: `readinessPercent` cresce leggermente per utenti con piani migrati. Decisione consapevole: `maintenance` semanticamente significa "padroneggiata". Per ridurre il peso rivedere `progress-logic.ts:185`.
 - **Visual identity FESK:** tema dark/gold applicato in `globals.css`, con overlay grain e componenti core meno arrotondati.
 
 1. Setup: Next.js + Tailwind + shadcn/ui + PWA + Supabase
@@ -707,8 +711,8 @@ const examPrograms = [
       { skillId: "s6", defaultStatus: "focus" },
       { skillId: "s7", defaultStatus: "focus" },
       { skillId: "s8", defaultStatus: "focus" },
-      { skillId: "s9", defaultStatus: "review" },
-      { skillId: "s11", defaultStatus: "review" },
+      { skillId: "s9", defaultStatus: "maintenance" },
+      { skillId: "s11", defaultStatus: "maintenance" },
     ]
   },
   {
@@ -721,9 +725,9 @@ const examPrograms = [
       { skillId: "s10", defaultStatus: "focus" },
       { skillId: "s1", defaultStatus: "maintenance" },
       { skillId: "s2", defaultStatus: "maintenance" },
-      { skillId: "s5", defaultStatus: "review" },
-      { skillId: "s6", defaultStatus: "review" },
-      { skillId: "s9", defaultStatus: "review" },
+      { skillId: "s5", defaultStatus: "maintenance" },
+      { skillId: "s6", defaultStatus: "maintenance" },
+      { skillId: "s9", defaultStatus: "maintenance" },
     ]
   },
   {
@@ -733,8 +737,8 @@ const examPrograms = [
     description: "Chum Kiu, applicazioni avanzate",
     skills: [
       { skillId: "s4", defaultStatus: "focus" },
-      { skillId: "s3", defaultStatus: "review" },
-      { skillId: "s10", defaultStatus: "review" },
+      { skillId: "s3", defaultStatus: "maintenance" },
+      { skillId: "s10", defaultStatus: "maintenance" },
       { skillId: "s1", defaultStatus: "maintenance" },
       { skillId: "s2", defaultStatus: "maintenance" },
     ]
@@ -743,6 +747,8 @@ const examPrograms = [
 ```
 
 > Ricorda §4.1: in SQL `examPrograms[].skills` diventa la junction table `exam_skill_requirements`, non un JSONB.
+
+> **Nota:** il blocco TS sopra è documentazione di riferimento. Il seed reale in `supabase/migrations/0004_seed_fesk.sql` non usa più `review` (solo `focus`/`maintenance`), quindi non richiede modifica DB per la semplificazione di Sprint 1.12.
 
 ---
 
