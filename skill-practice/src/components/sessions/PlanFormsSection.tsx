@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useOptimistic } from "react";
+import { useEffect, useTransition, useOptimistic } from "react";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import {
@@ -36,11 +36,9 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
   const focusCount = filtered.filter((i) => i.status === "focus").length;
   const maintCount = filtered.filter((i) => i.status === "maintenance").length;
 
-  if (onCountsChange) {
-    queueMicrotask(() =>
-      onCountsChange({ focus: focusCount, maintenance: maintCount }),
-    );
-  }
+  useEffect(() => {
+    onCountsChange?.({ focus: focusCount, maintenance: maintCount });
+  }, [focusCount, maintCount, onCountsChange]);
 
   const grouped = groupByDisciplineAndCategory(filtered);
 
@@ -48,7 +46,10 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
     const next: PlanStatus = item.status === "focus" ? "maintenance" : "focus";
     startTransition(async () => {
       setOptimistic({ skillId: item.skill_id, status: next });
-      await updatePlanItemStatus(item.skill_id, next);
+      const result = await updatePlanItemStatus(item.skill_id, next);
+      if (result && "error" in result) {
+        console.error("Errore aggiornamento status:", result.error);
+      }
     });
   }
 
@@ -68,9 +69,9 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
             </h3>
             {group.categories.map((cat) => (
               <div key={cat.category} className="space-y-1">
-                <p className="text-muted-foreground/70 text-[11px] tracking-wide uppercase">
+                <h4 className="text-muted-foreground/70 text-[11px] font-semibold tracking-wide uppercase">
                   {cat.category}
-                </p>
+                </h4>
                 <ul className="divide-border bg-card divide-y rounded-lg border">
                   {cat.items.map((it) => (
                     <li
