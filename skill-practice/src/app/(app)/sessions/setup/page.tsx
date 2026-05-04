@@ -25,7 +25,7 @@ export default async function SetupPage() {
       <header>
         <h1 className="text-2xl font-semibold">Sessioni di allenamento</h1>
         <p className="text-muted-foreground text-sm">
-          Definisci giorni, durata e frequenza del ripasso. Le sessioni vengono
+          Definisci giorni, durata e lunghezza del ciclo. Le sessioni vengono
           generate dal piano di allenamento attivo.
         </p>
       </header>
