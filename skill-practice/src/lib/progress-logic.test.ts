@@ -100,7 +100,7 @@ test("computePlanProgress rewards recent practice and mature statuses", () => {
     requiredSkills,
     planBySkillId: new Map([
       ["form", "maintenance" as const],
-      ["kick", "review" as const],
+      ["kick", "maintenance" as const],
     ]),
     logs: [
       log("2026-04-28", "form"),
@@ -111,7 +111,7 @@ test("computePlanProgress rewards recent practice and mature statuses", () => {
 
   assert.equal(progress.practicedRecent, 1);
   assert.equal(progress.practicedTotal, 2);
-  assert.equal(progress.readinessPercent, 75);
+  assert.equal(progress.readinessPercent, 80);
 });
 
 test("practice calendar computes current and best streak", () => {

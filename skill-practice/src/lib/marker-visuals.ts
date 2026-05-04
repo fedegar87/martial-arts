@@ -16,14 +16,6 @@ export const PLAN_STATUS_VISUALS: Record<PlanStatus, PlanStatusVisual> = {
     textClassName: "text-primary",
     mapClassName: "bg-primary",
   },
-  review: {
-    label: "Ripasso",
-    badgeClassName:
-      "border-[color:var(--status-warning)] bg-transparent text-[var(--status-warning)]",
-    dotClassName: "bg-[var(--status-warning)]",
-    textClassName: "text-[var(--status-warning)]",
-    mapClassName: "bg-[var(--status-warning)]",
-  },
   maintenance: {
     label: "Mantenimento",
     badgeClassName:

@@ -87,7 +87,6 @@ export function computePlanProgress({
 
   const statusCounts: Record<PlanStatus, number> = {
     focus: 0,
-    review: 0,
     maintenance: 0,
   };
   let maturityScore = 0;
@@ -184,6 +183,5 @@ export function toDateString(date: Date): string {
 
 function statusMaturityScore(status: PlanStatus): number {
   if (status === "maintenance") return 1;
-  if (status === "review") return 0.75;
   return 0.35;
 }

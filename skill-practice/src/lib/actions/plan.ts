@@ -11,7 +11,7 @@ export type PlanFormState = { error: string } | { success: true } | null;
 
 export async function addSkillToPlan(
   skillId: string,
-  status: PlanStatus = "review",
+  status: PlanStatus = "maintenance",
 ): Promise<PlanFormState> {
   const supabase = await createClient();
   const {
