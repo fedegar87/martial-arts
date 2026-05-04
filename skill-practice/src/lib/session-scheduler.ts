@@ -47,7 +47,7 @@ export function getScheduledSession(
   const slotInCycle = ((sessionIndex % cycleSize) + cycleSize) % cycleSize;
 
   const sortedItems = [...items].sort(stableItemOrder);
-  const tokens = expandTokens(sortedItems);
+  const tokens = expandTokens(sortedItems, cycleSize);
   const slots = distributeTokensToSlots(tokens, cycleSize);
 
   const todays = slots[slotInCycle] ?? [];
@@ -88,10 +88,11 @@ function normalizeExamDisciplines(schedule: TrainingSchedule): Discipline[] {
   return unique.length > 0 ? unique : ALL_DISCIPLINES;
 }
 
-function expandTokens(items: ItemWithSkill[]): ItemWithSkill[] {
+function expandTokens(items: ItemWithSkill[], slotCount: number): ItemWithSkill[] {
   const out: ItemWithSkill[] = [];
   for (const it of items) {
-    const weight = it.status === "focus" ? FOCUS_WEIGHT : MAINTENANCE_WEIGHT;
+    const baseWeight = it.status === "focus" ? FOCUS_WEIGHT : MAINTENANCE_WEIGHT;
+    const weight = Math.min(baseWeight, slotCount);
     for (let i = 0; i < weight; i++) out.push(it);
   }
   return out;

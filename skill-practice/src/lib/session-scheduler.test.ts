@@ -241,7 +241,7 @@ test("nuova distribuzione: forme/sessione = ceil(occorrenze_totali / giorni_prat
   // Sessioni con almeno 1 forma; total su tutto il ciclo = 14 occorrenze
   let total = 0;
   let maxPerSession = 0;
-  // Itera sulle 6 sessioni del ciclo a partire dalla start_date
+  // Itera su tutto il ciclo (6 sessioni in 14 giorni con weekdays=[1,3,5] cadence=2)
   for (let day = 0; day < 14; day++) {
     const date = addDaysIso(schedule.start_date, day);
     const s = getScheduledSession(date, schedule, items);
@@ -249,7 +249,10 @@ test("nuova distribuzione: forme/sessione = ceil(occorrenze_totali / giorni_prat
     const sessionTotal = s.focus.length + s.maintenance.length;
     total += sessionTotal;
     maxPerSession = Math.max(maxPerSession, sessionTotal);
-    if (total >= 14) break;
+    assert.ok(
+      sessionTotal >= 2,
+      `expected >=2 forme/sessione (floor(14/6)=2), got ${sessionTotal} on ${date}`,
+    );
   }
   assert.equal(total, 14);
   assert.ok(maxPerSession <= 3, `expected <=3 forme/sessione, got ${maxPerSession}`);
@@ -269,4 +272,20 @@ test("nuova distribuzione: stessa skill non compare due volte nella stessa sessi
     const ids = [...s.focus, ...s.maintenance].map((i) => i.skill_id);
     assert.equal(new Set(ids).size, ids.length, `duplicate skill in session ${date}: ${ids.join(",")}`);
   }
+});
+
+test("cycleSize=1 con focus skill non duplica nella sessione", () => {
+  // start_date 2026-04-27 e' un lunedi (weekday 1), quindi e' un training day
+  const schedule = makeSchedule({ weekdays: [1], cadence_weeks: 1 });
+  const items = [item("f1", "focus")];
+  const r = getScheduledSession(schedule.start_date, schedule, items);
+  assert.equal(r.kind, "training");
+  if (r.kind !== "training") return;
+  const ids = [...r.focus, ...r.maintenance].map((i) => i.skill_id);
+  assert.equal(
+    new Set(ids).size,
+    ids.length,
+    `duplicates in cycleSize=1 session: ${ids.join(",")}`,
+  );
+  assert.equal(ids.length, 1, `expected 1 occurrence (clamped from 2), got ${ids.length}`);
 });
