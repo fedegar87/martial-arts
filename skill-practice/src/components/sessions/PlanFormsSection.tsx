@@ -110,17 +110,15 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
 
 function PolarHeader() {
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-3">
-      <span aria-hidden="true" />
-      <div
-        className={cn(
-          TOGGLE_WIDTH_CLASS,
-          "flex justify-between text-[10px] font-semibold tracking-widest uppercase",
-        )}
-      >
-        <span className="text-muted-foreground">Mant.</span>
-        <span className="text-primary">Focus</span>
-      </div>
+    <div className="border-border flex items-center justify-between gap-3 border-b px-3 pb-2 text-xs font-semibold tracking-widest uppercase">
+      <span className="text-primary flex items-center gap-1.5">
+        <Flame className="h-3.5 w-3.5" />
+        Focus
+      </span>
+      <span className="text-muted-foreground flex items-center gap-1.5">
+        Mantenimento
+        <Anchor className="h-3.5 w-3.5" />
+      </span>
     </div>
   );
 }
@@ -139,7 +137,7 @@ function StatusToggle({
     <button
       type="button"
       role="switch"
-      aria-checked={isFocus}
+      aria-checked={!isFocus}
       aria-label={ariaLabel}
       onClick={() => onChange(isFocus ? "maintenance" : "focus")}
       className={cn(
@@ -154,8 +152,8 @@ function StatusToggle({
         className={cn(
           "absolute top-0.5 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-all duration-200",
           isFocus
-            ? "left-[calc(100%-1.625rem)] bg-primary text-primary-foreground"
-            : "left-0.5 bg-muted-foreground/30 text-muted-foreground",
+            ? "left-0.5 bg-primary text-primary-foreground"
+            : "left-[calc(100%-1.625rem)] bg-muted-foreground/30 text-muted-foreground",
         )}
       >
         {isFocus ? (
