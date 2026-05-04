@@ -1,7 +1,9 @@
+import { Flame, RefreshCw, type LucideIcon } from "lucide-react";
 import type { PlanStatus } from "@/lib/types";
 
 type PlanStatusVisual = {
   label: string;
+  Icon: LucideIcon;
   badgeClassName: string;
   dotClassName: string;
   textClassName: string;
@@ -11,6 +13,7 @@ type PlanStatusVisual = {
 export const PLAN_STATUS_VISUALS: Record<PlanStatus, PlanStatusVisual> = {
   focus: {
     label: "Focus",
+    Icon: Flame,
     badgeClassName: "border-primary bg-transparent text-primary",
     dotClassName: "bg-primary",
     textClassName: "text-primary",
@@ -18,6 +21,7 @@ export const PLAN_STATUS_VISUALS: Record<PlanStatus, PlanStatusVisual> = {
   },
   maintenance: {
     label: "Mantenimento",
+    Icon: RefreshCw,
     badgeClassName:
       "border-[color:var(--status-info)] bg-transparent text-[var(--status-info)]",
     dotClassName: "bg-[var(--status-info)]",

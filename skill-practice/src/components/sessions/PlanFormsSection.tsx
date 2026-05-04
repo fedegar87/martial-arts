@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useTransition, useOptimistic } from "react";
-import { Flame, RefreshCw } from "lucide-react";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
+import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
 import {
   Card,
   CardContent,
@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Discipline, PlanStatus, Skill, UserPlanItem } from "@/lib/types";
+
+const FocusIcon = PLAN_STATUS_VISUALS.focus.Icon;
+const MaintenanceIcon = PLAN_STATUS_VISUALS.maintenance.Icon;
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
 
@@ -117,12 +120,12 @@ function PolarHeader() {
         )}
       >
         <span className="text-primary flex items-center gap-0.5">
-          <Flame className="h-3 w-3" />
+          <FocusIcon className="h-3 w-3" />
           Focus
         </span>
         <span className="flex items-center justify-end gap-0.5 text-[var(--status-info)]">
           Mantenimento
-          <RefreshCw className="h-3 w-3" />
+          <MaintenanceIcon className="h-3 w-3" />
         </span>
       </div>
     </div>
@@ -171,7 +174,7 @@ function StatusSelector({
             : "text-muted-foreground hover:text-primary",
         )}
       >
-        <Flame className="h-3.5 w-3.5 shrink-0" />
+        <FocusIcon className="h-3.5 w-3.5 shrink-0" />
         <span>Focus</span>
       </button>
       <span
@@ -192,7 +195,7 @@ function StatusSelector({
         )}
       >
         <span>Mantenimento</span>
-        <RefreshCw className="h-3.5 w-3.5 shrink-0" />
+        <MaintenanceIcon className="h-3.5 w-3.5 shrink-0" />
       </button>
     </div>
   );

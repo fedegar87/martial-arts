@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  CheckCircle2,
-  Flame,
-  MoreVertical,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
+import { CheckCircle2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -28,11 +22,6 @@ type Props = {
 };
 
 const STATUS_OPTIONS: PlanStatus[] = ["focus", "maintenance"];
-
-const STATUS_ICONS: Record<PlanStatus, LucideIcon> = {
-  focus: Flame,
-  maintenance: Wrench,
-};
 
 export function SkillStatusMenu({
   skillId,
@@ -99,8 +88,8 @@ function StatusOptionButton({
   disabled: boolean;
   onClick: () => void;
 }) {
-  const Icon = STATUS_ICONS[status];
   const visual = PLAN_STATUS_VISUALS[status];
+  const Icon = visual.Icon;
 
   return (
     <Button

@@ -5,9 +5,7 @@ import {
   ChevronRight,
   Circle,
   Dumbbell,
-  Flame,
   Moon,
-  Wrench,
 } from "lucide-react";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
@@ -38,11 +36,6 @@ type Props = {
 };
 
 const WEEKDAY_LABELS = ["L", "M", "M", "G", "V", "S", "D"];
-
-const STATUS_ICONS: Record<PlanStatus, typeof Flame> = {
-  focus: Flame,
-  maintenance: Wrench,
-};
 
 export function GeneratedPlanCalendar({
   view,
@@ -489,8 +482,8 @@ function SessionSection({
 }) {
   if (items.length === 0) return null;
 
-  const Icon = STATUS_ICONS[status];
   const visual = PLAN_STATUS_VISUALS[status];
+  const Icon = visual.Icon;
 
   return (
     <section className="space-y-2">
