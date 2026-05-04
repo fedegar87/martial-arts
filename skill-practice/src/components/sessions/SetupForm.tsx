@@ -168,9 +168,12 @@ export function SetupForm({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Frequenza del ripasso</CardTitle>
+          <CardTitle className="text-base">Lunghezza ciclo</CardTitle>
         </CardHeader>
         <CardContent>
+          <p className="text-muted-foreground mb-2 text-xs">
+            Entro questo intervallo tutte le forme vengono praticate almeno una volta.
+          </p>
           <CadencePicker value={cadence} onChange={setCadence} />
         </CardContent>
       </Card>

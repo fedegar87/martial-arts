@@ -130,7 +130,6 @@ export default async function TodayPage() {
 
   const dailyItems = [
     ...session.focus,
-    ...session.review,
     ...session.maintenance,
   ];
   const dailyCount = dailyItems.length;

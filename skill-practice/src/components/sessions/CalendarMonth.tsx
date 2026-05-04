@@ -29,7 +29,7 @@ function CalendarRow({ row }: { row: Row }) {
       {session.kind === "training" ? (
         <span className="flex items-center gap-2 text-foreground">
           <Dumbbell className="h-3.5 w-3.5" />
-          {session.focus.length + session.review.length + session.maintenance.length} forme
+          {session.focus.length + session.maintenance.length} forme
         </span>
       ) : (
         <span className="text-muted-foreground flex items-center gap-2">

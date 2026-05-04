@@ -3,9 +3,9 @@
 import { cn } from "@/lib/utils";
 
 const OPTIONS: Array<{ value: 1 | 2 | 4; label: string }> = [
-  { value: 1, label: "Ogni settimana" },
-  { value: 2, label: "Ogni 2 settimane" },
-  { value: 4, label: "Ogni mese" },
+  { value: 1, label: "Ciclo di 1 settimana" },
+  { value: 2, label: "Ciclo di 2 settimane" },
+  { value: 4, label: "Ciclo di 4 settimane" },
 ];
 
 type Props = { value: 1 | 2 | 4; onChange: (v: 1 | 2 | 4) => void };

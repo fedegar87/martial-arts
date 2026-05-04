@@ -1,4 +1,4 @@
-import { Flame, Repeat, Wrench } from "lucide-react";
+import { Flame, Wrench } from "lucide-react";
 import { TodaySkillCard } from "@/components/today/TodaySkillCard";
 import { TodayEmptyState } from "@/components/today/TodayEmptyState";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
@@ -18,11 +18,7 @@ export function TodayPracticeSections({
   todayLogs,
   repsPerForm,
 }: Props) {
-  const dailyItems = [
-    ...session.focus,
-    ...session.review,
-    ...session.maintenance,
-  ];
+  const dailyItems = [...session.focus, ...session.maintenance];
 
   if (dailyItems.length === 0) {
     return <TodayEmptyState reason="empty_session" />;
@@ -42,26 +38,6 @@ export function TodayPracticeSections({
           title={PLAN_STATUS_VISUALS.focus.label}
         >
           {session.focus.map((item) => (
-            <TodaySkillCard
-              key={item.id}
-              skill={item.skill}
-              status={item.status}
-              alreadyDoneToday={doneTodaySkillIds.has(item.skill.id)}
-              repsTarget={
-                repsByLog.get(item.skill.id)?.reps_target ?? repsPerForm
-              }
-              repsDone={repsByLog.get(item.skill.id)?.reps_done ?? 0}
-            />
-          ))}
-        </PracticeSection>
-      )}
-
-      {session.review.length > 0 && (
-        <PracticeSection
-          icon={<Repeat className={`h-4 w-4 ${PLAN_STATUS_VISUALS.review.textClassName}`} />}
-          title={PLAN_STATUS_VISUALS.review.label}
-        >
-          {session.review.map((item) => (
             <TodaySkillCard
               key={item.id}
               skill={item.skill}

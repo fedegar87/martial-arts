@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
 import type { PlanStatus } from "@/lib/types";
-import { Flame, Repeat, Wrench } from "lucide-react";
+import { Flame, Wrench } from "lucide-react";
 
 const STATUS_CONFIG: Record<
   PlanStatus,
@@ -9,9 +9,6 @@ const STATUS_CONFIG: Record<
 > = {
   focus: {
     Icon: Flame,
-  },
-  review: {
-    Icon: Repeat,
   },
   maintenance: {
     Icon: Wrench,

@@ -63,16 +63,11 @@ export function PlanProgress({ progress }: Props) {
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2 text-center text-xs">
+      <div className="grid grid-cols-2 gap-2 text-center text-xs">
         <StatusStat
           label={PLAN_STATUS_VISUALS.focus.label}
           value={progress.statusCounts.focus}
           className={PLAN_STATUS_VISUALS.focus.textClassName}
-        />
-        <StatusStat
-          label={PLAN_STATUS_VISUALS.review.label}
-          value={progress.statusCounts.review}
-          className={PLAN_STATUS_VISUALS.review.textClassName}
         />
         <StatusStat
           label={PLAN_STATUS_VISUALS.maintenance.label}
