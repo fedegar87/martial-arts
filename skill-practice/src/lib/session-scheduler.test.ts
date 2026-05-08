@@ -6,7 +6,8 @@ import {
   listSessionsInRange,
   type ItemWithSkill,
 } from "./session-scheduler.ts";
-import type { Discipline, TrainingSchedule } from "./types.ts";
+import { buildSessionPeriodProgress } from "./session-progress.ts";
+import type { Discipline, PracticeLog, Skill, TrainingSchedule } from "./types.ts";
 
 function makeSchedule(over: Partial<TrainingSchedule> = {}): TrainingSchedule {
   return {
@@ -27,6 +28,7 @@ function item(
   id: string,
   status: "focus" | "maintenance",
   discipline: Discipline = "shaolin",
+  category: Skill["category"] = "forme",
 ): ItemWithSkill {
   return {
     id: `pi-${id}`,
@@ -42,7 +44,7 @@ function item(
       school_id: "school-1",
       name: id,
       name_italian: null,
-      category: "forme",
+      category,
       discipline,
       practice_mode: "solo",
       description: null,
@@ -54,6 +56,25 @@ function item(
       display_order: 0,
       created_at: "2026-04-01T00:00:00.000Z",
     },
+  };
+}
+
+function practiceLog(
+  date: string,
+  skillId: string,
+  over: Partial<PracticeLog> = {},
+): PracticeLog {
+  return {
+    id: `${date}-${skillId}`,
+    user_id: "user-1",
+    skill_id: skillId,
+    date,
+    completed: false,
+    personal_note: null,
+    reps_target: null,
+    reps_done: 0,
+    created_at: `${date}T00:00:00.000Z`,
+    ...over,
   };
 }
 
@@ -158,6 +179,79 @@ test("listSessionsInRange labels training/rest correctly", () => {
     .filter((s) => s.session.kind === "training")
     .map((s) => s.date);
   assert.deepEqual(trainingDates, ["2026-04-27", "2026-04-29", "2026-05-01"]);
+});
+
+test("buildSessionPeriodProgress summarizes planned sessions against logs", () => {
+  const rows = [
+    {
+      date: "2026-05-04",
+      session: {
+        kind: "training" as const,
+        sessionIndex: 0,
+        focus: [item("form", "focus")],
+        maintenance: [item("kick", "maintenance", "shaolin", "tui_fa")],
+      },
+    },
+    {
+      date: "2026-05-05",
+      session: {
+        kind: "training" as const,
+        sessionIndex: 1,
+        focus: [item("future-form", "focus")],
+        maintenance: [],
+      },
+    },
+  ];
+
+  const summary = buildSessionPeriodProgress({
+    rows,
+    logs: [
+      practiceLog("2026-05-04", "form", {
+        completed: true,
+        reps_target: 3,
+        reps_done: 3,
+      }),
+      practiceLog("2026-05-04", "kick", { completed: true }),
+    ],
+    from: "2026-05-04",
+    to: "2026-05-05",
+    repsPerForm: 3,
+    today: new Date("2026-05-04T12:00:00.000Z"),
+  });
+
+  assert.equal(summary.sessionCompleted, 1);
+  assert.equal(summary.sessionTotal, 2);
+  assert.equal(summary.exerciseCompleted, 2);
+  assert.equal(summary.exerciseTotal, 3);
+  assert.equal(summary.repsDone, 3);
+  assert.equal(summary.repsTarget, 6);
+  assert.equal(summary.rows[0].status, "completed");
+  assert.equal(summary.rows[1].status, "future");
+});
+
+test("buildSessionPeriodProgress marks partial sessions from repetition progress", () => {
+  const summary = buildSessionPeriodProgress({
+    rows: [
+      {
+        date: "2026-05-04",
+        session: {
+          kind: "training" as const,
+          sessionIndex: 0,
+          focus: [item("form", "focus")],
+          maintenance: [],
+        },
+      },
+    ],
+    logs: [practiceLog("2026-05-04", "form", { reps_target: 3, reps_done: 1 })],
+    from: "2026-05-04",
+    to: "2026-05-04",
+    repsPerForm: 3,
+    today: new Date("2026-05-04T12:00:00.000Z"),
+  });
+
+  assert.equal(summary.rows[0].exerciseCompleted, 0);
+  assert.equal(summary.rows[0].repsDone, 1);
+  assert.equal(summary.rows[0].status, "partial");
 });
 
 test("nextTrainingDate is null when no training day before end_date", () => {

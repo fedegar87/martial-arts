@@ -6,6 +6,7 @@ import {
   computePlanProgress,
   computeBestStreak,
   computeCurrentStreak,
+  countGlobalFormReps,
   dateDaysAgo,
   type PlanProgressSummary,
   type PracticeDay,
@@ -23,6 +24,7 @@ export type ProgressData = {
   skills: Skill[];
   planBySkillId: Map<string, PlanStatus>;
   logs: PracticeLog[];
+  globalFormReps: number;
   calendar: PracticeDay[];
   currentStreak: number;
   bestStreak: number;
@@ -37,7 +39,12 @@ export async function getProgressData(
   const supabase = await createClient();
   const source = activePlanSource(profile.plan_mode);
 
-  const [{ data: skillsData }, { data: planData }, { data: logsData }] =
+  const [
+    { data: skillsData },
+    { data: planData },
+    { data: logsData },
+    { data: repLogsData },
+  ] =
     await Promise.all([
       supabase.from("skills").select("*").order("display_order"),
       supabase
@@ -52,13 +59,22 @@ export async function getProgressData(
         .eq("user_id", userId)
         .gte("date", dateDaysAgo(89))
         .order("date", { ascending: true }),
+      supabase
+        .from("practice_logs")
+        .select("skill_id, reps_done")
+        .eq("user_id", userId)
+        .gt("reps_done", 0),
     ]);
 
   const skills = (skillsData as Skill[] | null) ?? [];
   const logs = (logsData as PracticeLog[] | null) ?? [];
+  const repLogs =
+    (repLogsData as Array<{ skill_id: string; reps_done: number | null }> | null) ??
+    [];
   const planRows =
     (planData as Array<{ skill_id: string; status: PlanStatus }> | null) ?? [];
   const planBySkillId = new Map(planRows.map((row) => [row.skill_id, row.status]));
+  const globalFormReps = countGlobalFormReps(skills, repLogs);
   const calendar = buildPracticeCalendar(logs);
   const recentCutoff = dateDaysAgo(29);
   const recentPracticedSkillCount = new Set(
@@ -71,6 +87,7 @@ export async function getProgressData(
     skills,
     planBySkillId,
     logs,
+    globalFormReps,
     calendar,
     currentStreak: computeCurrentStreak(calendar),
     bestStreak: computeBestStreak(calendar),

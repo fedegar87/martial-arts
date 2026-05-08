@@ -15,7 +15,6 @@ import { LevelBadge } from "@/components/skill/LevelBadge";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
-import { PracticeCompletionBadge } from "@/components/skill/PracticeCompletionBadge";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -72,7 +71,6 @@ export default async function SkillDetailPage({ params }: Props) {
               />
             </>
           )}
-          <PracticeCompletionBadge completed={practicedToday} />
           <VideoAvailabilityBadge videoUrl={skill.video_url} />
         </div>
       </header>

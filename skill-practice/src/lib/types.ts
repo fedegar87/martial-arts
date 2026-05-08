@@ -138,3 +138,58 @@ export type WeeklyReflection = {
   prompt_2_text: string;
   created_at: string;
 };
+
+export type JournalMode = "all" | "session";
+
+export type JournalDaySessionKind =
+  | "training"
+  | "rest_day"
+  | "expired"
+  | "no_schedule";
+
+export type JournalSkill = Pick<
+  Skill,
+  | "id"
+  | "name"
+  | "name_italian"
+  | "discipline"
+  | "category"
+  | "practice_mode"
+  | "minimum_grade_value"
+  | "display_order"
+>;
+
+export type ScheduledPracticeItem = {
+  planItemId: string;
+  skill: JournalSkill;
+  status: PlanStatus;
+  log: PracticeLog | null;
+  done: boolean;
+  repsDone: number;
+  repsTarget: number;
+  canToggle: boolean;
+};
+
+export type FreePracticeItem = {
+  skill: JournalSkill;
+  log: PracticeLog;
+  done: boolean;
+  hasNote: boolean;
+  canToggle: boolean;
+};
+
+export type JournalDayView = {
+  date: string;
+  isFuture: boolean;
+  hasSchedule: boolean;
+  isInScheduleRange: boolean;
+  canToggle: boolean;
+  sessionKind: JournalDaySessionKind;
+  sessionIndex: number | null;
+  nextTrainingDate: string | null;
+  scheduleEndDate: string | null;
+  repsPerForm: number;
+  scheduled: ScheduledPracticeItem[];
+  freePractice: FreePracticeItem[];
+  events: [];
+};

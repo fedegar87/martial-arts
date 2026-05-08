@@ -10,8 +10,11 @@ type Props = {
 };
 
 export function MetricStrip({ metrics }: Props) {
+  const layoutClass =
+    metrics.length >= 5 ? "sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-4";
+
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <div className={`grid grid-cols-2 gap-2 ${layoutClass}`}>
       {metrics.map((metric) => (
         <div key={metric.label} className="surface-inset rounded-md p-3">
           <div className="font-mono text-xl font-semibold leading-none">

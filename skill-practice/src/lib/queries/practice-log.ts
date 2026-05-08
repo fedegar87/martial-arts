@@ -30,6 +30,25 @@ export async function getRecentLogsForUser(
   return (data as PracticeLog[] | null) ?? [];
 }
 
+export async function getPracticeLogsInDateRange(
+  userId: string,
+  from: string,
+  to: string,
+): Promise<PracticeLog[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("practice_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("date", from)
+    .lte("date", to)
+    .order("date", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  return (data as PracticeLog[] | null) ?? [];
+}
+
 export async function getPersonalNotesForSkill(
   userId: string,
   skillId: string,

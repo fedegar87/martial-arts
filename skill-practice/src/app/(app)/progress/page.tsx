@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CalendarDays } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import {
   buildCurriculumCells,
@@ -16,6 +18,7 @@ import {
   getCurrentWeekReflection,
   shouldPromptWeeklyReflection,
 } from "@/lib/queries/reflections";
+import { Button } from "@/components/ui/button";
 import type { Discipline } from "@/lib/types";
 
 export default async function ProgressPage() {
@@ -51,11 +54,19 @@ export default async function ProgressPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Progresso</h1>
-        <p className="text-muted-foreground text-sm">
-          {disciplines.map((discipline) => DISCIPLINE_LABELS[discipline]).join(" / ")}
-        </p>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Progresso</h1>
+          <p className="text-muted-foreground text-sm">
+            {disciplines.map((discipline) => DISCIPLINE_LABELS[discipline]).join(" / ")}
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/journal">
+            <CalendarDays className="mr-2 h-3.5 w-3.5" />
+            Apri diario
+          </Link>
+        </Button>
       </header>
 
       {shouldPromptWeeklyReflection() && !weeklyReflection && (
@@ -66,6 +77,7 @@ export default async function ProgressPage() {
           { label: "Streak", value: data.currentStreak },
           { label: "Giorni 30gg", value: daysThisMonth },
           { label: "Praticati 30gg", value: data.recentPracticedSkillCount },
+          { label: "Rip. forme", value: formatInteger(data.globalFormReps) },
           { label: "Piano attivo", value: activePlanCount },
         ]}
       />
@@ -89,4 +101,8 @@ function activeDisciplines(taichiLevel: number): Discipline[] {
 function defaultDiscipline(shaolinLevel: number, taichiLevel: number): Discipline {
   if (taichiLevel === 0) return "shaolin";
   return taichiLevel < shaolinLevel ? "taichi" : "shaolin";
+}
+
+function formatInteger(value: number): string {
+  return new Intl.NumberFormat("it-IT").format(value);
 }

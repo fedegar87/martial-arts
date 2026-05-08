@@ -14,7 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
 import { cn } from "@/lib/utils";
 import type { ScheduledSession } from "@/lib/session-scheduler";
+import type { SessionPeriodProgress } from "@/lib/session-progress";
 import type { PlanStatus } from "@/lib/types";
+import { SessionPeriodSummary } from "./SessionPeriodSummary";
 
 export type CalendarView = "week" | "month";
 
@@ -28,6 +30,7 @@ type Props = {
   scheduleEnd: string;
   periodLabel: string;
   totalSessions: number;
+  periodProgress: SessionPeriodProgress;
   repsPerForm: number;
   previousDate: string;
   nextDate: string;
@@ -45,6 +48,7 @@ export function GeneratedPlanCalendar({
   scheduleEnd,
   periodLabel,
   totalSessions,
+  periodProgress,
   repsPerForm,
   previousDate,
   nextDate,
@@ -81,6 +85,8 @@ export function GeneratedPlanCalendar({
           scheduleEnd={scheduleEnd}
         />
       )}
+
+      <SessionPeriodSummary summary={periodProgress} periodLabel={periodLabel} />
 
       <SelectedDaySession
         row={selectedRow}

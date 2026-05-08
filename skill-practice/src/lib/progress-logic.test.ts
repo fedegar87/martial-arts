@@ -7,6 +7,7 @@ import {
   computeBestStreak,
   computeCurrentStreak,
   computePlanProgress,
+  countGlobalFormReps,
 } from "./progress-logic.ts";
 import type { Skill } from "./types.ts";
 
@@ -128,6 +129,25 @@ test("practice calendar computes current and best streak", () => {
 
   assert.equal(computeCurrentStreak(calendar), 3);
   assert.equal(computeBestStreak(calendar), 3);
+});
+
+test("countGlobalFormReps sums all form repetition logs", () => {
+  const skills = [
+    skill("empty-hand-form", 7, "forme"),
+    skill("weapon-form", 7, "armi_forma"),
+    skill("kick", 7, "tui_fa"),
+  ];
+
+  assert.equal(
+    countGlobalFormReps(skills, [
+      { skill_id: "empty-hand-form", reps_done: 3 },
+      { skill_id: "weapon-form", reps_done: 2 },
+      { skill_id: "kick", reps_done: 10 },
+      { skill_id: "unknown", reps_done: 4 },
+      { skill_id: "empty-hand-form", reps_done: null },
+    ]),
+    5,
+  );
 });
 
 function log(date: string, skillId = "skill-1") {

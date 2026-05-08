@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Dumbbell } from "lucide-react";
+import { Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markPracticeDone } from "@/lib/actions/practice";
 import { AddToPlanButton } from "@/components/skill/AddToPlanButton";
@@ -55,18 +55,14 @@ export function SkillPracticeActions({
           onClick={handleFreePracticeDone}
           disabled={pending || done}
           variant={done ? "outline" : "default"}
-          className={
-            done
-              ? "w-full border-[color:var(--status-success)] text-[var(--status-success)]"
-              : "w-full"
-          }
+          className="w-full"
         >
-          {done ? (
-            <Check className="mr-2 h-4 w-4" />
-          ) : (
-            <Dumbbell className="mr-2 h-4 w-4" />
-          )}
-          {done ? "Praticato oggi" : pending ? "..." : "Registra pratica libera"}
+          <Dumbbell className="mr-2 h-4 w-4" />
+          {done
+            ? "Pratica libera registrata"
+            : pending
+              ? "..."
+              : "Registra pratica libera"}
         </Button>
         <PracticeNoteButton
           skillId={skillId}

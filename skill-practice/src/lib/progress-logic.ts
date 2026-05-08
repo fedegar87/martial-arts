@@ -147,6 +147,23 @@ export function buildPracticeCalendar(
   });
 }
 
+export function countGlobalFormReps(
+  skills: Array<Pick<Skill, "id" | "category">>,
+  logs: Array<{ skill_id: string; reps_done: number | null }>,
+): number {
+  const formSkillIds = new Set(
+    skills
+      .filter((skill) => skill.category === "forme" || skill.category === "armi_forma")
+      .map((skill) => skill.id),
+  );
+
+  return logs.reduce(
+    (sum, log) =>
+      formSkillIds.has(log.skill_id) ? sum + (log.reps_done ?? 0) : sum,
+    0,
+  );
+}
+
 export function computeCurrentStreak(days: PracticeDay[]): number {
   let index = days.length - 1;
   if (days[index]?.count === 0) index -= 1;

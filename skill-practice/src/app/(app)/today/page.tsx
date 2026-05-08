@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CalendarDays } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { getThisWeekLogs } from "@/lib/queries/practice-log";
@@ -14,6 +16,7 @@ import { TodaySessionHeader } from "@/components/today/TodaySessionHeader";
 import { TodaySessionSummary } from "@/components/today/TodaySessionSummary";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline } from "@/lib/grades";
+import { Button } from "@/components/ui/button";
 import type { PlanMode, TrainingSchedule, UserProfile } from "@/lib/types";
 
 export default async function TodayPage() {
@@ -189,6 +192,12 @@ function TodayShell({
       />
       <NewsBanner unreadCount={unreadNewsCount} />
       {children}
+      <Button asChild variant="outline" size="sm">
+        <Link href="/journal">
+          <CalendarDays className="mr-2 h-3.5 w-3.5" />
+          Apri diario
+        </Link>
+      </Button>
     </section>
   );
 }
