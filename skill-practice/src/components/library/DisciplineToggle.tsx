@@ -1,4 +1,4 @@
-import { SegmentedNav } from "@/components/shared/SegmentedNav";
+import { FolderTabs } from "@/components/shared/FolderTabs";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import type { Discipline } from "@/lib/types";
 
@@ -24,7 +24,7 @@ export function DisciplineToggle({
   if (visible.length < 2) return null;
 
   return (
-    <SegmentedNav
+    <FolderTabs
       ariaLabel="Disciplina"
       items={visible.map((discipline) => ({
         href: disciplineHref(basePath, discipline, extraParams),

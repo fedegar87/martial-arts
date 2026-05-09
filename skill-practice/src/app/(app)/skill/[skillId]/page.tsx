@@ -1,5 +1,4 @@
 import { notFound, redirect } from "next/navigation";
-import { Users } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getSkillById } from "@/lib/queries/skills";
 import { getUserPlanItemsBySkill } from "@/lib/queries/plan";
@@ -17,7 +16,6 @@ import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 
 type Props = { params: Promise<{ skillId: string }> };
@@ -44,8 +42,6 @@ export default async function SkillDetailPage({ params }: Props) {
     null;
   const inPersonalSelection = manualPlanItem !== null;
   const practicedToday = todayLog?.completed ?? false;
-  const requiresPartner =
-    skill.practice_mode === "paired" || skill.practice_mode === "both";
 
   return (
     <div className="space-y-6">
@@ -80,17 +76,6 @@ export default async function SkillDetailPage({ params }: Props) {
         title={skill.name}
         practiceMode={skill.practice_mode}
       />
-
-      {requiresPartner && (
-        <Alert>
-          <Users className="h-4 w-4" />
-          <AlertDescription>
-            {skill.practice_mode === "paired"
-              ? "Questa pratica richiede un partner per essere completata."
-              : "La forma si pratica da soli; l'applicazione richiede un partner."}
-          </AlertDescription>
-        </Alert>
-      )}
 
       <TeacherNote note={skill.teacher_notes} />
 

@@ -28,7 +28,7 @@ export function CategoryFilter({
   };
 
   return (
-    <div className="scroll-chips">
+    <div className="wrap-chips">
       <Chip href={buildHref(undefined, withVideo)} active={!current}>
         Tutte
       </Chip>
@@ -62,7 +62,7 @@ function Chip({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`tap-feedback label-font flex min-h-11 shrink-0 items-center rounded-md border px-3 text-sm transition-colors ${
+      className={`tap-feedback label-font flex min-h-11 items-center justify-center rounded-md border px-3 text-sm transition-colors ${
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border text-muted-foreground hover:text-foreground"

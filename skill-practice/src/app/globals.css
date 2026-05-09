@@ -291,6 +291,16 @@
     display: none;
   }
 
+  .wrap-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .wrap-chips > * {
+    flex: 1 1 auto;
+  }
+
   .hub-grid {
     display: flex;
     flex-direction: column;

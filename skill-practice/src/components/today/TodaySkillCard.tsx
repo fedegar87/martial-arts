@@ -25,8 +25,6 @@ export function TodaySkillCard({
   repsTarget,
   repsDone,
 }: Props) {
-  const needsPartner =
-    skill.practice_mode === "paired" || skill.practice_mode === "both";
   const completedToday =
     alreadyDoneToday ||
     (typeof repsTarget === "number" &&
@@ -73,13 +71,6 @@ export function TodaySkillCard({
           practiceMode={skill.practice_mode}
         />
         <TeacherNote note={skill.teacher_notes} compact />
-        {needsPartner && (
-          <p className="text-muted-foreground text-sm">
-            {skill.practice_mode === "paired"
-              ? "Richiede un partner: se sei da solo, ripassa mentalmente la sequenza."
-              : "Ripassa la forma da solo; l'applicazione richiede un partner."}
-          </p>
-        )}
         {typeof repsTarget === "number" && typeof repsDone === "number" ? (
           <RepsCounter
             skillId={skill.id}
