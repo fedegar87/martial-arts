@@ -292,13 +292,21 @@
   }
 
   .wrap-chips {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.5rem;
   }
 
-  .wrap-chips > * {
-    flex: 1 1 auto;
+  @media (min-width: 640px) {
+    .wrap-chips {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .wrap-chips {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
   }
 
   .hub-grid {

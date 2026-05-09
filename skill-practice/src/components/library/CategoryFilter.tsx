@@ -29,22 +29,21 @@ export function CategoryFilter({
 
   return (
     <div className="wrap-chips">
-      <Chip href={buildHref(undefined, withVideo)} active={!current}>
-        Tutte
-      </Chip>
+      <Chip href={buildHref(undefined, withVideo)} active={!current} label="Tutte" />
       {categories.map((category) => (
         <Chip
           key={category}
           href={buildHref(category, withVideo)}
           active={current === category}
-        >
-          {SKILL_CATEGORY_LABELS[category]}
-        </Chip>
+          label={SKILL_CATEGORY_LABELS[category]}
+        />
       ))}
-      <Chip href={buildHref(current, !withVideo)} active={withVideo}>
-        <Video className="mr-1 h-3.5 w-3.5" />
-        Con video
-      </Chip>
+      <Chip
+        href={buildHref(current, !withVideo)}
+        active={withVideo}
+        label="Con video"
+        icon={<Video className="h-3.5 w-3.5 shrink-0" />}
+      />
     </div>
   );
 }
@@ -52,23 +51,27 @@ export function CategoryFilter({
 function Chip({
   href,
   active,
-  children,
+  label,
+  icon,
 }: {
   href: string;
   active: boolean;
-  children: ReactNode;
+  label: string;
+  icon?: ReactNode;
 }) {
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`tap-feedback label-font flex min-h-11 items-center justify-center rounded-md border px-3 text-sm transition-colors ${
+      title={label}
+      className={`tap-feedback label-font flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-sm transition-colors ${
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border text-muted-foreground hover:text-foreground"
       }`}
     >
-      {children}
+      {icon}
+      <span className="truncate">{label}</span>
     </Link>
   );
 }
