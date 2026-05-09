@@ -42,8 +42,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       : "Nel programma selezionato";
   const emptyPlanStatusLabel =
     profile.plan_mode === "custom"
-      ? "Nessun pallino: fuori dalla selezione personale"
-      : "Nessun pallino: fuori dal programma selezionato";
+      ? "Fuori dalla selezione personale"
+      : "Fuori dal programma selezionato";
 
   const [allSkills, activePlanItems, examRequirements] = await Promise.all([
     listSkillsForDiscipline(discipline),

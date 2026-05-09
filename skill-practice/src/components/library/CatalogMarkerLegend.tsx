@@ -1,3 +1,4 @@
+import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
 import type { PlanStatus } from "@/lib/types";
 
@@ -13,22 +14,22 @@ export function CatalogMarkerLegend({
   emptyLabel,
 }: Props) {
   return (
-    <details className="rounded-md border border-border/70 px-3 py-2 text-xs">
-      <summary className="cursor-pointer text-muted-foreground">
-        Indicatori
-      </summary>
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground">
+    <div className="rounded-md border border-border/70 px-3 py-2 text-xs">
+      <div className="text-muted-foreground mb-2 font-medium">Indicatori</div>
+      <ul className="text-muted-foreground flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1.5">
         {STATUSES.map((status) => (
-          <span key={status} className="inline-flex items-center gap-1.5">
-            <span
-              aria-hidden="true"
-              className={`h-2.5 w-2.5 rounded-full ${PLAN_STATUS_VISUALS[status].dotClassName}`}
-            />
-            {planStatusLabelPrefix}: {PLAN_STATUS_VISUALS[status].label}
-          </span>
+          <li key={status} className="inline-flex items-center gap-2">
+            <PlanStatusDot status={status} activeLabelPrefix={planStatusLabelPrefix} />
+            <span>
+              {planStatusLabelPrefix}: {PLAN_STATUS_VISUALS[status].label}
+            </span>
+          </li>
         ))}
-        <span>{emptyLabel}</span>
-      </div>
-    </details>
+        <li className="inline-flex items-center gap-2">
+          <PlanStatusDot />
+          <span>{emptyLabel}</span>
+        </li>
+      </ul>
+    </div>
   );
 }

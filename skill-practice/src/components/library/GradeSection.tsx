@@ -23,10 +23,7 @@ export function GradeSection({
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium">{title}</h2>
-        <div className="text-muted-foreground flex items-center gap-1 text-xs">
-          {locked && <Lock className="h-3.5 w-3.5" />}
-          {skills.length} contenuti
-        </div>
+        {locked && <Lock className="text-muted-foreground h-3.5 w-3.5" />}
       </div>
       <div className="divide-border rounded-lg border p-1">
         {skills.map((skill) => (

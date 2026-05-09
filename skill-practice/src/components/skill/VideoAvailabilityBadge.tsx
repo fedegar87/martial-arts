@@ -20,8 +20,8 @@ export function VideoAvailabilityBadge({ videoUrl, compact = false }: Props) {
       title={compact ? label : undefined}
       className={cn(
         available
-          ? "border-border bg-transparent text-muted-foreground"
-          : "border-[color:var(--status-warning)] bg-transparent text-[var(--status-warning)]",
+          ? "border-primary bg-transparent text-primary"
+          : "border-border bg-transparent text-muted-foreground",
         compact && "px-1.5",
       )}
     >
