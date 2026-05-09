@@ -13,7 +13,6 @@ import { TeacherNote } from "@/components/skill/TeacherNote";
 import { LevelBadge } from "@/components/skill/LevelBadge";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
-import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
@@ -56,7 +55,6 @@ export default async function SkillDetailPage({ params }: Props) {
             {SKILL_CATEGORY_LABELS[skill.category]}
           </span>
           <LevelBadge level={skill.minimum_grade_value} />
-          <PracticeModeBadge mode={skill.practice_mode} />
           {activePlanItem && (
             <>
               <StatusBadge status={activePlanItem.status} />
@@ -74,7 +72,6 @@ export default async function SkillDetailPage({ params }: Props) {
       <VideoPlayer
         videoUrl={skill.video_url}
         title={skill.name}
-        practiceMode={skill.practice_mode}
       />
 
       <TeacherNote note={skill.teacher_notes} />

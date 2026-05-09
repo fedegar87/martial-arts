@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
 import { StatusBadge } from "@/components/skill/StatusBadge";
-import { PracticeModeBadge } from "@/components/skill/PracticeModeBadge";
 import { PracticeCompletionBadge } from "@/components/skill/PracticeCompletionBadge";
 import { TeacherNote } from "@/components/skill/TeacherNote";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
@@ -52,7 +51,6 @@ export function TodaySkillCard({
             )}
           </div>
           <div className="flex flex-wrap gap-1">
-            <PracticeModeBadge mode={skill.practice_mode} />
             <StatusBadge status={status} />
             <PracticeCompletionBadge completed={completedToday} />
             <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
@@ -68,7 +66,6 @@ export function TodaySkillCard({
         <VideoPlayer
           videoUrl={skill.video_url}
           title={skill.name}
-          practiceMode={skill.practice_mode}
         />
         <TeacherNote note={skill.teacher_notes} compact />
         {typeof repsTarget === "number" && typeof repsDone === "number" ? (

@@ -1,14 +1,8 @@
-import type { Discipline, PracticeMode, SkillCategory } from "./types";
+import type { Discipline, SkillCategory } from "./types";
 
 export const DISCIPLINE_LABELS: Record<Discipline, string> = {
   shaolin: "Shaolin",
   taichi: "T'ai Chi",
-};
-
-export const PRACTICE_MODE_LABELS: Record<PracticeMode, string> = {
-  solo: "Da solo",
-  paired: "Con partner",
-  both: "Forma + applicazione",
 };
 
 export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {

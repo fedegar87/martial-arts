@@ -1,4 +1,4 @@
-import { CalendarDays, Moon, Users } from "lucide-react";
+import { CalendarDays, Moon } from "lucide-react";
 import { AddFreePracticeSheet } from "@/components/journal/AddFreePracticeSheet";
 import { PracticeCompletionToggle } from "@/components/journal/PracticeCompletionToggle";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
@@ -176,7 +176,6 @@ function ScheduledPracticeRow({
       <div className="hidden flex-wrap items-center justify-end gap-1 sm:flex">
         <DisciplineBadge discipline={item.skill.discipline} />
         <StatusBadge status={item.status} />
-        {requiresPartner(item.skill) && <PartnerBadge />}
       </div>
       <PracticeCompletionToggle
         skillId={item.skill.id}
@@ -205,7 +204,6 @@ function FreePracticeRow({
         <DisciplineBadge discipline={item.skill.discipline} />
         <Badge variant="outline">fuori sessione</Badge>
         {item.hasNote && <Badge variant="outline">nota</Badge>}
-        {requiresPartner(item.skill) && <PartnerBadge />}
       </div>
       {interactive ? (
         <PracticeCompletionToggle
@@ -238,19 +236,6 @@ function SkillSummary({ skill }: { skill: JournalSkill }) {
       </div>
     </div>
   );
-}
-
-function PartnerBadge() {
-  return (
-    <Badge variant="outline" className="text-muted-foreground">
-      <Users className="mr-1 h-3 w-3" />
-      partner
-    </Badge>
-  );
-}
-
-function requiresPartner(skill: JournalSkill): boolean {
-  return skill.practice_mode === "paired" || skill.practice_mode === "both";
 }
 
 function formatShortDate(date: string | null): string {
