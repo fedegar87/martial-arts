@@ -165,7 +165,11 @@ export function LibraryFilters({
             <h2 className="text-muted-foreground text-xs font-medium uppercase">
               Categorie
             </h2>
-            <div className="scroll-chips pb-1" role="list" aria-label="Categorie">
+            <div
+              className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
+              role="list"
+              aria-label="Categorie"
+            >
               <FilterChip
                 href={buildHref({ categories: [] })}
                 active={selectedCategories.length === 0}
@@ -236,8 +240,8 @@ function FilterChip({
       aria-current={active ? "page" : undefined}
       title={`${label}: ${count}`}
       className={cn(
-        "tap-feedback label-font inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border px-3 text-sm transition-colors",
-        wide ? "w-full sm:w-auto" : "min-w-24",
+        "tap-feedback label-font inline-flex min-h-11 min-w-0 max-w-full items-center justify-center gap-2 rounded-md border px-3 text-sm transition-colors",
+        wide ? "w-full sm:w-auto" : "sm:min-w-24",
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
