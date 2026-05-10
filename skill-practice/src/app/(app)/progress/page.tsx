@@ -17,9 +17,7 @@ export default async function ProgressPage() {
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Progresso</h1>
-        </div>
+        <h1 className="text-2xl font-semibold">Progresso</h1>
         <Button asChild variant="outline" size="sm">
           <Link href="/calendar">
             <CalendarDays className="mr-2 h-3.5 w-3.5" />
