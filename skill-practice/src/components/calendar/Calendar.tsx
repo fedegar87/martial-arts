@@ -6,7 +6,7 @@ import {
   Dumbbell,
   Moon,
 } from "lucide-react";
-import { JournalDayPanel } from "@/components/journal/JournalDayPanel";
+import { CalendarDayPanel } from "@/components/calendar/CalendarDayPanel";
 import { cn } from "@/lib/utils";
 import type { JournalDayView, JournalSkill } from "@/lib/types";
 
@@ -24,7 +24,7 @@ type Props = {
 
 const WEEKDAY_LABELS = ["L", "M", "M", "G", "V", "S", "D"];
 
-export function JournalCalendar({
+export function Calendar({
   view,
   selectedDate,
   days,
@@ -51,7 +51,7 @@ export function JournalCalendar({
         <MonthCalendar days={days} selectedDate={selectedDate} />
       )}
 
-      <JournalDayPanel day={selectedDay} skillOptions={skillOptions} />
+      <CalendarDayPanel day={selectedDay} skillOptions={skillOptions} />
     </div>
   );
 }

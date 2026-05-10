@@ -1,6 +1,6 @@
 import { CalendarDays, Moon } from "lucide-react";
-import { AddFreePracticeSheet } from "@/components/journal/AddFreePracticeSheet";
-import { PracticeCompletionToggle } from "@/components/journal/PracticeCompletionToggle";
+import { AddFreePracticeSheet } from "@/components/calendar/AddFreePracticeSheet";
+import { PracticeCompletionToggle } from "@/components/calendar/PracticeCompletionToggle";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
 import { StatusBadge } from "@/components/skill/StatusBadge";
@@ -18,7 +18,7 @@ type Props = {
   skillOptions: JournalSkill[];
 };
 
-export function JournalDayPanel({ day, skillOptions }: Props) {
+export function CalendarDayPanel({ day, skillOptions }: Props) {
   if (!day) return null;
 
   const title = new Date(`${day.date}T00:00:00Z`).toLocaleDateString("it-IT", {

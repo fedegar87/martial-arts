@@ -6,9 +6,9 @@ import {
 } from "@/lib/queries/calendar";
 import { addDaysToDateKey, localDateKey } from "@/lib/date";
 import {
-  JournalCalendar,
+  Calendar,
   type CalendarView,
-} from "@/components/journal/JournalCalendar";
+} from "@/components/calendar/Calendar";
 
 type Props = { searchParams: Promise<{ view?: string; date?: string }> };
 
@@ -49,7 +49,7 @@ export default async function JournalPage({ searchParams }: Props) {
         </p>
       </header>
 
-      <JournalCalendar
+      <Calendar
         view={view}
         selectedDate={selectedDate}
         days={journalData.days}
