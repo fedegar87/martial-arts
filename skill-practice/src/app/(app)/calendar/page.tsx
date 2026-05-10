@@ -19,7 +19,7 @@ type CalendarRange = {
   activeTo: string;
 };
 
-export default async function JournalPage({ searchParams }: Props) {
+export default async function CalendarPage({ searchParams }: Props) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -30,7 +30,7 @@ export default async function JournalPage({ searchParams }: Props) {
   const previousDate = shiftCalendarDate(view, selectedDate, -1);
   const nextDate = shiftCalendarDate(view, selectedDate, 1);
 
-  const [journalData, skillOptions] = await Promise.all([
+  const [calendarData, skillOptions] = await Promise.all([
     getCalendarDataInRange({
       userId: profile.id,
       profile,
@@ -52,7 +52,7 @@ export default async function JournalPage({ searchParams }: Props) {
       <Calendar
         view={view}
         selectedDate={selectedDate}
-        days={journalData.days}
+        days={calendarData.days}
         periodLabel={formatPeriodLabel(view, range.activeFrom, range.activeTo)}
         previousDate={previousDate}
         nextDate={nextDate}
