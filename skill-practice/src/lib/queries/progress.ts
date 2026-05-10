@@ -15,7 +15,7 @@ import {
   type ItemWithSkill,
 } from "@/lib/session-scheduler";
 import { buildSessionPeriodProgress } from "@/lib/session-progress";
-import { addDaysToDateKey, localDateKey } from "@/lib/date";
+import { dateKeyDaysAgo, localDateKey } from "@/lib/date";
 import type { PracticeLog, TrainingSchedule, UserProfile } from "@/lib/types";
 
 export type { PracticeDay } from "@/lib/progress-logic";
@@ -129,19 +129,13 @@ async function getActiveCycleProgress({
     repsPerForm: schedule.reps_per_form,
   });
 
-  const trainingRows = summary.rows.map((row) => ({ date: row.date, status: row.status }));
-
   return {
     periodLabel: `${fmtDate(schedule.start_date)} - ${fmtDate(schedule.end_date)}`,
-    respectedUntilToday: countRespectedSessionsUpTo(trainingRows, todayKey),
-    dueUntilToday: countSessionsUpTo(trainingRows, todayKey),
+    respectedUntilToday: countRespectedSessionsUpTo(summary.rows, todayKey),
+    dueUntilToday: countSessionsUpTo(summary.rows, todayKey),
     respectedTotal: summary.sessionCompleted,
     sessionTotal: summary.sessionTotal,
   };
-}
-
-function dateKeyDaysAgo(days: number, today = new Date()): string {
-  return addDaysToDateKey(localDateKey(today), -days);
 }
 
 function expectData<T>(
