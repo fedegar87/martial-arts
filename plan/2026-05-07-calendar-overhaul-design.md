@@ -1,5 +1,7 @@
 ---
-status: implemented
+status: superseded
+superseded_by: plan/2026-05-10-calendar-unification-design.md
+superseded_date: 2026-05-10
 date: 2026-05-07
 supersedes: nessuno (estende §6.4 e §7 di plan/current-plan.md)
 related:
