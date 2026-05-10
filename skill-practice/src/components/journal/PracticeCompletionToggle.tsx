@@ -7,7 +7,7 @@ import {
   addFreePracticeForDate,
   removeFreePracticeForDate,
   setPracticeCompletionForDate,
-} from "@/lib/actions/journal";
+} from "@/lib/actions/calendar";
 
 type Props = {
   skillId: string;

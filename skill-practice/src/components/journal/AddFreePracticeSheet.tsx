@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
-import { addFreePracticeForDate } from "@/lib/actions/journal";
+import { addFreePracticeForDate } from "@/lib/actions/calendar";
 import type { JournalSkill } from "@/lib/types";
 
 type Props = {

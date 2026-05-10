@@ -10,7 +10,7 @@ import {
 } from "@/lib/session-scheduler";
 import type { PlanMode, PracticeLog, TrainingSchedule } from "@/lib/types";
 
-export type JournalActionState = { error: string } | { success: true };
+export type CalendarActionState = { error: string } | { success: true };
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -24,7 +24,7 @@ export async function setPracticeCompletionForDate(
   skillId: string,
   dateKey: string,
   completed: boolean,
-): Promise<JournalActionState> {
+): Promise<CalendarActionState> {
   const supabase = await createClient();
   const userId = await getAuthenticatedUserId(supabase);
   if (!userId) return { error: "Sessione scaduta" };
@@ -71,14 +71,14 @@ export async function setPracticeCompletionForDate(
     }
   }
 
-  revalidateJournalPaths(dateKey);
+  revalidateCalendarPaths(dateKey);
   return { success: true };
 }
 
 export async function addFreePracticeForDate(
   skillId: string,
   dateKey: string,
-): Promise<JournalActionState> {
+): Promise<CalendarActionState> {
   const supabase = await createClient();
   const userId = await getAuthenticatedUserId(supabase);
   if (!userId) return { error: "Sessione scaduta" };
@@ -109,14 +109,14 @@ export async function addFreePracticeForDate(
   const rpcError = await updateLastPracticedAt(supabase, skillId, dateKey);
   if (rpcError) return { error: rpcError };
 
-  revalidateJournalPaths(dateKey);
+  revalidateCalendarPaths(dateKey);
   return { success: true };
 }
 
 export async function removeFreePracticeForDate(
   skillId: string,
   dateKey: string,
-): Promise<JournalActionState> {
+): Promise<CalendarActionState> {
   const supabase = await createClient();
   const userId = await getAuthenticatedUserId(supabase);
   if (!userId) return { error: "Sessione scaduta" };
@@ -149,7 +149,7 @@ export async function removeFreePracticeForDate(
     if (neutralizeError) return { error: neutralizeError };
   }
 
-  revalidateJournalPaths(dateKey);
+  revalidateCalendarPaths(dateKey);
   return { success: true };
 }
 
@@ -267,7 +267,7 @@ function isValidDateKey(value: string): boolean {
   );
 }
 
-function revalidateJournalPaths(dateKey: string): void {
+function revalidateCalendarPaths(dateKey: string): void {
   revalidatePath("/journal");
   revalidatePath("/progress");
   if (dateKey === localDateKey()) revalidatePath("/today");
