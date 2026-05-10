@@ -7,9 +7,7 @@ import {
   Moon,
 } from "lucide-react";
 import { JournalDayPanel } from "@/components/journal/JournalDayPanel";
-import { SessionPeriodSummary } from "@/components/sessions/SessionPeriodSummary";
 import { cn } from "@/lib/utils";
-import type { SessionPeriodProgress } from "@/lib/session-progress";
 import type { JournalDayView, JournalMode, JournalSkill } from "@/lib/types";
 
 export type CalendarView = "week" | "month";
@@ -22,9 +20,6 @@ type Props = {
   periodLabel: string;
   previousDate: string;
   nextDate: string;
-  previousDisabled?: boolean;
-  nextDisabled?: boolean;
-  periodProgress?: SessionPeriodProgress;
   skillOptions?: JournalSkill[];
 };
 
@@ -38,9 +33,6 @@ export function JournalCalendar({
   periodLabel,
   previousDate,
   nextDate,
-  previousDisabled = false,
-  nextDisabled = false,
-  periodProgress,
   skillOptions = [],
 }: Props) {
   const selectedDay = days.find((day) => day.date === selectedDate);
@@ -54,18 +46,12 @@ export function JournalCalendar({
         periodLabel={periodLabel}
         previousDate={previousDate}
         nextDate={nextDate}
-        previousDisabled={previousDisabled}
-        nextDisabled={nextDisabled}
       />
 
       {view === "week" ? (
         <WeekCalendar mode={mode} days={days} selectedDate={selectedDate} />
       ) : (
         <MonthCalendar mode={mode} days={days} selectedDate={selectedDate} />
-      )}
-
-      {periodProgress && (
-        <SessionPeriodSummary summary={periodProgress} periodLabel={periodLabel} />
       )}
 
       <JournalDayPanel
@@ -84,8 +70,6 @@ function CalendarToolbar({
   periodLabel,
   previousDate,
   nextDate,
-  previousDisabled,
-  nextDisabled,
 }: {
   mode: JournalMode;
   view: CalendarView;
@@ -93,8 +77,6 @@ function CalendarToolbar({
   periodLabel: string;
   previousDate: string;
   nextDate: string;
-  previousDisabled: boolean;
-  nextDisabled: boolean;
 }) {
   return (
     <section className="space-y-3">
@@ -106,14 +88,12 @@ function CalendarToolbar({
             direction="previous"
             view={view}
             date={previousDate}
-            disabled={previousDisabled}
           />
           <PeriodButton
             mode={mode}
             direction="next"
             view={view}
             date={nextDate}
-            disabled={nextDisabled}
           />
         </div>
       </div>
@@ -143,26 +123,16 @@ function PeriodButton({
   direction,
   view,
   date,
-  disabled,
 }: {
   mode: JournalMode;
   direction: "previous" | "next";
   view: CalendarView;
   date: string;
-  disabled: boolean;
 }) {
   const Icon = direction === "previous" ? ChevronLeft : ChevronRight;
   const label = direction === "previous" ? "Periodo precedente" : "Periodo successivo";
   const className =
     "inline-flex h-10 w-10 items-center justify-center rounded-md border border-border";
-
-  if (disabled) {
-    return (
-      <span aria-disabled="true" className={`${className} text-muted-foreground/40`}>
-        <Icon className="h-4 w-4" />
-      </span>
-    );
-  }
 
   return (
     <Link

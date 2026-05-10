@@ -6,7 +6,6 @@ import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { getJournalDataInRange } from "@/lib/queries/journal";
 import { getScheduledPlanItems } from "@/lib/session-scheduler";
-import { buildSessionPeriodProgress } from "@/lib/session-progress";
 import { addDaysToDateKey, localDateKey } from "@/lib/date";
 import {
   JournalCalendar,
@@ -74,20 +73,11 @@ export default async function CalendarPage({ searchParams }: Props) {
   const range = getCalendarRange(view, selectedDate);
   const previousDate = shiftCalendarDate(view, selectedDate, -1);
   const nextDate = shiftCalendarDate(view, selectedDate, 1);
-  const previousRange = getCalendarRange(view, previousDate);
-  const nextRange = getCalendarRange(view, nextDate);
   const journalData = await getJournalDataInRange({
     userId: profile.id,
     profile,
     from: range.from,
     to: range.to,
-  });
-  const periodProgress = buildSessionPeriodProgress({
-    rows: journalData.rows,
-    logs: journalData.logs,
-    from: range.activeFrom,
-    to: range.activeTo,
-    repsPerForm: schedule.reps_per_form,
   });
 
   return (
@@ -123,11 +113,8 @@ export default async function CalendarPage({ searchParams }: Props) {
         selectedDate={selectedDate}
         days={journalData.days}
         periodLabel={formatPeriodLabel(view, range.activeFrom, range.activeTo)}
-        periodProgress={periodProgress}
         previousDate={previousDate}
         nextDate={nextDate}
-        previousDisabled={previousRange.to < schedule.start_date}
-        nextDisabled={nextRange.from > schedule.end_date}
       />
     </div>
   );
