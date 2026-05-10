@@ -242,6 +242,26 @@ export function computeBestStreak(days: PracticeDay[]): number {
   return best;
 }
 
+export type SessionRowForCount = {
+  date: string;
+  status: "completed" | "partial" | "not_started" | "future";
+};
+
+export function countRespectedSessionsUpTo(
+  rows: SessionRowForCount[],
+  upToDate: string,
+): number {
+  return rows.filter((row) => row.date <= upToDate && row.status === "completed")
+    .length;
+}
+
+export function countSessionsUpTo(
+  rows: SessionRowForCount[],
+  upToDate: string,
+): number {
+  return rows.filter((row) => row.date <= upToDate).length;
+}
+
 export function dateDaysAgo(days: number, today = new Date()): string {
   return dateKeyDaysAgo(days, today);
 }

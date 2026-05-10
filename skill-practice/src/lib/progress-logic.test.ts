@@ -12,6 +12,8 @@ import {
   countPracticeDays,
   countPracticedSkills,
   countGlobalFormReps,
+  countRespectedSessionsUpTo,
+  countSessionsUpTo,
 } from "./progress-logic.ts";
 import type { Skill } from "./types.ts";
 
@@ -214,6 +216,30 @@ test("practice calendar marks days without practice as practiced=false", () => {
   assert.equal(calendar.length, 90);
   assert.equal(calendar.at(-1)?.practiced, true);
   assert.equal(calendar.at(-2)?.practiced, false);
+});
+
+test("countRespectedSessionsUpTo conta solo righe completed entro la data limite", () => {
+  const rows = [
+    { date: "2026-05-01", status: "completed" as const },
+    { date: "2026-05-02", status: "partial" as const },
+    { date: "2026-05-03", status: "completed" as const },
+    { date: "2026-05-10", status: "completed" as const },
+  ];
+
+  assert.equal(countRespectedSessionsUpTo(rows, "2026-05-05"), 2);
+  assert.equal(countRespectedSessionsUpTo(rows, "2026-05-10"), 3);
+  assert.equal(countRespectedSessionsUpTo(rows, "2026-04-30"), 0);
+});
+
+test("countSessionsUpTo conta tutte le righe entro la data limite", () => {
+  const rows = [
+    { date: "2026-05-01", status: "completed" as const },
+    { date: "2026-05-02", status: "partial" as const },
+    { date: "2026-05-10", status: "not_started" as const },
+  ];
+
+  assert.equal(countSessionsUpTo(rows, "2026-05-05"), 2);
+  assert.equal(countSessionsUpTo(rows, "2026-05-15"), 3);
 });
 
 function log(
