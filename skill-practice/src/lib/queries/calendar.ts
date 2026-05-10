@@ -10,8 +10,8 @@ import {
 import { buildCalendarDayViewsInRange } from "@/lib/calendar-logic";
 import { localDateKey } from "@/lib/date";
 import type {
-  JournalDayView,
-  JournalSkill,
+  CalendarDayView,
+  CalendarSkill,
   PracticeLog,
   Skill,
   TrainingSchedule,
@@ -21,7 +21,7 @@ import type {
 export type CalendarRow = { date: string; session: ScheduledSession };
 
 export type CalendarData = {
-  days: JournalDayView[];
+  days: CalendarDayView[];
   rows: CalendarRow[];
   logs: PracticeLog[];
   schedule: TrainingSchedule | null;
@@ -29,7 +29,7 @@ export type CalendarData = {
 };
 
 type PracticeLogWithSkill = PracticeLog & {
-  skill: JournalSkill | JournalSkill[] | null;
+  skill: CalendarSkill | CalendarSkill[] | null;
 };
 
 export async function getCalendarDataInRange({
@@ -55,7 +55,7 @@ export async function getCalendarDataInRange({
     ? getScheduledPlanItems(items, schedule, profile.plan_mode)
     : [];
   const rows = listSessionsInRange(from, to, schedule, scheduledItems);
-  const skillById = new Map<string, JournalSkill>();
+  const skillById = new Map<string, CalendarSkill>();
 
   for (const item of scheduledItems) {
     skillById.set(item.skill.id, toCalendarSkill(item.skill));
@@ -89,7 +89,7 @@ export async function getCalendarDataInRange({
   };
 }
 
-export async function getCalendarSkillOptions(): Promise<JournalSkill[]> {
+export async function getCalendarSkillOptions(): Promise<CalendarSkill[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("skills")
@@ -110,7 +110,7 @@ export async function getCalendarSkillOptions(): Promise<JournalSkill[]> {
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
 
-  return (data as JournalSkill[] | null) ?? [];
+  return (data as CalendarSkill[] | null) ?? [];
 }
 
 async function fetchMeaningfulLogsWithSkill(
@@ -147,13 +147,13 @@ async function fetchMeaningfulLogsWithSkill(
 }
 
 function normalizeJoinedSkill(
-  skill: JournalSkill | JournalSkill[] | null,
-): JournalSkill | null {
+  skill: CalendarSkill | CalendarSkill[] | null,
+): CalendarSkill | null {
   if (Array.isArray(skill)) return skill[0] ?? null;
   return skill;
 }
 
-function toCalendarSkill(skill: Skill): JournalSkill {
+function toCalendarSkill(skill: Skill): CalendarSkill {
   return {
     id: skill.id,
     name: skill.name,

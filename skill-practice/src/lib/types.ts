@@ -139,13 +139,13 @@ export type WeeklyReflection = {
   created_at: string;
 };
 
-export type JournalDaySessionKind =
+export type CalendarDaySessionKind =
   | "training"
   | "rest_day"
   | "expired"
   | "no_schedule";
 
-export type JournalSkill = Pick<
+export type CalendarSkill = Pick<
   Skill,
   | "id"
   | "name"
@@ -159,7 +159,7 @@ export type JournalSkill = Pick<
 
 export type ScheduledPracticeItem = {
   planItemId: string;
-  skill: JournalSkill;
+  skill: CalendarSkill;
   status: PlanStatus;
   log: PracticeLog | null;
   done: boolean;
@@ -169,20 +169,20 @@ export type ScheduledPracticeItem = {
 };
 
 export type FreePracticeItem = {
-  skill: JournalSkill;
+  skill: CalendarSkill;
   log: PracticeLog;
   done: boolean;
   hasNote: boolean;
   canToggle: boolean;
 };
 
-export type JournalDayView = {
+export type CalendarDayView = {
   date: string;
   isFuture: boolean;
   hasSchedule: boolean;
   isInScheduleRange: boolean;
   canToggle: boolean;
-  sessionKind: JournalDaySessionKind;
+  sessionKind: CalendarDaySessionKind;
   sessionIndex: number | null;
   nextTrainingDate: string | null;
   scheduleEndDate: string | null;

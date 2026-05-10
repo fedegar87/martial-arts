@@ -8,18 +8,18 @@ import {
 } from "lucide-react";
 import { CalendarDayPanel } from "@/components/calendar/CalendarDayPanel";
 import { cn } from "@/lib/utils";
-import type { JournalDayView, JournalSkill } from "@/lib/types";
+import type { CalendarDayView, CalendarSkill } from "@/lib/types";
 
 export type CalendarView = "week" | "month";
 
 type Props = {
   view: CalendarView;
   selectedDate: string;
-  days: JournalDayView[];
+  days: CalendarDayView[];
   periodLabel: string;
   previousDate: string;
   nextDate: string;
-  skillOptions?: JournalSkill[];
+  skillOptions?: CalendarSkill[];
 };
 
 const WEEKDAY_LABELS = ["L", "M", "M", "G", "V", "S", "D"];
@@ -157,7 +157,7 @@ function WeekCalendar({
   days,
   selectedDate,
 }: {
-  days: JournalDayView[];
+  days: CalendarDayView[];
   selectedDate: string;
 }) {
   return (
@@ -181,7 +181,7 @@ function MonthCalendar({
   days,
   selectedDate,
 }: {
-  days: JournalDayView[];
+  days: CalendarDayView[];
   selectedDate: string;
 }) {
   const selectedMonth = selectedDate.slice(0, 7);
@@ -214,7 +214,7 @@ function DayCell({
   selected,
   inCurrentMonth,
 }: {
-  day: JournalDayView;
+  day: CalendarDayView;
   view: CalendarView;
   selected: boolean;
   inCurrentMonth: boolean;
@@ -264,7 +264,7 @@ function DayCell({
   );
 }
 
-function DayCellBody({ day }: { day: JournalDayView }) {
+function DayCellBody({ day }: { day: CalendarDayView }) {
   if (day.sessionKind === "training") {
     return (
       <span className="flex items-center gap-1 text-[0.65rem] text-foreground">
@@ -297,7 +297,7 @@ function DayCellBody({ day }: { day: JournalDayView }) {
   );
 }
 
-function dayCellLabel(date: Date, day: JournalDayView): string {
+function dayCellLabel(date: Date, day: CalendarDayView): string {
   const formattedDate = date.toLocaleDateString("it-IT", {
     weekday: "long",
     day: "numeric",

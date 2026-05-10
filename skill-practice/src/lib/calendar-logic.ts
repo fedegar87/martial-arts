@@ -2,8 +2,8 @@ import { addDaysToDateKey } from "./date.ts";
 import type { ScheduledSession, ItemWithSkill } from "./session-scheduler.ts";
 import type {
   FreePracticeItem,
-  JournalDayView,
-  JournalSkill,
+  CalendarDayView,
+  CalendarSkill,
   PracticeLog,
   ScheduledPracticeItem,
 } from "./types.ts";
@@ -14,7 +14,7 @@ type TrainingSession = Extract<ScheduledSession, { kind: "training" }>;
 type BuildCalendarDayViewInput = {
   row: CalendarRow | null;
   logs: PracticeLog[];
-  skillById: Map<string, JournalSkill>;
+  skillById: Map<string, CalendarSkill>;
   todayKey: string;
   repsPerForm: number;
   hasSchedule: boolean;
@@ -47,7 +47,7 @@ export function buildCalendarDayView(
     scheduleStart,
     scheduleEnd,
   }: BuildCalendarDayViewInput,
-): JournalDayView {
+): CalendarDayView {
   const session = row?.session ?? { kind: "no_schedule" as const };
   const isFuture = date > todayKey;
   const canToggle = !isFuture;
@@ -94,10 +94,10 @@ export function buildCalendarDayViewsInRange(
   from: string,
   to: string,
   input: BuildCalendarDayViewsInRangeInput,
-): JournalDayView[] {
+): CalendarDayView[] {
   const rowsByDate = new Map(input.rows.map((row) => [row.date, row]));
   const logsByDate = groupLogsByDate(input.logs);
-  const days: JournalDayView[] = [];
+  const days: CalendarDayView[] = [];
 
   let current = from;
   while (current <= to) {
@@ -179,7 +179,7 @@ function toFreePracticeItem({
   canToggle,
 }: {
   log: PracticeLog;
-  skill: JournalSkill | undefined;
+  skill: CalendarSkill | undefined;
   canToggle: boolean;
 }): FreePracticeItem | null {
   if (!skill) return null;

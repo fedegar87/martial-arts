@@ -8,14 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import type {
   FreePracticeItem,
-  JournalDayView,
-  JournalSkill,
+  CalendarDayView,
+  CalendarSkill,
   ScheduledPracticeItem,
 } from "@/lib/types";
 
 type Props = {
-  day: JournalDayView | undefined;
-  skillOptions: JournalSkill[];
+  day: CalendarDayView | undefined;
+  skillOptions: CalendarSkill[];
 };
 
 export function CalendarDayPanel({ day, skillOptions }: Props) {
@@ -85,7 +85,7 @@ export function CalendarDayPanel({ day, skillOptions }: Props) {
   );
 }
 
-function DaySubtitle({ day }: { day: JournalDayView }) {
+function DaySubtitle({ day }: { day: CalendarDayView }) {
   if (day.sessionKind === "training") {
     return (
       <p className="text-sm text-muted-foreground">
@@ -109,7 +109,7 @@ function DaySubtitle({ day }: { day: JournalDayView }) {
   return <p className="text-sm text-muted-foreground">Nessuna sessione programmata.</p>;
 }
 
-function DayBadge({ day }: { day: JournalDayView }) {
+function DayBadge({ day }: { day: CalendarDayView }) {
   if (day.sessionKind === "training") {
     return (
       <Badge variant="outline">
@@ -135,7 +135,7 @@ function DayBadge({ day }: { day: JournalDayView }) {
   return <Badge variant="outline">Diario</Badge>;
 }
 
-function EmptyScheduledState({ day }: { day: JournalDayView }) {
+function EmptyScheduledState({ day }: { day: CalendarDayView }) {
   if (day.sessionKind === "rest_day" && day.freePractice.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -207,7 +207,7 @@ function FreePracticeRow({
   );
 }
 
-function SkillSummary({ skill }: { skill: JournalSkill }) {
+function SkillSummary({ skill }: { skill: CalendarSkill }) {
   return (
     <div className="min-w-0 flex-1">
       <div className="truncate text-sm font-medium">{skill.name}</div>

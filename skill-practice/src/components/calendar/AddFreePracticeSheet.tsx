@@ -15,11 +15,11 @@ import {
 import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import { addFreePracticeForDate } from "@/lib/actions/calendar";
-import type { JournalSkill } from "@/lib/types";
+import type { CalendarSkill } from "@/lib/types";
 
 type Props = {
   dateKey: string;
-  skills: JournalSkill[];
+  skills: CalendarSkill[];
   scheduledSkillIds: string[];
   disabled?: boolean;
 };
