@@ -20,7 +20,6 @@ type Props = {
   selectedDate: string;
   days: JournalDayView[];
   periodLabel: string;
-  totalSessions: number;
   previousDate: string;
   nextDate: string;
   previousDisabled?: boolean;
@@ -37,7 +36,6 @@ export function JournalCalendar({
   selectedDate,
   days,
   periodLabel,
-  totalSessions,
   previousDate,
   nextDate,
   previousDisabled = false,
@@ -54,7 +52,6 @@ export function JournalCalendar({
         view={view}
         selectedDate={selectedDate}
         periodLabel={periodLabel}
-        totalSessions={totalSessions}
         previousDate={previousDate}
         nextDate={nextDate}
         previousDisabled={previousDisabled}
@@ -85,7 +82,6 @@ function CalendarToolbar({
   view,
   selectedDate,
   periodLabel,
-  totalSessions,
   previousDate,
   nextDate,
   previousDisabled,
@@ -95,7 +91,6 @@ function CalendarToolbar({
   view: CalendarView;
   selectedDate: string;
   periodLabel: string;
-  totalSessions: number;
   previousDate: string;
   nextDate: string;
   previousDisabled: boolean;
@@ -104,13 +99,7 @@ function CalendarToolbar({
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold capitalize">{periodLabel}</h2>
-          <p className="text-muted-foreground text-sm">
-            {totalSessions} {totalSessions === 1 ? "sessione" : "sessioni"} nel
-            periodo
-          </p>
-        </div>
+        <h2 className="text-lg font-semibold capitalize">{periodLabel}</h2>
         <div className="flex items-center gap-2">
           <PeriodButton
             mode={mode}

@@ -9,7 +9,6 @@ import {
   JournalCalendar,
   type CalendarView,
 } from "@/components/journal/JournalCalendar";
-import type { ScheduledSession } from "@/lib/session-scheduler";
 
 type Props = { searchParams: Promise<{ view?: string; date?: string }> };
 
@@ -56,11 +55,6 @@ export default async function JournalPage({ searchParams }: Props) {
         selectedDate={selectedDate}
         days={journalData.days}
         periodLabel={formatPeriodLabel(view, range.activeFrom, range.activeTo)}
-        totalSessions={countTrainingSessions(
-          journalData.rows,
-          range.activeFrom,
-          range.activeTo,
-        )}
         previousDate={previousDate}
         nextDate={nextDate}
         skillOptions={skillOptions}
@@ -141,19 +135,6 @@ function addMonthsToDateKey(date: string, months: number): string {
 function isoWeekday(date: string): number {
   const day = new Date(`${date}T00:00:00Z`).getUTCDay();
   return day === 0 ? 7 : day;
-}
-
-function countTrainingSessions(
-  rows: Array<{ date: string; session: ScheduledSession }>,
-  from: string,
-  to: string,
-): number {
-  return rows.filter(
-    (row) =>
-      row.date >= from &&
-      row.date <= to &&
-      row.session.kind === "training",
-  ).length;
 }
 
 function formatPeriodLabel(

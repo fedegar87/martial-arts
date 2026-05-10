@@ -5,10 +5,7 @@ import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { getJournalDataInRange } from "@/lib/queries/journal";
-import {
-  getScheduledPlanItems,
-  type ScheduledSession,
-} from "@/lib/session-scheduler";
+import { getScheduledPlanItems } from "@/lib/session-scheduler";
 import { buildSessionPeriodProgress } from "@/lib/session-progress";
 import { addDaysToDateKey, localDateKey } from "@/lib/date";
 import {
@@ -85,11 +82,6 @@ export default async function CalendarPage({ searchParams }: Props) {
     from: range.from,
     to: range.to,
   });
-  const totalSessions = countTrainingSessions(
-    journalData.rows,
-    range.activeFrom,
-    range.activeTo,
-  );
   const periodProgress = buildSessionPeriodProgress({
     rows: journalData.rows,
     logs: journalData.logs,
@@ -131,7 +123,6 @@ export default async function CalendarPage({ searchParams }: Props) {
         selectedDate={selectedDate}
         days={journalData.days}
         periodLabel={formatPeriodLabel(view, range.activeFrom, range.activeTo)}
-        totalSessions={totalSessions}
         periodProgress={periodProgress}
         previousDate={previousDate}
         nextDate={nextDate}
@@ -220,19 +211,6 @@ function addMonthsToDateKey(date: string, months: number): string {
 function isoWeekday(date: string): number {
   const day = new Date(`${date}T00:00:00Z`).getUTCDay();
   return day === 0 ? 7 : day;
-}
-
-function countTrainingSessions(
-  rows: Array<{ date: string; session: ScheduledSession }>,
-  from: string,
-  to: string,
-): number {
-  return rows.filter(
-    (row) =>
-      row.date >= from &&
-      row.date <= to &&
-      row.session.kind === "training",
-  ).length;
 }
 
 function formatPeriodLabel(
