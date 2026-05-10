@@ -57,7 +57,7 @@ Per il razionale completo vedi `archive/`:
 | **D8** | Provisioning utenti | **Solo admin.** Niente self-signup pubblico. Admin invita via Supabase dashboard "Send invitation". Coerente con modello federazione (§1.1). Self-signup riapribile in futuro se serve |
 | **D9** | Min password length | **8 caratteri** (NIST 2024 baseline). Niente regex complex (es. una maiuscola + un numero) — NIST le ha rimosse |
 | **D10** | Documenti legali (privacy/terms/cookies/disclaimer) | **Pagine custom in-app, non iubenda.** Deviazione esplicita rispetto al §15.3 v3 (che suggeriva iubenda generator a €29/anno). Razionale: (a) MVP single-user non ha budget legale ricorrente; (b) i contenuti devono essere specifici per pratica fisica/scuola e non generici da generator; (c) tutto il testo non derivabile è marcato `[PLACEHOLDER: ...]` per revisione legale prima di apertura a utenti terzi. iubenda resta opzione di fallback se la federazione richiederà policy generata da fonte certificata |
-| **D11** | Diario calendario | **`/journal` è la vista canonica di tracking/correzione.** Compone `practice_logs`, schedule e piano attivo in una DayView; `/sessions/calendar` resta vista filtrata sulle sessioni. `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/2026-05-07-calendar-overhaul-design.md` |
+| **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/2026-05-10-calendar-unification-design.md` |
 
 ### 2.2 Decisioni aperte ⚠️
 
@@ -341,12 +341,12 @@ skill-practice/
 │   │   ├── actions/                    # Mutation: Next.js Server Actions
 │   │   │   ├── plan.ts                 # add / hide / change-status
 │   │   │   ├── practice.ts             # mark done
-│   │   │   ├── journal.ts              # practice retroattiva / pratica libera (Sprint 1.13)
+│   │   │   ├── calendar.ts             # practice retroattiva / pratica libera (Sprint 1.13)
 │   │   │   ├── training-schedule.ts
 │   │   │   ├── onboarding.ts
 │   │   │   └── account.ts              # Richiesta cancellazione (Sprint 1.11)
 │   │   ├── practice-logic.ts           # Algoritmo "oggi fai questo" (puro)
-│   │   ├── journal-logic.ts            # DayView diario (puro, testato)
+│   │   ├── calendar-logic.ts           # DayView calendario (puro, testato)
 │   │   ├── session-scheduler.ts        # Logica pura "sessione del giorno X"
 │   │   ├── plan-manager.ts             # Genera UserPlanItem da ExamProgram
 │   │   ├── onboarding-state.ts         # Helper isProfileOnboarded (puro)
@@ -428,7 +428,7 @@ Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi 
 
 Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
 
-In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile (sinistra → torna a `/hub`) e icona utente (destra → `/profile`). È non-sticky di design: l'AppHeader scrolla via per non collidere con sticky pre-esistenti su `/today` e `/sessions/calendar`. Vedi `plan/2026-05-01-hub-page-design.md`.
+In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile (sinistra → torna a `/hub`) e icona utente (destra → `/profile`). È non-sticky di design: l'AppHeader scrolla via per non collidere con la sticky pre-esistente su `/today`. Vedi `plan/2026-05-01-hub-page-design.md`.
 
 ### 7.1 Bottom navigation
 
@@ -438,7 +438,7 @@ In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sti
 
 5 slot riservati alle aree ad alta frequenza di pratica. Il **Profilo non occupa uno slot**: si raggiunge via icona utente in alto a destra in `AppHeader` (oltre che dalla tile `/hub`). Razionale: gradi/sessions setup/password/logout sono destinazioni rare rispetto alla pratica giornaliera, e Bacheca (notifiche scuola) merita la promozione in nav permanente.
 
-`/journal` non occupa uno slot BottomNav: è il diario di dettaglio dietro Progressi e Allenamento. Si raggiunge da `/progress`, `/today` e dal link "Diario completo" in `/sessions/calendar`.
+`/calendar` non occupa uno slot BottomNav: è il calendario generale dell'app. Si raggiunge da `/today` (sticky header), `/progress` (bottone "Apri calendario") e `/profile` (card Allenamento).
 
 ### 7.2 Tab "Oggi"
 
@@ -525,11 +525,13 @@ PIANO LIBERO
 - **1.6 — VideoPlayer custom:** implementato in `src/components/skill/VideoPlayer.tsx`; sostituisce `YouTubeEmbed` e carica YouTube solo dopo tap.
 - **1.7 — UX Programma + Modalità di studio:** schema `0005_plan_mode.sql`, `/library/program`, `/plan/exam`, `/plan/custom` e azioni RPC atomiche implementate; richiede migrations applicate per walkthrough reale.
 - **1.8 — Tab Progresso:** `/progress` e BottomNav a 4 tab implementati con SVG/Tailwind, senza dipendenze chart.
-- **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup` e `/sessions/calendar`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Design: `plan/2026-04-26-training-schedule-design.md`. Plan: `plan/2026-04-26-training-schedule-plan.md`.
+- **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Design: `plan/2026-04-26-training-schedule-design.md`. Plan: `plan/2026-04-26-training-schedule-plan.md`. Nota 2026-05-10: la rotta `/sessions/calendar` originariamente prevista è stata unificata in `/calendar` (vedi 1.14).
 - **1.10 — Auth password management:** flow completo per recovery, invite e change password. Pagine `/auth/forgot-password`, `/auth/update-password`, sezione "Sicurezza" su `/profile`. Server actions `requestPasswordReset` / `updatePassword` / `changePassword`. Modifica `auth/callback/route.ts` con allowlist `next` (anti open redirect) e middleware con lista `AUTHENTICATED_ONLY`. Logica pura testabile in `lib/auth-validation.ts`. Provisioning solo admin (D8), invito via Supabase dashboard "Send invitation". Min password length 8 (D9). Design: `plan/2026-05-02-auth-password-management-design.md`.
 - **1.11 — Profilo, account, privacy e documenti legali:** `/profile` esteso con card Account (email, scuola, ruolo, member date), Programma, Allenamento, Sicurezza, Privacy/dati. Migration `0016_profile_account_privacy.sql` con trigger immutabile su `role`/`school_id` (vedi §4.4 limite admin) e tabella `account_deletion_requests`. Export JSON dati utente via `/profile/export`. Pagine pubbliche `/privacy`, `/terms`, `/cookies`, `/disclaimer` con `[PLACEHOLDER: ...]` espliciti per dati titolare/DPO/retention/sub-processor (decisione D10). Logout client-side ora pulisce localStorage/sessionStorage/Cache best-effort; service worker non cachea navigazioni autenticate. Plan completo + missing items: `plan/2026-05-03-profile-account-privacy-settings-plan.md`.
 - **1.12 — Semplificazione PlanStatus (2 stati):** collassati `review` e `maintenance` in un singolo stato `maintenance`. Nuovo algoritmo distribuzione pesata 2:1 in `session-scheduler.ts`, formula deterministica per forme/sessione, nuova UI `PlanFormsSection` in `/sessions/setup` con toggle binario, label "Frequenza del ripasso" rinominata "Lunghezza ciclo". Migration `0019_simplify_plan_status.sql`. Design: `plan/2026-05-04-plan-status-simplification-design.md`. Plan: `plan/2026-05-04-plan-status-simplification-plan.md`.
-- **1.13 — Diario generale e segna-pratica retroattiva:** route `/journal`, componenti `components/journal/*`, query `lib/queries/journal.ts`, action retroattive `lib/actions/journal.ts`, logica pura `journal-logic.ts`. `/sessions/calendar` diventa vista filtrata sulle sessioni con stessa DayView. Migration `0021_practice_logs_unique.sql` aggiunge unique `(user_id, skill_id, date)`, indice `(user_id, date)` e RPC atomica `update_plan_item_last_practiced_at`. Design: `plan/2026-05-07-calendar-overhaul-design.md`.
+- **1.13 — Diario generale e segna-pratica retroattiva:** route `/journal`, componenti `components/journal/*`, query `lib/queries/journal.ts`, action retroattive `lib/actions/journal.ts`, logica pura `journal-logic.ts`. `/sessions/calendar` diventa vista filtrata sulle sessioni con stessa DayView. Migration `0021_practice_logs_unique.sql` aggiunge unique `(user_id, skill_id, date)`, indice `(user_id, date)` e RPC atomica `update_plan_item_last_practiced_at`. Design: `plan/2026-05-07-calendar-overhaul-design.md`. **Superato il 2026-05-10 da 1.14**.
+
+- **1.14 — Calendario unificato:** `/journal` e `/sessions/calendar` unificati in unica route `/calendar` (etichetta "Calendario"). Rinomina del dominio nel codice: `components/journal/* → components/calendar/*` (con `JournalCalendar → Calendar`, `JournalDayPanel → CalendarDayPanel`), `lib/queries/journal.ts → lib/queries/calendar.ts`, `lib/actions/journal.ts → lib/actions/calendar.ts`, `lib/journal-logic.ts → lib/calendar-logic.ts`, tipi `JournalDayView/JournalSkill → CalendarDayView/CalendarSkill`. Rimossi: prop `mode` di JournalCalendar, sottotitolo "X sessioni nel periodo", riepilogo periodo `SessionPeriodSummary`, bottone "Apri diario" da `/today` (resta accesso da sticky header). Aggiornati link in `/today`, `/progress`, `/profile` a `/calendar`. Design: `plan/2026-05-10-calendar-unification-design.md`. Plan: `plan/2026-05-10-calendar-unification-plan.md`.
 
   **Behavior change**: gli item che prima erano `review` (peso `0.75` in `progress-logic.ts statusMaturityScore`) ora sono `maintenance` (peso `1.0`). Risultato: `readinessPercent` cresce leggermente per utenti con piani migrati. Decisione consapevole: `maintenance` semanticamente significa "padroneggiata". Per ridurre il peso rivedere `progress-logic.ts:185`.
 - **Visual identity FESK:** tema dark/gold applicato in `globals.css`, con overlay grain e componenti core meno arrotondati.
