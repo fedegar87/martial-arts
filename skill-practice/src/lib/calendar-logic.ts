@@ -11,7 +11,7 @@ import type {
 type CalendarRow = { date: string; session: ScheduledSession };
 type TrainingSession = Extract<ScheduledSession, { kind: "training" }>;
 
-type BuildJournalDayViewInput = {
+type BuildCalendarDayViewInput = {
   row: CalendarRow | null;
   logs: PracticeLog[];
   skillById: Map<string, JournalSkill>;
@@ -22,8 +22,8 @@ type BuildJournalDayViewInput = {
   scheduleEnd: string | null;
 };
 
-type BuildJournalDayViewsInRangeInput = Omit<
-  BuildJournalDayViewInput,
+type BuildCalendarDayViewsInRangeInput = Omit<
+  BuildCalendarDayViewInput,
   "row" | "logs"
 > & {
   rows: CalendarRow[];
@@ -35,7 +35,7 @@ export type CategorizedDayLogs = {
   freePracticeLogs: PracticeLog[];
 };
 
-export function buildJournalDayView(
+export function buildCalendarDayView(
   date: string,
   {
     row,
@@ -46,7 +46,7 @@ export function buildJournalDayView(
     hasSchedule,
     scheduleStart,
     scheduleEnd,
-  }: BuildJournalDayViewInput,
+  }: BuildCalendarDayViewInput,
 ): JournalDayView {
   const session = row?.session ?? { kind: "no_schedule" as const };
   const isFuture = date > todayKey;
@@ -90,10 +90,10 @@ export function buildJournalDayView(
   };
 }
 
-export function buildJournalDayViewsInRange(
+export function buildCalendarDayViewsInRange(
   from: string,
   to: string,
-  input: BuildJournalDayViewsInRangeInput,
+  input: BuildCalendarDayViewsInRangeInput,
 ): JournalDayView[] {
   const rowsByDate = new Map(input.rows.map((row) => [row.date, row]));
   const logsByDate = groupLogsByDate(input.logs);
@@ -102,7 +102,7 @@ export function buildJournalDayViewsInRange(
   let current = from;
   while (current <= to) {
     days.push(
-      buildJournalDayView(current, {
+      buildCalendarDayView(current, {
         ...input,
         row: rowsByDate.get(current) ?? null,
         logs: logsByDate.get(current) ?? [],

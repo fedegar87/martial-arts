@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  buildJournalDayView,
-  buildJournalDayViewsInRange,
+  buildCalendarDayView,
+  buildCalendarDayViewsInRange,
   categorizeLogsForDay,
   isMeaningfulLog,
-} from "./journal-logic.ts";
+} from "./calendar-logic.ts";
 import type { ItemWithSkill } from "./session-scheduler.ts";
 import type { PracticeLog, Skill } from "./types.ts";
 
@@ -99,10 +99,10 @@ test("categorizeLogsForDay separates scheduled and free practice", () => {
   );
 });
 
-test("buildJournalDayView attaches scheduled logs and free practice", () => {
+test("buildCalendarDayView attaches scheduled logs and free practice", () => {
   const scheduled = item("scheduled", "focus");
   const free = skill("free", { name_italian: "Libera" });
-  const view = buildJournalDayView("2026-05-04", {
+  const view = buildCalendarDayView("2026-05-04", {
     row: {
       date: "2026-05-04",
       session: {
@@ -139,9 +139,9 @@ test("buildJournalDayView attaches scheduled logs and free practice", () => {
   assert.equal(view.freePractice[0].hasNote, true);
 });
 
-test("buildJournalDayViewsInRange includes days without schedule rows", () => {
+test("buildCalendarDayViewsInRange includes days without schedule rows", () => {
   const free = skill("free");
-  const views = buildJournalDayViewsInRange("2026-05-04", "2026-05-06", {
+  const views = buildCalendarDayViewsInRange("2026-05-04", "2026-05-06", {
     rows: [
       {
         date: "2026-05-04",

@@ -7,7 +7,7 @@ import {
   listSessionsInRange,
   type ScheduledSession,
 } from "@/lib/session-scheduler";
-import { buildJournalDayViewsInRange } from "@/lib/journal-logic";
+import { buildCalendarDayViewsInRange } from "@/lib/calendar-logic";
 import { localDateKey } from "@/lib/date";
 import type {
   JournalDayView,
@@ -72,7 +72,7 @@ export async function getJournalDataInRange({
   const repsPerForm = schedule?.reps_per_form ?? 1;
 
   return {
-    days: buildJournalDayViewsInRange(from, to, {
+    days: buildCalendarDayViewsInRange(from, to, {
       rows,
       logs,
       skillById,
