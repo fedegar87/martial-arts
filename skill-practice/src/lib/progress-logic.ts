@@ -7,6 +7,7 @@ import type {
   Skill,
 } from "./types";
 import { addDaysToDateKey, dateKeyDaysAgo, localDateKey } from "./date.ts";
+import type { SessionProgressStatus } from "./session-progress.ts";
 
 export type CurriculumCell = {
   skill: Skill;
@@ -244,7 +245,7 @@ export function computeBestStreak(days: PracticeDay[]): number {
 
 export type SessionRowForCount = {
   date: string;
-  status: "completed" | "partial" | "not_started" | "future";
+  status: SessionProgressStatus;
 };
 
 export function countRespectedSessionsUpTo(
