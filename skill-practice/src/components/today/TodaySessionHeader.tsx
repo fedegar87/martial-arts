@@ -39,7 +39,7 @@ export function TodaySessionHeader({
           variant="secondary"
           className="h-12 flex-1 justify-center text-sm"
         >
-          <Link href="/journal" aria-label="Calendario">
+          <Link href="/calendar" aria-label="Calendario">
             <CalendarDays className="mr-2 h-5 w-5" />
             Calendario
           </Link>

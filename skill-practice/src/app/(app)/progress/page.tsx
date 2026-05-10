@@ -61,9 +61,9 @@ export default async function ProgressPage() {
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
-          <Link href="/journal">
+          <Link href="/calendar">
             <CalendarDays className="mr-2 h-3.5 w-3.5" />
-            Apri diario
+            Apri calendario
           </Link>
         </Button>
       </header>

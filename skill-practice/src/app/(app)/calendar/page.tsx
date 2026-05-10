@@ -43,7 +43,7 @@ export default async function JournalPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold">Diario</h1>
+        <h1 className="text-2xl font-semibold">Calendario</h1>
         <p className="text-muted-foreground text-sm">
           Sessioni programmate e pratica libera.
         </p>

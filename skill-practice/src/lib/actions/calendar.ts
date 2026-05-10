@@ -268,7 +268,7 @@ function isValidDateKey(value: string): boolean {
 }
 
 function revalidateCalendarPaths(dateKey: string): void {
-  revalidatePath("/journal");
+  revalidatePath("/calendar");
   revalidatePath("/progress");
   if (dateKey === localDateKey()) revalidatePath("/today");
 }

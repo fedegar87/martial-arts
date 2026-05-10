@@ -70,7 +70,7 @@ export async function setupTrainingSchedule(
   if (error) return { error: error.message };
 
   revalidatePath("/today");
-  revalidatePath("/journal");
+  revalidatePath("/calendar");
   redirect("/today");
 }
 
@@ -89,7 +89,7 @@ export async function resetTrainingSchedule(): Promise<
   if (error) return { error: error.message };
 
   revalidatePath("/today");
-  revalidatePath("/journal");
+  revalidatePath("/calendar");
   revalidatePath("/sessions/setup");
   return { success: true };
 }

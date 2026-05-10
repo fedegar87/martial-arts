@@ -111,7 +111,7 @@ export default async function ProfilePage() {
             </Link>
           </Button>
           <Button asChild variant="outline" className="w-full justify-start">
-            <Link href="/journal">
+            <Link href="/calendar">
               <CalendarDays className="mr-2 h-4 w-4" />
               Calendario
             </Link>

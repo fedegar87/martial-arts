@@ -315,5 +315,5 @@ function dayCellLabel(date: Date, day: CalendarDayView): string {
 }
 
 function calendarHref(view: CalendarView, date: string): string {
-  return `/journal?view=${view}&date=${date}`;
+  return `/calendar?view=${view}&date=${date}`;
 }
