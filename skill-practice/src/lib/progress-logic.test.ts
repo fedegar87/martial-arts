@@ -4,9 +4,13 @@ import {
   activePlanSource,
   buildCurriculumCells,
   buildPracticeCalendar,
+  computeBestStreakFromLogs,
   computeBestStreak,
+  computeCurrentStreakFromLogs,
   computeCurrentStreak,
   computePlanProgress,
+  countPracticeDays,
+  countPracticedSkills,
   countGlobalFormReps,
 } from "./progress-logic.ts";
 import type { Skill } from "./types.ts";
@@ -115,6 +119,30 @@ test("computePlanProgress rewards recent practice and mature statuses", () => {
   assert.equal(progress.readinessPercent, 80);
 });
 
+test("computePlanProgress counts partial repetition logs as practice", () => {
+  const requiredSkills = [
+    skill("form", 7, "forme"),
+    skill("kick", 7, "tui_fa"),
+  ];
+  const progress = computePlanProgress({
+    discipline: "shaolin",
+    mode: "exam",
+    title: "Shaolin 7 Chi",
+    requiredSkills,
+    planBySkillId: new Map([
+      ["form", "focus" as const],
+      ["kick", "focus" as const],
+    ]),
+    logs: [
+      log("2026-04-28", "form", { completed: false, repsDone: 1 }),
+    ],
+    today: new Date("2026-05-01T12:00:00.000Z"),
+  });
+
+  assert.equal(progress.practicedRecent, 1);
+  assert.equal(progress.practicedTotal, 1);
+});
+
 test("practice calendar computes current and best streak", () => {
   const today = new Date("2026-04-25T12:00:00.000Z");
   const calendar = buildPracticeCalendar(
@@ -129,6 +157,35 @@ test("practice calendar computes current and best streak", () => {
 
   assert.equal(computeCurrentStreak(calendar), 3);
   assert.equal(computeBestStreak(calendar), 3);
+});
+
+test("practice activity metrics count partial reps but not notes alone", () => {
+  const logs = [
+    log("2026-04-21", "form", { completed: false, repsDone: 1 }),
+    log("2026-04-21", "kick", { completed: false, repsDone: 0 }),
+    log("2026-04-22", "kick"),
+  ];
+  const calendar = buildPracticeCalendar(logs, new Date("2026-04-22T12:00:00.000Z"));
+
+  assert.equal(countPracticeDays(logs), 2);
+  assert.equal(countPracticedSkills(logs), 2);
+  assert.deepEqual(calendar.slice(-2), [
+    { date: "2026-04-21", count: 1 },
+    { date: "2026-04-22", count: 1 },
+  ]);
+});
+
+test("historical streaks are computed from all practice activity logs", () => {
+  const logs = [
+    log("2025-12-01"),
+    log("2025-12-02"),
+    log("2025-12-03"),
+    log("2026-04-24", "form", { completed: false, repsDone: 1 }),
+  ];
+  const today = new Date("2026-04-25T12:00:00.000Z");
+
+  assert.equal(computeCurrentStreakFromLogs(logs, today), 1);
+  assert.equal(computeBestStreakFromLogs(logs), 3);
 });
 
 test("countGlobalFormReps sums all form repetition logs", () => {
@@ -150,16 +207,20 @@ test("countGlobalFormReps sums all form repetition logs", () => {
   );
 });
 
-function log(date: string, skillId = "skill-1") {
+function log(
+  date: string,
+  skillId = "skill-1",
+  options: { completed?: boolean; repsDone?: number } = {},
+) {
   return {
     id: date,
     user_id: "user-1",
     skill_id: skillId,
     date,
-    completed: true,
+    completed: options.completed ?? true,
     personal_note: null,
     reps_target: null,
-    reps_done: 0,
+    reps_done: options.repsDone ?? 0,
     created_at: `${date}T00:00:00.000Z`,
   };
 }

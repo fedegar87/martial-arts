@@ -3,15 +3,32 @@ import { createClient } from "@/lib/supabase/server";
 import {
   activePlanSource,
   buildPracticeCalendar,
+  computeBestStreakFromLogs,
   computePlanProgress,
-  computeBestStreak,
-  computeCurrentStreak,
+  computeCurrentStreakFromLogs,
   countGlobalFormReps,
+  countPracticedSkills,
+  countPracticeDays,
   dateDaysAgo,
+  type PracticeActivityLog,
   type PlanProgressSummary,
   type PracticeDay,
 } from "@/lib/progress-logic";
-import type { Discipline, PlanStatus, PracticeLog, Skill, UserProfile } from "@/lib/types";
+import {
+  getScheduledPlanItems,
+  listSessionsInRange,
+  type ItemWithSkill,
+} from "@/lib/session-scheduler";
+import { buildSessionPeriodProgress, type SessionPeriodProgress } from "@/lib/session-progress";
+import { addDaysToDateKey, localDateKey } from "@/lib/date";
+import type {
+  Discipline,
+  PlanStatus,
+  PracticeLog,
+  Skill,
+  TrainingSchedule,
+  UserProfile,
+} from "@/lib/types";
 
 export {
   buildCurriculumCells,
@@ -23,13 +40,30 @@ export {
 export type ProgressData = {
   skills: Skill[];
   planBySkillId: Map<string, PlanStatus>;
-  logs: PracticeLog[];
-  globalFormReps: number;
+  generalProgress: GeneralProgress;
+  activeCycleProgress: ActiveCycleProgress | null;
+  planProgressByDiscipline: Partial<Record<Discipline, PlanProgressSummary>>;
+};
+
+export type GeneralProgress = {
   calendar: PracticeDay[];
   currentStreak: number;
   bestStreak: number;
-  recentPracticedSkillCount: number;
-  planProgressByDiscipline: Partial<Record<Discipline, PlanProgressSummary>>;
+  practicedDays30: number;
+  practicedDaysTotal: number;
+  practicedSkillCount30: number;
+  practicedSkillCountTotal: number;
+  globalFormReps: number;
+};
+
+export type ActiveCycleProgress = {
+  startDate: string;
+  endDate: string;
+  todayKey: string;
+  periodLabel: string;
+  daysRemaining: number;
+  nextTrainingDate: string | null;
+  summary: SessionPeriodProgress;
 };
 
 export async function getProgressData(
@@ -40,63 +74,90 @@ export async function getProgressData(
   const source = activePlanSource(profile.plan_mode);
 
   const [
-    { data: skillsData },
-    { data: planData },
-    { data: logsData },
-    { data: repLogsData },
-  ] =
-    await Promise.all([
-      supabase.from("skills").select("*").order("display_order"),
-      supabase
-        .from("user_plan_items")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("is_hidden", false)
-        .eq("source", source),
-      supabase
-        .from("practice_logs")
-        .select("*")
-        .eq("user_id", userId)
-        .gte("date", dateDaysAgo(89))
-        .order("date", { ascending: true }),
-      supabase
-        .from("practice_logs")
-        .select("skill_id, reps_done")
-        .eq("user_id", userId)
-        .gt("reps_done", 0),
-    ]);
+    skillsResult,
+    planResult,
+    recentLogsResult,
+    activityLogsResult,
+    repLogsResult,
+    scheduleResult,
+  ] = await Promise.all([
+    supabase.from("skills").select("*").order("display_order"),
+    supabase
+      .from("user_plan_items")
+      .select("*, skill:skills(*)")
+      .eq("user_id", userId)
+      .eq("is_hidden", false)
+      .eq("source", source),
+    supabase
+      .from("practice_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("date", dateDaysAgo(89))
+      .order("date", { ascending: true }),
+    supabase
+      .from("practice_logs")
+      .select("date, skill_id, completed, reps_done")
+      .eq("user_id", userId)
+      .order("date", { ascending: true }),
+    supabase
+      .from("practice_logs")
+      .select("skill_id, reps_done")
+      .eq("user_id", userId)
+      .gt("reps_done", 0),
+    supabase
+      .from("training_schedule")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
 
-  const skills = (skillsData as Skill[] | null) ?? [];
-  const logs = (logsData as PracticeLog[] | null) ?? [];
+  const skills = expectData<Skill[]>(skillsResult, "skills") ?? [];
+  const planItems = (expectData<ItemWithSkill[]>(planResult, "user_plan_items") ?? [])
+    .filter((item) => item.skill);
+  const recentLogs = expectData<PracticeLog[]>(recentLogsResult, "practice_logs recenti") ?? [];
+  const activityLogs =
+    expectData<PracticeActivityLog[]>(activityLogsResult, "practice_logs storici") ?? [];
   const repLogs =
-    (repLogsData as Array<{ skill_id: string; reps_done: number | null }> | null) ??
-    [];
-  const planRows =
-    (planData as Array<{ skill_id: string; status: PlanStatus }> | null) ?? [];
-  const planBySkillId = new Map(planRows.map((row) => [row.skill_id, row.status]));
+    expectData<Array<{ skill_id: string; reps_done: number | null }>>(
+      repLogsResult,
+      "practice_logs ripetizioni",
+    ) ?? [];
+  const schedule = expectMaybeData<TrainingSchedule>(
+    scheduleResult,
+    "training_schedule",
+  );
+  const planBySkillId = new Map(
+    planItems.map((row) => [row.skill_id, row.status] as const),
+  );
   const globalFormReps = countGlobalFormReps(skills, repLogs);
-  const calendar = buildPracticeCalendar(logs);
+  const calendar = buildPracticeCalendar(recentLogs);
   const recentCutoff = dateDaysAgo(29);
-  const recentPracticedSkillCount = new Set(
-    logs
-      .filter((log) => log.completed && log.date >= recentCutoff)
-      .map((log) => log.skill_id),
-  ).size;
+  const recentActivityLogs = activityLogs.filter((log) => log.date >= recentCutoff);
 
   return {
     skills,
     planBySkillId,
-    logs,
-    globalFormReps,
-    calendar,
-    currentStreak: computeCurrentStreak(calendar),
-    bestStreak: computeBestStreak(calendar),
-    recentPracticedSkillCount,
+    generalProgress: {
+      calendar,
+      currentStreak: computeCurrentStreakFromLogs(activityLogs),
+      bestStreak: computeBestStreakFromLogs(activityLogs),
+      practicedDays30: countPracticeDays(recentActivityLogs),
+      practicedDaysTotal: countPracticeDays(activityLogs),
+      practicedSkillCount30: countPracticedSkills(recentActivityLogs),
+      practicedSkillCountTotal: countPracticedSkills(activityLogs),
+      globalFormReps,
+    },
+    activeCycleProgress: await getActiveCycleProgress({
+      userId,
+      profile,
+      schedule,
+      planItems,
+    }),
     planProgressByDiscipline: await getPlanProgressByDiscipline(
       profile,
       skills,
       planBySkillId,
-      logs,
+      activityLogs,
     ),
   };
 }
@@ -105,7 +166,7 @@ async function getPlanProgressByDiscipline(
   profile: UserProfile,
   skills: Skill[],
   planBySkillId: Map<string, PlanStatus>,
-  logs: PracticeLog[],
+  logs: PracticeActivityLog[],
 ): Promise<ProgressData["planProgressByDiscipline"]> {
   if (profile.plan_mode === "custom") {
     const result: ProgressData["planProgressByDiscipline"] = {};
@@ -178,6 +239,93 @@ async function getPlanProgressByDiscipline(
   return result;
 }
 
+async function getActiveCycleProgress({
+  userId,
+  profile,
+  schedule,
+  planItems,
+}: {
+  userId: string;
+  profile: UserProfile;
+  schedule: TrainingSchedule | null;
+  planItems: ItemWithSkill[];
+}): Promise<ActiveCycleProgress | null> {
+  const todayKey = localDateKey();
+  if (!schedule || todayKey < schedule.start_date || todayKey > schedule.end_date) {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const logsResult = await supabase
+    .from("practice_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("date", schedule.start_date)
+    .lte("date", schedule.end_date)
+    .order("date", { ascending: true })
+    .order("created_at", { ascending: true });
+  const logs = expectData<PracticeLog[]>(logsResult, "practice_logs ciclo") ?? [];
+  const scheduledItems = getScheduledPlanItems(planItems, schedule, profile.plan_mode);
+  const rows = listSessionsInRange(schedule.start_date, schedule.end_date, schedule, scheduledItems);
+  const summary = buildSessionPeriodProgress({
+    rows,
+    logs,
+    from: schedule.start_date,
+    to: schedule.end_date,
+    repsPerForm: schedule.reps_per_form,
+  });
+  const nextTrainingDate =
+    rows.find((row) => row.date >= todayKey && row.session.kind === "training")?.date ??
+    null;
+
+  return {
+    startDate: schedule.start_date,
+    endDate: schedule.end_date,
+    todayKey,
+    periodLabel: `${fmtDate(schedule.start_date)} - ${fmtDate(schedule.end_date)}`,
+    daysRemaining: Math.max(0, daysBetween(todayKey, schedule.end_date)),
+    nextTrainingDate,
+    summary,
+  };
+}
+
 function activeDisciplines(taichiLevel: number): Discipline[] {
   return taichiLevel > 0 ? ["shaolin", "taichi"] : ["shaolin"];
+}
+
+function expectData<T>(
+  result: { data: unknown; error: { message: string } | null },
+  label: string,
+): T | null {
+  if (result.error) {
+    throw new Error(`Errore nel caricamento di ${label}: ${result.error.message}`);
+  }
+  return result.data as T | null;
+}
+
+function expectMaybeData<T>(
+  result: { data: unknown; error: { message: string; code?: string } | null },
+  label: string,
+): T | null {
+  if (result.error) {
+    throw new Error(`Errore nel caricamento di ${label}: ${result.error.message}`);
+  }
+  return result.data as T | null;
+}
+
+function daysBetween(from: string, to: string): number {
+  let days = 0;
+  let cursor = from;
+  while (cursor < to) {
+    days += 1;
+    cursor = addDaysToDateKey(cursor, 1);
+  }
+  return days;
+}
+
+function fmtDate(date: string): string {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString("it-IT", {
+    day: "numeric",
+    month: "short",
+  });
 }

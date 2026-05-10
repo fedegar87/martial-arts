@@ -14,7 +14,7 @@ export function PlanProgress({ progress }: Props) {
   const offset =
     circumference - (progress.readinessPercent / 100) * circumference;
   const sectionTitle =
-    progress.mode === "exam" ? "Preparazione esame" : "Piano attivo";
+    progress.mode === "exam" ? "Copertura esame" : "Copertura piano";
 
   return (
     <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]">
@@ -54,6 +54,10 @@ export function PlanProgress({ progress }: Props) {
         </svg>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="font-medium">{progress.title}</div>
+          <p className="text-muted-foreground text-sm">
+            Indice misto: pratica recente, stato nel piano e copertura dei
+            contenuti richiesti.
+          </p>
           <p className="text-muted-foreground text-sm">
             {progress.practicedRecent}/{progress.total} praticati negli ultimi
             30 giorni.

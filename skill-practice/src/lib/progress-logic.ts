@@ -18,6 +18,11 @@ export type PracticeDay = {
   count: number;
 };
 
+export type PracticeActivityLog = Pick<
+  PracticeLog,
+  "date" | "skill_id" | "completed" | "reps_done"
+>;
+
 export type PlanProgressSummary = {
   discipline: Discipline;
   mode: PlanMode;
@@ -37,7 +42,7 @@ type ComputePlanProgressInput = {
   title: string;
   requiredSkills: Skill[];
   planBySkillId: Map<string, PlanStatus>;
-  logs: PracticeLog[];
+  logs: PracticeActivityLog[];
   today?: Date;
 };
 
@@ -75,12 +80,12 @@ export function computePlanProgress({
   const total = requiredSkills.length;
   const recentCutoff = dateDaysAgo(29, today);
   const requiredIds = new Set(requiredSkills.map((skill) => skill.id));
-  const completedLogs = logs.filter(
-    (log) => log.completed && requiredIds.has(log.skill_id),
+  const practicedLogs = logs.filter(
+    (log) => isPracticeActivityLog(log) && requiredIds.has(log.skill_id),
   );
-  const practicedSkillIds = new Set(completedLogs.map((log) => log.skill_id));
+  const practicedSkillIds = new Set(practicedLogs.map((log) => log.skill_id));
   const recentPracticedSkillIds = new Set(
-    completedLogs
+    practicedLogs
       .filter((log) => log.date >= recentCutoff)
       .map((log) => log.skill_id),
   );
@@ -132,12 +137,12 @@ export function computePlanProgress({
 }
 
 export function buildPracticeCalendar(
-  logs: PracticeLog[],
+  logs: PracticeActivityLog[],
   today = new Date(),
 ): PracticeDay[] {
   const counts = new Map<string, number>();
   for (const log of logs) {
-    if (!log.completed) continue;
+    if (!isPracticeActivityLog(log)) continue;
     counts.set(log.date, (counts.get(log.date) ?? 0) + 1);
   }
 
@@ -162,6 +167,55 @@ export function countGlobalFormReps(
       formSkillIds.has(log.skill_id) ? sum + (log.reps_done ?? 0) : sum,
     0,
   );
+}
+
+export function isPracticeActivityLog(log: PracticeActivityLog): boolean {
+  return log.completed || (log.reps_done ?? 0) > 0;
+}
+
+export function countPracticeDays(logs: PracticeActivityLog[]): number {
+  return new Set(
+    logs.filter(isPracticeActivityLog).map((log) => log.date),
+  ).size;
+}
+
+export function countPracticedSkills(logs: PracticeActivityLog[]): number {
+  return new Set(
+    logs.filter(isPracticeActivityLog).map((log) => log.skill_id),
+  ).size;
+}
+
+export function computeCurrentStreakFromLogs(
+  logs: PracticeActivityLog[],
+  today = new Date(),
+): number {
+  const activeDates = activeDateSet(logs);
+  const todayKey = localDateKey(today);
+  let cursor = activeDates.has(todayKey) ? todayKey : addDaysToDateKey(todayKey, -1);
+
+  let streak = 0;
+  while (activeDates.has(cursor)) {
+    streak += 1;
+    cursor = addDaysToDateKey(cursor, -1);
+  }
+  return streak;
+}
+
+export function computeBestStreakFromLogs(logs: PracticeActivityLog[]): number {
+  const dates = Array.from(activeDateSet(logs)).sort();
+  if (dates.length === 0) return 0;
+
+  let best = 1;
+  let current = 1;
+  for (let index = 1; index < dates.length; index += 1) {
+    if (dates[index] === addDaysToDateKey(dates[index - 1], 1)) {
+      current += 1;
+    } else {
+      current = 1;
+    }
+    best = Math.max(best, current);
+  }
+  return best;
 }
 
 export function computeCurrentStreak(days: PracticeDay[]): number {
@@ -201,4 +255,10 @@ export function toDateString(date: Date): string {
 function statusMaturityScore(status: PlanStatus): number {
   if (status === "maintenance") return 1;
   return 0.35;
+}
+
+function activeDateSet(logs: PracticeActivityLog[]): Set<string> {
+  return new Set(
+    logs.filter(isPracticeActivityLog).map((log) => log.date),
+  );
 }
