@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import {
   getJournalDataInRange,
@@ -11,7 +9,6 @@ import {
   JournalCalendar,
   type CalendarView,
 } from "@/components/journal/JournalCalendar";
-import { Button } from "@/components/ui/button";
 import type { ScheduledSession } from "@/lib/session-scheduler";
 
 type Props = { searchParams: Promise<{ view?: string; date?: string }> };
@@ -47,20 +44,10 @@ export default async function JournalPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold">Diario</h1>
-            <p className="text-muted-foreground text-sm">
-              Sessioni programmate e pratica libera.
-            </p>
-          </div>
-          <Button asChild variant="outline">
-            <Link href="/sessions/calendar?view=week">
-              <CalendarDays className="mr-2 h-3.5 w-3.5" />
-              Solo sessioni
-            </Link>
-          </Button>
-        </div>
+        <h1 className="text-2xl font-semibold">Diario</h1>
+        <p className="text-muted-foreground text-sm">
+          Sessioni programmate e pratica libera.
+        </p>
       </header>
 
       <JournalCalendar
