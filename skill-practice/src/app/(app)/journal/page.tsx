@@ -50,7 +50,6 @@ export default async function JournalPage({ searchParams }: Props) {
       </header>
 
       <JournalCalendar
-        mode="all"
         view={view}
         selectedDate={selectedDate}
         days={journalData.days}

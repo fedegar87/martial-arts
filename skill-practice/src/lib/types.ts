@@ -139,8 +139,6 @@ export type WeeklyReflection = {
   created_at: string;
 };
 
-export type JournalMode = "all" | "session";
-
 export type JournalDaySessionKind =
   | "training"
   | "rest_day"

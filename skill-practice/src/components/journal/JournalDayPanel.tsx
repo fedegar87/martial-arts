@@ -9,18 +9,16 @@ import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import type {
   FreePracticeItem,
   JournalDayView,
-  JournalMode,
   JournalSkill,
   ScheduledPracticeItem,
 } from "@/lib/types";
 
 type Props = {
   day: JournalDayView | undefined;
-  mode: JournalMode;
   skillOptions: JournalSkill[];
 };
 
-export function JournalDayPanel({ day, mode, skillOptions }: Props) {
+export function JournalDayPanel({ day, skillOptions }: Props) {
   if (!day) return null;
 
   const title = new Date(`${day.date}T00:00:00Z`).toLocaleDateString("it-IT", {
@@ -55,39 +53,34 @@ export function JournalDayPanel({ day, mode, skillOptions }: Props) {
         <EmptyScheduledState day={day} />
       )}
 
-      {(mode === "all" || day.freePractice.length > 0) && (
-        <section className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-medium uppercase text-muted-foreground">
-              Pratica libera
-            </h3>
-            {mode === "all" && (
-              <AddFreePracticeSheet
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-medium uppercase text-muted-foreground">
+            Pratica libera
+          </h3>
+          <AddFreePracticeSheet
+            dateKey={day.date}
+            skills={skillOptions}
+            scheduledSkillIds={scheduledSkillIds}
+            disabled={!day.canToggle}
+          />
+        </div>
+        {day.freePractice.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nessuna pratica libera registrata.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {day.freePractice.map((item) => (
+              <FreePracticeRow
+                key={item.log.id}
+                item={item}
                 dateKey={day.date}
-                skills={skillOptions}
-                scheduledSkillIds={scheduledSkillIds}
-                disabled={!day.canToggle}
               />
-            )}
+            ))}
           </div>
-          {day.freePractice.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nessuna pratica libera registrata.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {day.freePractice.map((item) => (
-                <FreePracticeRow
-                  key={item.log.id}
-                  item={item}
-                  dateKey={day.date}
-                  interactive={mode === "all"}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+        )}
+      </section>
     </section>
   );
 }
@@ -191,11 +184,9 @@ function ScheduledPracticeRow({
 function FreePracticeRow({
   item,
   dateKey,
-  interactive,
 }: {
   item: FreePracticeItem;
   dateKey: string;
-  interactive: boolean;
 }) {
   return (
     <div className="flex min-h-16 items-center gap-3 rounded-md border border-border p-3">
@@ -205,19 +196,13 @@ function FreePracticeRow({
         <Badge variant="outline">fuori sessione</Badge>
         {item.hasNote && <Badge variant="outline">nota</Badge>}
       </div>
-      {interactive ? (
-        <PracticeCompletionToggle
-          skillId={item.skill.id}
-          dateKey={dateKey}
-          done={item.done}
-          disabled={!item.canToggle}
-          kind="free"
-        />
-      ) : (
-        <Badge variant="outline" className="text-[var(--status-success)]">
-          Registrata
-        </Badge>
-      )}
+      <PracticeCompletionToggle
+        skillId={item.skill.id}
+        dateKey={dateKey}
+        done={item.done}
+        disabled={!item.canToggle}
+        kind="free"
+      />
     </div>
   );
 }

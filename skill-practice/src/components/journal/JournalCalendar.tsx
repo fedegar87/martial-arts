@@ -8,12 +8,11 @@ import {
 } from "lucide-react";
 import { JournalDayPanel } from "@/components/journal/JournalDayPanel";
 import { cn } from "@/lib/utils";
-import type { JournalDayView, JournalMode, JournalSkill } from "@/lib/types";
+import type { JournalDayView, JournalSkill } from "@/lib/types";
 
 export type CalendarView = "week" | "month";
 
 type Props = {
-  mode: JournalMode;
   view: CalendarView;
   selectedDate: string;
   days: JournalDayView[];
@@ -26,7 +25,6 @@ type Props = {
 const WEEKDAY_LABELS = ["L", "M", "M", "G", "V", "S", "D"];
 
 export function JournalCalendar({
-  mode,
   view,
   selectedDate,
   days,
@@ -40,7 +38,6 @@ export function JournalCalendar({
   return (
     <div className="space-y-5">
       <CalendarToolbar
-        mode={mode}
         view={view}
         selectedDate={selectedDate}
         periodLabel={periodLabel}
@@ -49,29 +46,23 @@ export function JournalCalendar({
       />
 
       {view === "week" ? (
-        <WeekCalendar mode={mode} days={days} selectedDate={selectedDate} />
+        <WeekCalendar days={days} selectedDate={selectedDate} />
       ) : (
-        <MonthCalendar mode={mode} days={days} selectedDate={selectedDate} />
+        <MonthCalendar days={days} selectedDate={selectedDate} />
       )}
 
-      <JournalDayPanel
-        day={selectedDay}
-        mode={mode}
-        skillOptions={skillOptions}
-      />
+      <JournalDayPanel day={selectedDay} skillOptions={skillOptions} />
     </div>
   );
 }
 
 function CalendarToolbar({
-  mode,
   view,
   selectedDate,
   periodLabel,
   previousDate,
   nextDate,
 }: {
-  mode: JournalMode;
   view: CalendarView;
   selectedDate: string;
   periodLabel: string;
@@ -84,30 +75,22 @@ function CalendarToolbar({
         <h2 className="text-lg font-semibold capitalize">{periodLabel}</h2>
         <div className="flex items-center gap-2">
           <PeriodButton
-            mode={mode}
             direction="previous"
             view={view}
             date={previousDate}
           />
-          <PeriodButton
-            mode={mode}
-            direction="next"
-            view={view}
-            date={nextDate}
-          />
+          <PeriodButton direction="next" view={view} date={nextDate} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 rounded-md border border-border p-1">
         <ViewLink
-          mode={mode}
           label="Settimana"
           view="week"
           selectedDate={selectedDate}
           active={view === "week"}
         />
         <ViewLink
-          mode={mode}
           label="Mese"
           view="month"
           selectedDate={selectedDate}
@@ -119,12 +102,10 @@ function CalendarToolbar({
 }
 
 function PeriodButton({
-  mode,
   direction,
   view,
   date,
 }: {
-  mode: JournalMode;
   direction: "previous" | "next";
   view: CalendarView;
   date: string;
@@ -136,7 +117,7 @@ function PeriodButton({
 
   return (
     <Link
-      href={calendarHref(mode, view, date)}
+      href={calendarHref(view, date)}
       aria-label={label}
       className={`${className} tap-feedback hover:bg-muted`}
     >
@@ -146,13 +127,11 @@ function PeriodButton({
 }
 
 function ViewLink({
-  mode,
   label,
   view,
   selectedDate,
   active,
 }: {
-  mode: JournalMode;
   label: string;
   view: CalendarView;
   selectedDate: string;
@@ -160,7 +139,7 @@ function ViewLink({
 }) {
   return (
     <Link
-      href={calendarHref(mode, view, selectedDate)}
+      href={calendarHref(view, selectedDate)}
       aria-current={active ? "page" : undefined}
       className={cn(
         "tap-feedback label-font min-h-10 rounded-sm px-3 py-2 text-center text-sm",
@@ -175,11 +154,9 @@ function ViewLink({
 }
 
 function WeekCalendar({
-  mode,
   days,
   selectedDate,
 }: {
-  mode: JournalMode;
   days: JournalDayView[];
   selectedDate: string;
 }) {
@@ -189,7 +166,6 @@ function WeekCalendar({
         {days.map((day) => (
           <DayCell
             key={day.date}
-            mode={mode}
             day={day}
             view="week"
             selected={day.date === selectedDate}
@@ -202,11 +178,9 @@ function WeekCalendar({
 }
 
 function MonthCalendar({
-  mode,
   days,
   selectedDate,
 }: {
-  mode: JournalMode;
   days: JournalDayView[];
   selectedDate: string;
 }) {
@@ -223,7 +197,6 @@ function MonthCalendar({
         {days.map((day) => (
           <DayCell
             key={day.date}
-            mode={mode}
             day={day}
             view="month"
             selected={day.date === selectedDate}
@@ -236,13 +209,11 @@ function MonthCalendar({
 }
 
 function DayCell({
-  mode,
   day,
   view,
   selected,
   inCurrentMonth,
 }: {
-  mode: JournalMode;
   day: JournalDayView;
   view: CalendarView;
   selected: boolean;
@@ -251,8 +222,7 @@ function DayCell({
   const date = new Date(`${day.date}T00:00:00Z`);
   const dayNumber = date.getUTCDate();
   const weekdayLabel = date.toLocaleDateString("it-IT", { weekday: "short" });
-  const available = mode === "all" || day.isInScheduleRange;
-  const cellLabel = dayCellLabel(date, day, available);
+  const cellLabel = dayCellLabel(date, day);
   const content = (
     <>
       <span className="flex items-center justify-between gap-1">
@@ -270,7 +240,7 @@ function DayCell({
           </span>
         )}
       </span>
-      <DayCellBody day={day} available={available} />
+      <DayCellBody day={day} />
     </>
   );
   const className = cn(
@@ -279,20 +249,11 @@ function DayCell({
       ? "border-primary bg-primary/5"
       : "border-border bg-card hover:bg-muted/50",
     !inCurrentMonth && "bg-muted/30",
-    !available && "pointer-events-none opacity-40",
   );
-
-  if (!available) {
-    return (
-      <span role="group" className={className} aria-label={cellLabel} title={cellLabel}>
-        {content}
-      </span>
-    );
-  }
 
   return (
     <Link
-      href={calendarHref(mode, view, day.date)}
+      href={calendarHref(view, day.date)}
       aria-label={cellLabel}
       aria-current={selected ? "date" : undefined}
       className={className}
@@ -303,17 +264,7 @@ function DayCell({
   );
 }
 
-function DayCellBody({
-  day,
-  available,
-}: {
-  day: JournalDayView;
-  available: boolean;
-}) {
-  if (!available) {
-    return <span className="text-[0.65rem] text-muted-foreground">fuori periodo</span>;
-  }
-
+function DayCellBody({ day }: { day: JournalDayView }) {
   if (day.sessionKind === "training") {
     return (
       <span className="flex items-center gap-1 text-[0.65rem] text-foreground">
@@ -346,18 +297,13 @@ function DayCellBody({
   );
 }
 
-function dayCellLabel(
-  date: Date,
-  day: JournalDayView,
-  available: boolean,
-): string {
+function dayCellLabel(date: Date, day: JournalDayView): string {
   const formattedDate = date.toLocaleDateString("it-IT", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
 
-  if (!available) return `${formattedDate}: fuori periodo`;
   if (day.sessionKind === "training") {
     return `${formattedDate}: ${day.scheduled.length} ${
       day.scheduled.length === 1 ? "esercizio" : "esercizi"
@@ -368,7 +314,6 @@ function dayCellLabel(
   return `${formattedDate}: nessuna sessione`;
 }
 
-function calendarHref(mode: JournalMode, view: CalendarView, date: string): string {
-  const base = mode === "all" ? "/journal" : "/sessions/calendar";
-  return `${base}?view=${view}&date=${date}`;
+function calendarHref(view: CalendarView, date: string): string {
+  return `/journal?view=${view}&date=${date}`;
 }
