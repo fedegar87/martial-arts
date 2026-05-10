@@ -1,17 +1,12 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import {
-  activePlanSource,
   buildPracticeCalendar,
-  computeBestStreakFromLogs,
-  computePlanProgress,
   computeCurrentStreakFromLogs,
-  countGlobalFormReps,
-  countPracticedSkills,
   countPracticeDays,
-  dateDaysAgo,
+  countRespectedSessionsUpTo,
+  countSessionsUpTo,
   type PracticeActivityLog,
-  type PlanProgressSummary,
   type PracticeDay,
 } from "@/lib/progress-logic";
 import {
@@ -19,51 +14,29 @@ import {
   listSessionsInRange,
   type ItemWithSkill,
 } from "@/lib/session-scheduler";
-import { buildSessionPeriodProgress, type SessionPeriodProgress } from "@/lib/session-progress";
+import { buildSessionPeriodProgress } from "@/lib/session-progress";
 import { addDaysToDateKey, localDateKey } from "@/lib/date";
-import type {
-  Discipline,
-  PlanStatus,
-  PracticeLog,
-  Skill,
-  TrainingSchedule,
-  UserProfile,
-} from "@/lib/types";
+import type { PracticeLog, TrainingSchedule, UserProfile } from "@/lib/types";
 
-export {
-  buildCurriculumCells,
-  type CurriculumCell,
-  type PlanProgressSummary as PlanProgressInfo,
-  type PracticeDay,
-} from "@/lib/progress-logic";
-
-export type ProgressData = {
-  skills: Skill[];
-  planBySkillId: Map<string, PlanStatus>;
-  generalProgress: GeneralProgress;
-  activeCycleProgress: ActiveCycleProgress | null;
-  planProgressByDiscipline: Partial<Record<Discipline, PlanProgressSummary>>;
-};
+export type { PracticeDay } from "@/lib/progress-logic";
 
 export type GeneralProgress = {
-  calendar: PracticeDay[];
-  currentStreak: number;
-  bestStreak: number;
-  practicedDays30: number;
   practicedDaysTotal: number;
-  practicedSkillCount30: number;
-  practicedSkillCountTotal: number;
-  globalFormReps: number;
+  currentStreak: number;
+  calendar: PracticeDay[];
 };
 
 export type ActiveCycleProgress = {
-  startDate: string;
-  endDate: string;
-  todayKey: string;
   periodLabel: string;
-  daysRemaining: number;
-  nextTrainingDate: string | null;
-  summary: SessionPeriodProgress;
+  respectedUntilToday: number;
+  dueUntilToday: number;
+  respectedTotal: number;
+  sessionTotal: number;
+};
+
+export type ProgressData = {
+  generalProgress: GeneralProgress;
+  activeCycleProgress: ActiveCycleProgress | null;
 };
 
 export async function getProgressData(
@@ -71,28 +44,13 @@ export async function getProgressData(
   profile: UserProfile,
 ): Promise<ProgressData> {
   const supabase = await createClient();
-  const source = activePlanSource(profile.plan_mode);
 
-  const [
-    skillsResult,
-    planResult,
-    recentLogsResult,
-    activityLogsResult,
-    repLogsResult,
-    scheduleResult,
-  ] = await Promise.all([
-    supabase.from("skills").select("*").order("display_order"),
-    supabase
-      .from("user_plan_items")
-      .select("*, skill:skills(*)")
-      .eq("user_id", userId)
-      .eq("is_hidden", false)
-      .eq("source", source),
+  const [recentLogsResult, activityLogsResult, scheduleResult] = await Promise.all([
     supabase
       .from("practice_logs")
       .select("*")
       .eq("user_id", userId)
-      .gte("date", dateDaysAgo(89))
+      .gte("date", dateKeyDaysAgo(89))
       .order("date", { ascending: true }),
     supabase
       .from("practice_logs")
@@ -100,155 +58,35 @@ export async function getProgressData(
       .eq("user_id", userId)
       .order("date", { ascending: true }),
     supabase
-      .from("practice_logs")
-      .select("skill_id, reps_done")
-      .eq("user_id", userId)
-      .gt("reps_done", 0),
-    supabase
       .from("training_schedule")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle(),
   ]);
 
-  const skills = expectData<Skill[]>(skillsResult, "skills") ?? [];
-  const planItems = (expectData<ItemWithSkill[]>(planResult, "user_plan_items") ?? [])
-    .filter((item) => item.skill);
   const recentLogs = expectData<PracticeLog[]>(recentLogsResult, "practice_logs recenti") ?? [];
   const activityLogs =
     expectData<PracticeActivityLog[]>(activityLogsResult, "practice_logs storici") ?? [];
-  const repLogs =
-    expectData<Array<{ skill_id: string; reps_done: number | null }>>(
-      repLogsResult,
-      "practice_logs ripetizioni",
-    ) ?? [];
-  const schedule = expectMaybeData<TrainingSchedule>(
-    scheduleResult,
-    "training_schedule",
-  );
-  const planBySkillId = new Map(
-    planItems.map((row) => [row.skill_id, row.status] as const),
-  );
-  const globalFormReps = countGlobalFormReps(skills, repLogs);
-  const calendar = buildPracticeCalendar(recentLogs);
-  const recentCutoff = dateDaysAgo(29);
-  const recentActivityLogs = activityLogs.filter((log) => log.date >= recentCutoff);
+  const schedule = expectMaybeData<TrainingSchedule>(scheduleResult, "training_schedule");
 
   return {
-    skills,
-    planBySkillId,
     generalProgress: {
-      calendar,
-      currentStreak: computeCurrentStreakFromLogs(activityLogs),
-      bestStreak: computeBestStreakFromLogs(activityLogs),
-      practicedDays30: countPracticeDays(recentActivityLogs),
       practicedDaysTotal: countPracticeDays(activityLogs),
-      practicedSkillCount30: countPracticedSkills(recentActivityLogs),
-      practicedSkillCountTotal: countPracticedSkills(activityLogs),
-      globalFormReps,
+      currentStreak: computeCurrentStreakFromLogs(activityLogs),
+      calendar: buildPracticeCalendar(recentLogs),
     },
-    activeCycleProgress: await getActiveCycleProgress({
-      userId,
-      profile,
-      schedule,
-      planItems,
-    }),
-    planProgressByDiscipline: await getPlanProgressByDiscipline(
-      profile,
-      skills,
-      planBySkillId,
-      activityLogs,
-    ),
+    activeCycleProgress: await getActiveCycleProgress({ userId, profile, schedule }),
   };
-}
-
-async function getPlanProgressByDiscipline(
-  profile: UserProfile,
-  skills: Skill[],
-  planBySkillId: Map<string, PlanStatus>,
-  logs: PracticeActivityLog[],
-): Promise<ProgressData["planProgressByDiscipline"]> {
-  if (profile.plan_mode === "custom") {
-    const result: ProgressData["planProgressByDiscipline"] = {};
-    for (const discipline of activeDisciplines(profile.assigned_level_taichi)) {
-      const requiredSkills = skills.filter(
-        (skill) => skill.discipline === discipline && planBySkillId.has(skill.id),
-      );
-      if (requiredSkills.length === 0) continue;
-      result[discipline] = computePlanProgress({
-        discipline,
-        mode: "custom",
-        title: "Selezione personale",
-        requiredSkills,
-        planBySkillId,
-        logs,
-      });
-    }
-    return result;
-  }
-
-  const examRefs: Array<{ discipline: Discipline; id: string }> = [
-    profile.preparing_exam_id
-      ? { discipline: "shaolin", id: profile.preparing_exam_id }
-      : null,
-    profile.preparing_exam_taichi_id
-      ? { discipline: "taichi", id: profile.preparing_exam_taichi_id }
-      : null,
-  ].filter((item): item is { discipline: Discipline; id: string } => item !== null);
-
-  if (examRefs.length === 0) return {};
-
-  const supabase = await createClient();
-  const examIds = examRefs.map((exam) => exam.id);
-  const [{ data: examData }, { data: reqData }] = await Promise.all([
-    supabase.from("exam_programs").select("*").in("id", examIds),
-    supabase
-      .from("exam_skill_requirements")
-      .select("exam_id, skill_id")
-      .in("exam_id", examIds),
-  ]);
-
-  const examsById = new Map(
-    ((examData ?? []) as Array<{ id: string; level_name?: string }>).map(
-      (exam) => [exam.id, exam],
-    ),
-  );
-  const reqsByExamId = new Map<string, Set<string>>();
-  for (const row of (reqData ?? []) as Array<{ exam_id: string; skill_id: string }>) {
-    const reqs = reqsByExamId.get(row.exam_id) ?? new Set<string>();
-    reqs.add(row.skill_id);
-    reqsByExamId.set(row.exam_id, reqs);
-  }
-
-  const result: ProgressData["planProgressByDiscipline"] = {};
-  for (const examRef of examRefs) {
-    const reqIds = reqsByExamId.get(examRef.id) ?? new Set<string>();
-    const requiredSkills = skills.filter((skill) => reqIds.has(skill.id));
-    if (requiredSkills.length === 0) continue;
-
-    result[examRef.discipline] = computePlanProgress({
-      discipline: examRef.discipline,
-      mode: "exam",
-      title: examsById.get(examRef.id)?.level_name ?? "Esame",
-      requiredSkills,
-      planBySkillId,
-      logs,
-    });
-  }
-
-  return result;
 }
 
 async function getActiveCycleProgress({
   userId,
   profile,
   schedule,
-  planItems,
 }: {
   userId: string;
   profile: UserProfile;
   schedule: TrainingSchedule | null;
-  planItems: ItemWithSkill[];
 }): Promise<ActiveCycleProgress | null> {
   const todayKey = localDateKey();
   if (!schedule || todayKey < schedule.start_date || todayKey > schedule.end_date) {
@@ -256,17 +94,33 @@ async function getActiveCycleProgress({
   }
 
   const supabase = await createClient();
-  const logsResult = await supabase
-    .from("practice_logs")
-    .select("*")
-    .eq("user_id", userId)
-    .gte("date", schedule.start_date)
-    .lte("date", schedule.end_date)
-    .order("date", { ascending: true })
-    .order("created_at", { ascending: true });
+  const [logsResult, planItemsResult] = await Promise.all([
+    supabase
+      .from("practice_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("date", schedule.start_date)
+      .lte("date", schedule.end_date)
+      .order("date", { ascending: true })
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("user_plan_items")
+      .select("*, skill:skills(*)")
+      .eq("user_id", userId)
+      .eq("is_hidden", false)
+      .eq("source", profile.plan_mode === "custom" ? "manual" : "exam_program"),
+  ]);
+
   const logs = expectData<PracticeLog[]>(logsResult, "practice_logs ciclo") ?? [];
+  const planItems = (expectData<ItemWithSkill[]>(planItemsResult, "user_plan_items") ?? [])
+    .filter((item) => item.skill);
   const scheduledItems = getScheduledPlanItems(planItems, schedule, profile.plan_mode);
-  const rows = listSessionsInRange(schedule.start_date, schedule.end_date, schedule, scheduledItems);
+  const rows = listSessionsInRange(
+    schedule.start_date,
+    schedule.end_date,
+    schedule,
+    scheduledItems,
+  );
   const summary = buildSessionPeriodProgress({
     rows,
     logs,
@@ -274,23 +128,20 @@ async function getActiveCycleProgress({
     to: schedule.end_date,
     repsPerForm: schedule.reps_per_form,
   });
-  const nextTrainingDate =
-    rows.find((row) => row.date >= todayKey && row.session.kind === "training")?.date ??
-    null;
+
+  const trainingRows = summary.rows.map((row) => ({ date: row.date, status: row.status }));
 
   return {
-    startDate: schedule.start_date,
-    endDate: schedule.end_date,
-    todayKey,
     periodLabel: `${fmtDate(schedule.start_date)} - ${fmtDate(schedule.end_date)}`,
-    daysRemaining: Math.max(0, daysBetween(todayKey, schedule.end_date)),
-    nextTrainingDate,
-    summary,
+    respectedUntilToday: countRespectedSessionsUpTo(trainingRows, todayKey),
+    dueUntilToday: countSessionsUpTo(trainingRows, todayKey),
+    respectedTotal: summary.sessionCompleted,
+    sessionTotal: summary.sessionTotal,
   };
 }
 
-function activeDisciplines(taichiLevel: number): Discipline[] {
-  return taichiLevel > 0 ? ["shaolin", "taichi"] : ["shaolin"];
+function dateKeyDaysAgo(days: number, today = new Date()): string {
+  return addDaysToDateKey(localDateKey(today), -days);
 }
 
 function expectData<T>(
@@ -311,16 +162,6 @@ function expectMaybeData<T>(
     throw new Error(`Errore nel caricamento di ${label}: ${result.error.message}`);
   }
   return result.data as T | null;
-}
-
-function daysBetween(from: string, to: string): number {
-  let days = 0;
-  let cursor = from;
-  while (cursor < to) {
-    days += 1;
-    cursor = addDaysToDateKey(cursor, 1);
-  }
-  return days;
 }
 
 function fmtDate(date: string): string {
