@@ -21,7 +21,7 @@ const ENABLE_LEVEL_LOCK = false;
 type Props = {
   searchParams: Promise<{
     d?: string;
-    category?: string;
+    category?: string | string[];
     withVideo?: string;
     q?: string;
   }>;
@@ -33,7 +33,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
 
   const { d, category, withVideo, q } = await searchParams;
   const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
-  const selectedCategory = isSkillCategory(category) ? category : undefined;
+  const selectedCategories = parseSkillCategories(category);
+  const selectedCategorySet = new Set(selectedCategories);
   const onlyWithVideo = withVideo === "1";
   const query = normalizeQuery(q);
   const userLevel =
@@ -78,10 +79,14 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
     count: categoryCountBase.filter((s) => s.category === value).length,
   }));
   const videoCount = searchMatchedSkills
-    .filter((s) => (selectedCategory ? s.category === selectedCategory : true))
+    .filter((s) =>
+      selectedCategorySet.size > 0 ? selectedCategorySet.has(s.category) : true,
+    )
     .filter((s) => hasPlayableVideo(s.video_url)).length;
   const filteredSkills = searchMatchedSkills
-    .filter((s) => (selectedCategory ? s.category === selectedCategory : true))
+    .filter((s) =>
+      selectedCategorySet.size > 0 ? selectedCategorySet.has(s.category) : true,
+    )
     .filter((s) => (onlyWithVideo ? hasPlayableVideo(s.video_url) : true));
 
   const byGrade = filteredSkills.reduce<Record<number, Skill[]>>(
@@ -123,7 +128,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       <LibraryFilters
         basePath="/library"
         discipline={discipline}
-        currentCategory={selectedCategory}
+        selectedCategories={selectedCategories}
         categories={categoryOptions}
         withVideo={onlyWithVideo}
         query={query}
@@ -173,9 +178,10 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   );
 }
 
-function isSkillCategory(value?: string): value is SkillCategory {
-  return Boolean(
-    value && Object.prototype.hasOwnProperty.call(SKILL_CATEGORY_LABELS, value),
+function parseSkillCategories(value?: string | string[]): SkillCategory[] {
+  const values = Array.isArray(value) ? value : value ? [value] : [];
+  return (Object.keys(SKILL_CATEGORY_LABELS) as SkillCategory[]).filter(
+    (category) => values.includes(category),
   );
 }
 
