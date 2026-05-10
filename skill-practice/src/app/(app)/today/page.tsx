@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { getThisWeekLogs } from "@/lib/queries/practice-log";
@@ -16,7 +14,6 @@ import { TodaySessionHeader } from "@/components/today/TodaySessionHeader";
 import { TodaySessionSummary } from "@/components/today/TodaySessionSummary";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline } from "@/lib/grades";
-import { Button } from "@/components/ui/button";
 import type { PlanMode, TrainingSchedule, UserProfile } from "@/lib/types";
 
 export default async function TodayPage() {
@@ -140,7 +137,9 @@ export default async function TodayPage() {
     todayLogs.some((log) => log.skill_id === item.skill_id && log.completed),
   ).length;
   const weekDoneCount = new Set(
-    logs.filter((log) => log.completed).map((log) => log.date),
+    logs
+      .filter((log) => log.completed || log.reps_done > 0)
+      .map((log) => log.date),
   ).size;
 
   return (
@@ -192,12 +191,6 @@ function TodayShell({
       />
       <NewsBanner unreadCount={unreadNewsCount} />
       {children}
-      <Button asChild variant="outline" size="sm">
-        <Link href="/journal">
-          <CalendarDays className="mr-2 h-3.5 w-3.5" />
-          Apri diario
-        </Link>
-      </Button>
     </section>
   );
 }
