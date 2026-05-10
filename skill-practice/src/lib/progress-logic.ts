@@ -15,7 +15,7 @@ export type CurriculumCell = {
 
 export type PracticeDay = {
   date: string;
-  count: number;
+  practiced: boolean;
 };
 
 export type PracticeActivityLog = Pick<
@@ -140,15 +140,13 @@ export function buildPracticeCalendar(
   logs: PracticeActivityLog[],
   today = new Date(),
 ): PracticeDay[] {
-  const counts = new Map<string, number>();
-  for (const log of logs) {
-    if (!isPracticeActivityLog(log)) continue;
-    counts.set(log.date, (counts.get(log.date) ?? 0) + 1);
-  }
+  const practicedDates = new Set(
+    logs.filter(isPracticeActivityLog).map((log) => log.date),
+  );
 
   return Array.from({ length: 90 }, (_, index) => {
     const key = addDaysToDateKey(localDateKey(today), -(89 - index));
-    return { date: key, count: counts.get(key) ?? 0 };
+    return { date: key, practiced: practicedDates.has(key) };
   });
 }
 

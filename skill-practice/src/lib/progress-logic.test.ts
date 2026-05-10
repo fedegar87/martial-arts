@@ -170,8 +170,8 @@ test("practice activity metrics count partial reps but not notes alone", () => {
   assert.equal(countPracticeDays(logs), 2);
   assert.equal(countPracticedSkills(logs), 2);
   assert.deepEqual(calendar.slice(-2), [
-    { date: "2026-04-21", count: 1 },
-    { date: "2026-04-22", count: 1 },
+    { date: "2026-04-21", practiced: true },
+    { date: "2026-04-22", practiced: true },
   ]);
 });
 
@@ -205,6 +205,15 @@ test("countGlobalFormReps sums all form repetition logs", () => {
     ]),
     5,
   );
+});
+
+test("practice calendar marks days without practice as practiced=false", () => {
+  const today = new Date("2026-04-25T12:00:00.000Z");
+  const calendar = buildPracticeCalendar([log("2026-04-25")], today);
+
+  assert.equal(calendar.length, 90);
+  assert.equal(calendar.at(-1)?.practiced, true);
+  assert.equal(calendar.at(-2)?.practiced, false);
 });
 
 function log(
