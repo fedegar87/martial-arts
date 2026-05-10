@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import {
-  getJournalDataInRange,
-  getJournalSkillOptions,
-} from "@/lib/queries/journal";
+  getCalendarDataInRange,
+  getCalendarSkillOptions,
+} from "@/lib/queries/calendar";
 import { addDaysToDateKey, localDateKey } from "@/lib/date";
 import {
   JournalCalendar,
@@ -31,13 +31,13 @@ export default async function JournalPage({ searchParams }: Props) {
   const nextDate = shiftCalendarDate(view, selectedDate, 1);
 
   const [journalData, skillOptions] = await Promise.all([
-    getJournalDataInRange({
+    getCalendarDataInRange({
       userId: profile.id,
       profile,
       from: range.from,
       to: range.to,
     }),
-    getJournalSkillOptions(),
+    getCalendarSkillOptions(),
   ]);
 
   return (

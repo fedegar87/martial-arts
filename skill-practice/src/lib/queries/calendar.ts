@@ -18,11 +18,11 @@ import type {
   UserProfile,
 } from "@/lib/types";
 
-export type JournalCalendarRow = { date: string; session: ScheduledSession };
+export type CalendarRow = { date: string; session: ScheduledSession };
 
-export type JournalData = {
+export type CalendarData = {
   days: JournalDayView[];
-  rows: JournalCalendarRow[];
+  rows: CalendarRow[];
   logs: PracticeLog[];
   schedule: TrainingSchedule | null;
   repsPerForm: number;
@@ -32,7 +32,7 @@ type PracticeLogWithSkill = PracticeLog & {
   skill: JournalSkill | JournalSkill[] | null;
 };
 
-export async function getJournalDataInRange({
+export async function getCalendarDataInRange({
   userId,
   profile,
   from,
@@ -42,7 +42,7 @@ export async function getJournalDataInRange({
   profile: UserProfile;
   from: string;
   to: string;
-}): Promise<JournalData> {
+}): Promise<CalendarData> {
   const supabase = await createClient();
   const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
   const [schedule, items, logsWithSkill] = await Promise.all([
@@ -58,7 +58,7 @@ export async function getJournalDataInRange({
   const skillById = new Map<string, JournalSkill>();
 
   for (const item of scheduledItems) {
-    skillById.set(item.skill.id, toJournalSkill(item.skill));
+    skillById.set(item.skill.id, toCalendarSkill(item.skill));
   }
 
   const logs: PracticeLog[] = [];
@@ -89,7 +89,7 @@ export async function getJournalDataInRange({
   };
 }
 
-export async function getJournalSkillOptions(): Promise<JournalSkill[]> {
+export async function getCalendarSkillOptions(): Promise<JournalSkill[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("skills")
@@ -153,7 +153,7 @@ function normalizeJoinedSkill(
   return skill;
 }
 
-function toJournalSkill(skill: Skill): JournalSkill {
+function toCalendarSkill(skill: Skill): JournalSkill {
   return {
     id: skill.id,
     name: skill.name,
