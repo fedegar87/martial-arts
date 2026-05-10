@@ -16,7 +16,6 @@ type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 type ScheduleContext = {
   schedule: TrainingSchedule | null;
-  isInScheduleRange: boolean;
   isScheduled: boolean;
   repsPerForm: number;
 };
@@ -72,7 +71,7 @@ export async function setPracticeCompletionForDate(
     }
   }
 
-  revalidateJournalPaths(dateKey, scheduleContext.isInScheduleRange);
+  revalidateJournalPaths(dateKey);
   return { success: true };
 }
 
@@ -110,7 +109,7 @@ export async function addFreePracticeForDate(
   const rpcError = await updateLastPracticedAt(supabase, skillId, dateKey);
   if (rpcError) return { error: rpcError };
 
-  revalidateJournalPaths(dateKey, scheduleContext.isInScheduleRange);
+  revalidateJournalPaths(dateKey);
   return { success: true };
 }
 
@@ -150,7 +149,7 @@ export async function removeFreePracticeForDate(
     if (neutralizeError) return { error: neutralizeError };
   }
 
-  revalidateJournalPaths(dateKey, scheduleContext.isInScheduleRange);
+  revalidateJournalPaths(dateKey);
   return { success: true };
 }
 
@@ -187,13 +186,9 @@ async function getScheduleContext(
 
   const schedule = (scheduleData as TrainingSchedule | null) ?? null;
   const repsPerForm = schedule?.reps_per_form ?? 1;
-  const isInScheduleRange =
-    schedule !== null &&
-    dateKey >= schedule.start_date &&
-    dateKey <= schedule.end_date;
 
   if (!schedule || !profileData) {
-    return { schedule, isInScheduleRange, isScheduled: false, repsPerForm };
+    return { schedule, isScheduled: false, repsPerForm };
   }
 
   const planMode = (profileData as { plan_mode: PlanMode }).plan_mode;
@@ -219,7 +214,7 @@ async function getScheduleContext(
       (item) => item.skill_id === skillId,
     );
 
-  return { schedule, isInScheduleRange, isScheduled, repsPerForm };
+  return { schedule, isScheduled, repsPerForm };
 }
 
 async function neutralizeOrDeleteLog(
@@ -272,12 +267,8 @@ function isValidDateKey(value: string): boolean {
   );
 }
 
-function revalidateJournalPaths(
-  dateKey: string,
-  isInScheduleRange: boolean,
-): void {
+function revalidateJournalPaths(dateKey: string): void {
   revalidatePath("/journal");
   revalidatePath("/progress");
-  if (isInScheduleRange) revalidatePath("/sessions/calendar");
   if (dateKey === localDateKey()) revalidatePath("/today");
 }

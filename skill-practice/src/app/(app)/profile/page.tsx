@@ -111,9 +111,9 @@ export default async function ProfilePage() {
             </Link>
           </Button>
           <Button asChild variant="outline" className="w-full justify-start">
-            <Link href="/sessions/calendar">
+            <Link href="/journal">
               <CalendarDays className="mr-2 h-4 w-4" />
-              Calendario sessioni
+              Calendario
             </Link>
           </Button>
         </CardContent>
