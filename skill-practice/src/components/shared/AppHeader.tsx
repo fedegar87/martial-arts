@@ -15,7 +15,7 @@ export function AppHeader() {
       <Link
         href="/profile"
         aria-label="Profilo"
-        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-muted-foreground transition-opacity hover:opacity-80 hover:text-foreground"
+        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-accent transition-opacity hover:opacity-80"
       >
         <User className="h-5 w-5" aria-hidden />
       </Link>
