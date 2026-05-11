@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { ChipButton } from "@/components/primitives/Chip";
 
 const OPTIONS: Array<{ weeks: 4 | 8 | 12 | 24; label: string }> = [
   { weeks: 4, label: "1 mese" },
@@ -18,19 +18,13 @@ export function DurationPicker({ value, onChange }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
       {OPTIONS.map((opt) => (
-        <button
+        <ChipButton
           key={opt.weeks}
-          type="button"
           onClick={() => onChange(opt.weeks)}
-          className={cn(
-            "min-h-11 rounded-full border px-4 text-sm",
-            value === opt.weeks
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-card text-muted-foreground",
-          )}
+          active={value === opt.weeks}
         >
           {opt.label}
-        </button>
+        </ChipButton>
       ))}
       <input type="hidden" name="duration_weeks" value={value} />
     </div>

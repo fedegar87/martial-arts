@@ -374,6 +374,13 @@ skill-practice/
 
 ### 5.1 Note vincolanti sulla struttura
 
+Aggiornamento UI 2026-05-11:
+
+- `src/components/ui/` resta riservato ai componenti shadcn-managed.
+- Le primitive UI custom del progetto vanno in `src/components/primitives/<Name>.tsx` con PascalCase.
+- `src/components/shared/` resta per shell/app/layout e asset identitari, non per primitive UI pure.
+- Regole e roadmap UI sono in `skill-practice/docs/ui-system.md` e `skill-practice/docs/ui-codebase-refactor-plan.md`.
+
 - **Route groups `(auth)` e `(app)`**: separano pagine pubbliche da protette. Il middleware in `src/middleware.ts` redirige verso `/login` qualunque rotta sotto `(app)` se la sessione manca.
 - **`lib/supabase/` con tre file**: in App Router servono client diversi per Client Components, RSC/Server Actions e middleware. Un singolo `supabase.ts` rompe SSR e session refresh.
 - **`lib/queries/` + `lib/actions/`**: lettura via Server Components senza hook, mutation via Server Action. Per questo `hooks/` è ridotto a 2 file: hook tipo `useSkills`/`useUserPlan` sarebbero anti-pattern in App Router (riscaricano dati già nel server tree).
@@ -981,6 +988,8 @@ Per pre-vendita federazione: landing statica separata su Carrd (€19/anno) o Fr
 Per MVP personale: zero branding, massima funzionalità. Identità visiva rifinita quando si va in pre-vendita federazione.
 
 ### 16.2 Componenti
+
+Aggiornamento UI 2026-05-11: per coerenza con `CLAUDE.md`, `src/components/ui/` e' trattato come superficie shadcn-managed. Non aggiungere primitive custom in questa cartella e non modificarla a mano senza decisione esplicita. Le primitive custom vivono in `src/components/primitives/`.
 
 shadcn/ui copiato nel repo (`src/components/ui/`). **Non è dipendenza npm** — è codice tuo, modificabile.
 

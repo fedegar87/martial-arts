@@ -2,8 +2,8 @@
 
 import { useActionState, useCallback, useState } from "react";
 import { setupTrainingSchedule } from "@/lib/actions/training-schedule";
+import { OptionCard } from "@/components/primitives/OptionCard";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
-import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -268,12 +268,10 @@ function ExamScopePicker({
   return (
     <div className="flex flex-col gap-2">
       {options.map((option) => (
-        <label
+        <OptionCard
           key={option.value}
-          className={cn(
-            "border-border bg-card flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg border px-4 py-2 text-sm",
-            value === option.value && "border-primary",
-          )}
+          selected={value === option.value}
+          className="justify-between"
         >
           <span className="font-medium">{option.label}</span>
           <span className="text-muted-foreground text-xs">{option.detail}</span>
@@ -285,7 +283,7 @@ function ExamScopePicker({
             onChange={() => onChange(option.value)}
             className="sr-only"
           />
-        </label>
+        </OptionCard>
       ))}
     </div>
   );

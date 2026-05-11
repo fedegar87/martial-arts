@@ -8,6 +8,7 @@ import {
   Video,
   X,
 } from "lucide-react";
+import { chipClassName } from "@/components/primitives/Chip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
@@ -152,7 +153,7 @@ export function LibraryFilters({
           </span>
           <span className="flex shrink-0 items-center gap-2">
             {activeFilterCount > 0 && (
-              <span className="rounded-sm bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
+              <span className="rounded-sm border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
                 {activeFilterCount}
               </span>
             )}
@@ -240,12 +241,8 @@ function FilterChip({
       aria-current={active ? "page" : undefined}
       title={`${label}: ${count}`}
       className={cn(
-        "tap-feedback label-font inline-flex min-h-11 min-w-0 max-w-full items-center justify-center gap-2 rounded-md border px-3 text-sm transition-colors",
+        chipClassName({ active, muted }),
         wide ? "w-full sm:w-auto" : "sm:min-w-24",
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
-        muted && "opacity-45",
       )}
     >
       {icon}
@@ -253,7 +250,7 @@ function FilterChip({
       <span
         className={cn(
           "rounded-sm px-1.5 py-0.5 text-[0.68rem] leading-none",
-          active ? "bg-background/20" : "bg-muted text-muted-foreground",
+          active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
         )}
       >
         {count}

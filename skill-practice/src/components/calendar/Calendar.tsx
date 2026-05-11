@@ -7,6 +7,7 @@ import {
   Moon,
 } from "lucide-react";
 import { CalendarDayPanel } from "@/components/calendar/CalendarDayPanel";
+import { SegmentedNav } from "@/components/primitives/SegmentedNav";
 import { cn } from "@/lib/utils";
 import type { CalendarDayView, CalendarSkill } from "@/lib/types";
 
@@ -83,20 +84,22 @@ function CalendarToolbar({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 rounded-md border border-border p-1">
-        <ViewLink
-          label="Settimana"
-          view="week"
-          selectedDate={selectedDate}
-          active={view === "week"}
-        />
-        <ViewLink
-          label="Mese"
-          view="month"
-          selectedDate={selectedDate}
-          active={view === "month"}
-        />
-      </div>
+      <SegmentedNav
+        ariaLabel="Vista calendario"
+        fullWidth
+        items={[
+          {
+            href: calendarHref("week", selectedDate),
+            label: "Settimana",
+            active: view === "week",
+          },
+          {
+            href: calendarHref("month", selectedDate),
+            label: "Mese",
+            active: view === "month",
+          },
+        ]}
+      />
     </section>
   );
 }
@@ -113,7 +116,7 @@ function PeriodButton({
   const Icon = direction === "previous" ? ChevronLeft : ChevronRight;
   const label = direction === "previous" ? "Periodo precedente" : "Periodo successivo";
   const className =
-    "inline-flex h-10 w-10 items-center justify-center rounded-md border border-border";
+    "inline-flex h-11 w-11 items-center justify-center rounded-md border border-border";
 
   return (
     <Link
@@ -122,33 +125,6 @@ function PeriodButton({
       className={`${className} tap-feedback hover:bg-muted`}
     >
       <Icon className="h-4 w-4" />
-    </Link>
-  );
-}
-
-function ViewLink({
-  label,
-  view,
-  selectedDate,
-  active,
-}: {
-  label: string;
-  view: CalendarView;
-  selectedDate: string;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={calendarHref(view, selectedDate)}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "tap-feedback label-font min-h-10 rounded-sm px-3 py-2 text-center text-sm",
-        active
-          ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground",
-      )}
-    >
-      {label}
     </Link>
   );
 }

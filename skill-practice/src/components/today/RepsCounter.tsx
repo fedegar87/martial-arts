@@ -4,6 +4,7 @@ import { useOptimistic, useState, useTransition } from "react";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { incrementRep, decrementRep } from "@/lib/actions/practice";
+import { completedButtonClassName } from "@/lib/ui-classes";
 import { PracticeNoteButton } from "./PracticeNoteButton";
 
 type Props = {
@@ -52,7 +53,7 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
           disabled={pending || completed}
           className={
             completed
-              ? "border-[color:var(--status-success)] text-[var(--status-success)]"
+              ? completedButtonClassName
               : undefined
           }
           onClick={() =>

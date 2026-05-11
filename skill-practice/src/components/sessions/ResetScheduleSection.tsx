@@ -83,7 +83,7 @@ export function ResetScheduleSection() {
                 handleConfirm();
               }}
               disabled={pending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="border border-destructive bg-transparent text-destructive shadow-none hover:bg-destructive/10"
             >
               {pending ? "Cancellazione..." : "Cancella"}
             </AlertDialogAction>

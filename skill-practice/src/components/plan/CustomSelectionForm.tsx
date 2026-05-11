@@ -6,6 +6,7 @@ import {
   deleteCustomSelection,
   saveCustomSelectionFromForm,
 } from "@/lib/actions/plan";
+import { ChipButton } from "@/components/primitives/Chip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -195,7 +196,7 @@ function DeleteCustomSelectionSection({
                 handleConfirm();
               }}
               disabled={pending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="border border-destructive bg-transparent text-destructive shadow-none hover:bg-destructive/10"
             >
               {pending ? "Cancellazione..." : "Cancella"}
             </AlertDialogAction>
@@ -216,18 +217,13 @@ function GradeChip({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
+    <ChipButton
       onClick={onClick}
-      aria-pressed={active}
-      className={`tap-feedback label-font min-h-11 shrink-0 rounded-md border px-3 text-sm ${
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border text-muted-foreground hover:text-foreground"
-      }`}
+      active={active}
+      className="shrink-0"
     >
       {label}
-    </button>
+    </ChipButton>
   );
 }
 

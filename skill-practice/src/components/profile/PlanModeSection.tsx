@@ -61,12 +61,12 @@ export function PlanModeSection({
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button asChild variant={planMode === "exam" ? "default" : "outline"}>
+        <Button asChild variant={planMode === "exam" ? "secondary" : "outline"}>
           <Link href="/plan/exam">Programma esame</Link>
         </Button>
         <Button
           type="button"
-          variant={planMode === "custom" ? "default" : "outline"}
+          variant={planMode === "custom" ? "secondary" : "outline"}
           disabled={pending}
           onClick={handleCustomClick}
         >

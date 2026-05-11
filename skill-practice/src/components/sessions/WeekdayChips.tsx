@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { ChipButton } from "@/components/primitives/Chip";
 
 const LABELS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
@@ -23,19 +23,13 @@ export function WeekdayChips({ value, onChange }: Props) {
         const day = i + 1;
         const active = value.includes(day);
         return (
-          <button
+          <ChipButton
             key={day}
-            type="button"
             onClick={() => toggle(day)}
-            className={cn(
-              "min-h-11 rounded-full border px-4 text-sm transition",
-              active
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground",
-            )}
+            active={active}
           >
             {label}
-          </button>
+          </ChipButton>
         );
       })}
       {value.map((d) => (

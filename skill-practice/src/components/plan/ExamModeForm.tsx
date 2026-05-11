@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { activateExamModeFromForm } from "@/lib/actions/plan";
+import { FormSelect } from "@/components/primitives/FormSelect";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import type { ExamProgram } from "@/lib/types";
@@ -99,26 +100,25 @@ function ExamSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="block space-y-1.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <select
-        name={name}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
-      >
-        <option value="">Nessun esame</option>
-        {exams.map((exam) => (
-          <option key={exam.id} value={exam.id}>
-            {exam.level_name}
-          </option>
-        ))}
-      </select>
-      {exams.length === 0 && (
-        <p className="text-muted-foreground text-xs">
-          Nessun esame disponibile per il livello del profilo.
-        </p>
-      )}
-    </label>
+    <FormSelect
+      label={label}
+      name={name}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      helperText={
+        exams.length === 0 ? (
+          <p className="text-muted-foreground text-xs">
+            Nessun esame disponibile per il livello del profilo.
+          </p>
+        ) : undefined
+      }
+    >
+      <option value="">Nessun esame</option>
+      {exams.map((exam) => (
+        <option key={exam.id} value={exam.id}>
+          {exam.level_name}
+        </option>
+      ))}
+    </FormSelect>
   );
 }

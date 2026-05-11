@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { OptionCard } from "@/components/primitives/OptionCard";
 
 const OPTIONS: Array<{ value: 1 | 2 | 4; label: string }> = [
   { value: 1, label: "Ciclo di 1 settimana" },
@@ -14,12 +14,9 @@ export function CadencePicker({ value, onChange }: Props) {
   return (
     <div className="flex flex-col gap-2">
       {OPTIONS.map((opt) => (
-        <label
+        <OptionCard
           key={opt.value}
-          className={cn(
-            "border-border bg-card flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-4 text-sm",
-            value === opt.value && "border-primary",
-          )}
+          selected={value === opt.value}
         >
           <input
             type="radio"
@@ -30,7 +27,7 @@ export function CadencePicker({ value, onChange }: Props) {
             className="sr-only"
           />
           <span>{opt.label}</span>
-        </label>
+        </OptionCard>
       ))}
     </div>
   );

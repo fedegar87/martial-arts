@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { markPracticeDone } from "@/lib/actions/practice";
+import { completedButtonClassName } from "@/lib/ui-classes";
 import { PracticeNoteButton } from "./PracticeNoteButton";
 
 type Props = {
@@ -39,7 +40,7 @@ export function PracticeCheckButton({ skillId, alreadyDone }: Props) {
           variant={done ? "outline" : "default"}
           className={
             done
-              ? "w-full border-[color:var(--status-success)] text-[var(--status-success)]"
+              ? `w-full ${completedButtonClassName}`
               : "w-full"
           }
         >

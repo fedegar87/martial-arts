@@ -2,8 +2,9 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { selectExam } from "@/lib/actions/onboarding";
+import { FormSelect } from "@/components/primitives/FormSelect";
+import { OptionCard } from "@/components/primitives/OptionCard";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Card,
@@ -70,7 +71,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
           <section className="space-y-3">
             <div className="text-sm font-medium">Discipline praticate</div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="tap-feedback flex min-h-12 items-center gap-3 rounded-lg border p-3 text-sm">
+              <OptionCard selected={practicesShaolin}>
                 <input
                   type="checkbox"
                   name="practicesShaolin"
@@ -79,8 +80,8 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   className="h-5 w-5"
                 />
                 {DISCIPLINE_LABELS.shaolin}
-              </label>
-              <label className="tap-feedback flex min-h-12 items-center gap-3 rounded-lg border p-3 text-sm">
+              </OptionCard>
+              <OptionCard selected={practicesTaichi}>
                 <input
                   type="checkbox"
                   name="practicesTaichi"
@@ -89,7 +90,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   className="h-5 w-5"
                 />
                 {DISCIPLINE_LABELS.taichi}
-              </label>
+              </OptionCard>
             </div>
           </section>
 
@@ -97,60 +98,51 @@ export function OnboardingForm({ exams, displayName }: Props) {
             <div className="text-sm font-medium">Grado attuale</div>
             <div className="grid gap-3 sm:grid-cols-2">
               {practicesShaolin && (
-                <Label className="space-y-1.5">
-                  <span className="text-muted-foreground text-sm">Shaolin</span>
-                  <select
-                    name="assignedLevelShaolin"
-                    value={assignedLevelShaolin}
-                    onChange={(event) =>
-                      setAssignedLevelShaolin(Number(event.target.value))
-                    }
-                    className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
-                  >
-                    {SHAOLIN_GRADES.map((grade) => (
-                      <option key={grade.value} value={grade.value}>
-                        {grade.label}
-                      </option>
-                    ))}
-                  </select>
-                </Label>
+                <FormSelect
+                  label="Shaolin"
+                  name="assignedLevelShaolin"
+                  value={assignedLevelShaolin}
+                  onChange={(event) =>
+                    setAssignedLevelShaolin(Number(event.target.value))
+                  }
+                >
+                  {SHAOLIN_GRADES.map((grade) => (
+                    <option key={grade.value} value={grade.value}>
+                      {grade.label}
+                    </option>
+                  ))}
+                </FormSelect>
               )}
 
               {practicesTaichi && (
-                <Label className="space-y-1.5">
-                  <span className="text-muted-foreground text-sm">
-                    T&apos;ai Chi
-                  </span>
-                  <select
-                    name="assignedLevelTaichi"
-                    value={assignedLevelTaichi}
-                    onChange={(event) =>
-                      setAssignedLevelTaichi(Number(event.target.value))
-                    }
-                    className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
-                  >
-                    {TAICHI_GRADES.filter((grade) => grade.value !== 0).map(
-                      (grade) => (
-                        <option key={grade.value} value={grade.value}>
-                          {grade.label}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </Label>
+                <FormSelect
+                  label="T'ai Chi"
+                  name="assignedLevelTaichi"
+                  value={assignedLevelTaichi}
+                  onChange={(event) =>
+                    setAssignedLevelTaichi(Number(event.target.value))
+                  }
+                >
+                  {TAICHI_GRADES.filter((grade) => grade.value !== 0).map(
+                    (grade) => (
+                      <option key={grade.value} value={grade.value}>
+                        {grade.label}
+                      </option>
+                    ),
+                  )}
+                </FormSelect>
               )}
             </div>
           </section>
 
           <section className="space-y-3">
-            <Label htmlFor="examId">Esame in preparazione</Label>
-            <select
+            <FormSelect
               key={firstExamId}
               id="examId"
+              label="Esame in preparazione"
               name="examId"
               required
               defaultValue={firstExamId}
-              className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
               disabled={visibleExams.length === 0}
             >
               {visibleExams.map((exam) => (
@@ -158,7 +150,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   {DISCIPLINE_LABELS[exam.discipline]} — {exam.level_name}
                 </option>
               ))}
-            </select>
+            </FormSelect>
             {visibleExams.length === 0 && (
               <p className="text-muted-foreground text-sm">
                 Nessun prossimo esame disponibile per i gradi selezionati.

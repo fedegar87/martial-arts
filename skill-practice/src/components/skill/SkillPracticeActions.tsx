@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markPracticeDone } from "@/lib/actions/practice";
+import { completedButtonClassName } from "@/lib/ui-classes";
 import { AddToPlanButton } from "@/components/skill/AddToPlanButton";
 import { PracticeNoteButton } from "@/components/today/PracticeNoteButton";
 import type { PlanMode } from "@/lib/types";
@@ -55,7 +56,7 @@ export function SkillPracticeActions({
           onClick={handleFreePracticeDone}
           disabled={pending || done}
           variant={done ? "outline" : "default"}
-          className="w-full"
+          className={done ? `w-full ${completedButtonClassName}` : "w-full"}
         >
           <Dumbbell className="mr-2 h-4 w-4" />
           {done

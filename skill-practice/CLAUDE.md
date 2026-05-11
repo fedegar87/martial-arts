@@ -34,7 +34,8 @@ Regole d'oro:
 | Nuova route protetta | `src/app/(app)/<feature>/page.tsx` |
 | Nuova route pubblica | `src/app/(auth)/<name>/page.tsx` |
 | Nuovo componente di feature | `src/components/<feature>/<Name>.tsx` |
-| Componente trasversale | `src/components/shared/<Name>.tsx` |
+| Primitiva UI custom trasversale | `src/components/primitives/<Name>.tsx` |
+| Componente trasversale di app/layout | `src/components/shared/<Name>.tsx` |
 | Lettura DB (Server Component) | `src/lib/queries/<entity>.ts` |
 | Mutation (Server Action) | `src/lib/actions/<entity>.ts` (con `"use server"`) |
 | Logica pura | file dedicato in `src/lib/` (es. `practice-logic.ts`) |
@@ -48,6 +49,14 @@ Regole d'oro:
 - Hook lato client per leggere dati (`useSkills`, `useUserPlan` ecc.) — usa Server Components + `lib/queries/*`
 - Importare codice server (`lib/server.ts`, `lib/queries/*`, `lib/actions/*`) dentro Client Components
 - Modificare `src/components/ui/` a mano (è generato da shadcn)
+
+Regole UI:
+
+- `src/components/ui/` resta riservato ai componenti generati o gestiti da shadcn.
+- `src/components/primitives/` contiene wrapper e primitive UI custom del progetto, senza dominio: `Chip`, `OptionCard`, `SegmentedNav`, eventuali wrapper conferma.
+- `src/components/shared/` contiene componenti trasversali di shell/app/layout o asset identitari, non primitive UI pure.
+- Fuori da `src/components/ui/`, i file componenti restano PascalCase.
+- Le regole operative complete sono in `docs/ui-system.md` e il piano di migrazione in `docs/ui-codebase-refactor-plan.md`.
 
 ---
 

@@ -42,7 +42,7 @@ export function AddToPlanButton({
     <Button
       onClick={handleClick}
       disabled={pending}
-      variant={inPersonalSelection ? "outline" : "default"}
+      variant={inPersonalSelection ? "outline" : "secondary"}
       className="w-full"
     >
       {inPersonalSelection ? (

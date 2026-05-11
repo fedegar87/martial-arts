@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Check, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { completedButtonClassName } from "@/lib/ui-classes";
 import {
   addFreePracticeForDate,
   removeFreePracticeForDate,
@@ -53,7 +54,7 @@ export function PracticeCompletionToggle({
     <div className="space-y-1">
       <Button
         type="button"
-        variant={checked ? "outline" : "default"}
+        variant={checked ? "outline" : "secondary"}
         size="sm"
         role="switch"
         aria-checked={checked}
@@ -61,7 +62,7 @@ export function PracticeCompletionToggle({
         onClick={handleClick}
         className={
           checked
-            ? "border-[color:var(--status-success)] text-[var(--status-success)]"
+            ? completedButtonClassName
             : undefined
         }
       >

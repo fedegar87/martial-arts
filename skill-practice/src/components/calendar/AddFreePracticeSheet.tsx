@@ -118,7 +118,7 @@ export function AddFreePracticeSheet({
                     <Button
                       type="button"
                       size="sm"
-                      variant={alreadyScheduled ? "outline" : "default"}
+                      variant={alreadyScheduled ? "outline" : "secondary"}
                       disabled={pending}
                       onClick={() => handleAdd(skill.id)}
                     >

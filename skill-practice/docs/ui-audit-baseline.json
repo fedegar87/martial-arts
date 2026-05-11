@@ -1,0 +1,155 @@
+{
+  "generatedAt": "2026-05-11T19:39:55.374Z",
+  "surfaces": {
+    "domain_surface": {
+      "gold_fill": {
+        "count": 2,
+        "pattern": "bg-primary text-primary-foreground|border-primary bg-primary",
+        "matches": [
+          "src/components/calendar/Calendar.tsx:225:? \"border-primary bg-primary/5\"",
+          "src/components/skill/VideoPlayer.tsx:47:<span className=\"bg-primary text-primary-foreground flex h-14 w-14 items-center justify-center rounded-full shadow-lg\">"
+        ]
+      },
+      "large_radius": {
+        "count": 22,
+        "pattern": "rounded-(xl|lg|full)",
+        "matches": [
+          "src/app/(app)/onboarding/OnboardingForm.tsx:163:className=\"rounded-lg border p-3 text-sm\"",
+          "src/components/calendar/CalendarDayPanel.tsx:32:<section className=\"space-y-4 rounded-lg border border-border p-4\">",
+          "src/components/hub/HubTile.tsx:22:className={`tap-feedback flex items-center gap-4 rounded-xl border border-accent bg-transparent px-5 py-4 transition-colors hover:bg-accent/5 active:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${animClassName}`}",
+          "src/components/landing/EnterButton.tsx:10:rounded-lg",
+          "src/components/library/GradeSection.tsx:28:<div className=\"divide-border rounded-lg border p-1\">",
+          "src/components/plan/CustomSelectionForm.tsx:248:<div className=\"divide-border overflow-hidden rounded-lg border\">",
+          "src/components/progress/ActiveCycleProgress.tsx:12:<section className=\"space-y-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]\">",
+          "src/components/progress/GeneralProgressSummary.tsx:12:<section className=\"space-y-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]\">",
+          "src/components/progress/PracticeCalendar.tsx:15:<section className=\"space-y-4 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]\">",
+          "src/components/progress/sections/ProgressSectionSkeleton.tsx:10:className=\"space-y-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]\"",
+          "src/components/progress/skeletons.tsx:3:<div className=\"space-y-3 rounded-lg border p-4\">",
+          "src/components/progress/TopPracticedList.tsx:11:<section className=\"space-y-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]\">",
+          "src/components/sessions/PlanFormsSection.tsx:81:<ul className=\"divide-border bg-card divide-y rounded-lg border\">",
+          "src/components/sessions/PlanFormsSection.tsx:151:\"bg-muted/70 relative grid h-8 shrink-0 grid-cols-2 rounded-full border p-0.5 shadow-inner transition-colors\",",
+          "src/components/sessions/PlanFormsSection.tsx:158:\"absolute inset-y-0.5 w-[calc(50%-0.125rem)] rounded-full shadow-sm transition-all duration-200\",",
+          "src/components/sessions/PlanFormsSection.tsx:171:\"relative z-10 flex min-w-0 items-center justify-center gap-0.5 rounded-full px-1 text-[10px] font-semibold leading-none transition-colors sm:text-[11px]\",",
+          "src/components/sessions/PlanFormsSection.tsx:191:\"relative z-10 flex min-w-0 items-center justify-center gap-0.5 rounded-full px-1 text-[9px] font-semibold leading-none transition-colors sm:text-[10px]\",",
+          "src/components/sessions/SetupForm.tsx:228:<div className=\"border-border bg-muted/40 flex min-h-11 items-center justify-between gap-3 rounded-lg border px-4 py-2 text-sm\">",
+          "src/components/skill/PlanStatusDot.tsx:23:\"border-muted-foreground/40 inline-block h-2.5 w-2.5 shrink-0 rounded-full border bg-transparent\",",
+          "src/components/skill/VideoPlayer.tsx:47:<span className=\"bg-primary text-primary-foreground flex h-14 w-14 items-center justify-center rounded-full shadow-lg\">",
+          "src/components/today/TodaySessionSummary.tsx:33:className=\"h-1.5 overflow-hidden rounded-full bg-muted\"",
+          "src/components/today/TodaySessionSummary.tsx:37:className=\"h-full rounded-full bg-primary transition-[width]\""
+        ]
+      },
+      "tap_feedback": {
+        "count": 14,
+        "pattern": "tap-feedback",
+        "matches": [
+          "src/components/calendar/Calendar.tsx:125:className={`${className} tap-feedback hover:bg-muted`}",
+          "src/components/calendar/Calendar.tsx:223:\"tap-feedback flex min-h-20 flex-col gap-2 rounded-md border p-2 text-left transition-colors sm:min-h-24\",",
+          "src/components/hub/HubTile.tsx:22:className={`tap-feedback flex items-center gap-4 rounded-xl border border-accent bg-transparent px-5 py-4 transition-colors hover:bg-accent/5 active:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${animClassName}`}",
+          "src/components/library/LibraryFilters.tsx:137:className=\"tap-feedback label-font inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-sm border border-border px-2.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground\"",
+          "src/components/library/LibraryFilters.tsx:149:<summary className=\"tap-feedback flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 marker:hidden [&::-webkit-details-marker]:hidden\">",
+          "src/components/library/LibraryFilters.tsx:266:className=\"tap-feedback inline-flex min-h-8 max-w-full items-center gap-1.5 rounded-sm border border-border px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground\"",
+          "src/components/library/ProgramSkillRow.tsx:21:className={`tap-feedback flex min-h-12 items-center gap-3 rounded-md px-2 py-2 text-sm ${",
+          "src/components/library/SkillListItem.tsx:27:<Card className=\"tap-feedback hover:bg-muted/50 flex min-h-16 flex-row items-center gap-3 p-3 transition-colors\">",
+          "src/components/nav/BottomNav.tsx:39:className={`app-nav__link tap-feedback label-font ${",
+          "src/components/plan/CustomSelectionForm.tsx:252:className=\"tap-feedback flex min-h-14 items-start gap-3 border-b p-3 text-sm last:border-b-0 hover:bg-muted\"",
+          "src/components/programma/PlanTabsNav.tsx:51:className={`program-plan-tab tap-feedback label-font relative flex min-h-11 shrink-0 items-center gap-2 px-3 text-sm font-medium transition-colors ${",
+          "src/components/shared/AppHeader.tsx:11:className=\"tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-accent transition-opacity hover:opacity-80\"",
+          "src/components/shared/AppHeader.tsx:18:className=\"tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-accent transition-opacity hover:opacity-80\"",
+          "src/components/skill/VideoPlayer.tsx:42:className=\"tap-feedback hairline bg-card hover:bg-primary/10 active:bg-primary/20 focus-visible:outline-primary flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-md border filter sepia-[0.12] transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2\""
+        ]
+      },
+      "native_controls": {
+        "count": 4,
+        "pattern": "<button|<select|<textarea",
+        "matches": [
+          "src/components/sessions/PlanFormsSection.tsx:164:<button",
+          "src/components/sessions/PlanFormsSection.tsx:184:<button",
+          "src/components/skill/VideoPlayer.tsx:38:<button",
+          "src/components/today/PracticeNoteButton.tsx:81:<textarea"
+        ]
+      },
+      "status_tokens": {
+        "count": 2,
+        "pattern": "var\\(--status-success\\)|var\\(--destructive\\)",
+        "matches": [
+          "src/components/progress/PracticeCalendar.tsx:131:return \"border-[color:var(--status-success)] bg-[var(--status-success)]\";",
+          "src/components/today/TodaySkillCard.tsx:37:? \"border-[color:var(--status-success)]\""
+        ]
+      },
+      "gold_glow": {
+        "count": 1,
+        "pattern": "shadow-\\[0_0_24px_var\\(--gold-glow\\)",
+        "matches": [
+          "src/components/today/TodaySkillCard.tsx:39:? \"border-primary/40 shadow-[0_0_24px_var(--gold-glow)]\""
+        ]
+      }
+    },
+    "allowed_surface": {
+      "gold_fill": {
+        "count": 5,
+        "pattern": "bg-primary text-primary-foreground|border-primary bg-primary",
+        "matches": [
+          "src/components/ui/avatar.tsx:65:\"absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground bg-blend-color ring-2 ring-background select-none\",",
+          "src/components/ui/badge.tsx:12:default: \"bg-primary text-primary-foreground [a]:hover:bg-primary/80\",",
+          "src/components/ui/button.tsx:12:default: \"bg-primary text-primary-foreground shadow-[0_0_24px_var(--gold-glow)] [a]:hover:bg-primary/80\",",
+          "src/components/primitives/Chip.tsx:27:? \"border-primary bg-primary/10 text-primary\"",
+          "src/components/primitives/OptionCard.tsx:21:selected && \"border-primary bg-primary/10 text-foreground\","
+        ]
+      },
+      "large_radius": {
+        "count": 17,
+        "pattern": "rounded-(xl|lg|full)",
+        "matches": [
+          "src/components/ui/alert-dialog.tsx:57:\"fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border bg-popover p-6 text-popover-foreground shadow-lg duration-200 sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95\",",
+          "src/components/ui/alert.tsx:7:\"group/alert relative grid w-full gap-0.5 rounded-lg border px-2.5 py-2 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4\",",
+          "src/components/ui/avatar.tsx:20:\"group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten\",",
+          "src/components/ui/avatar.tsx:36:\"aspect-square size-full rounded-full object-cover\",",
+          "src/components/ui/avatar.tsx:52:\"flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs\",",
+          "src/components/ui/avatar.tsx:65:\"absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground bg-blend-color ring-2 ring-background select-none\",",
+          "src/components/ui/avatar.tsx:97:\"relative flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-muted-foreground ring-2 ring-background group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3\",",
+          "src/components/ui/button.tsx:26:xs: \"h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3\",",
+          "src/components/ui/button.tsx:27:sm: \"h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5\",",
+          "src/components/ui/button.tsx:31:\"size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3\",",
+          "src/components/ui/button.tsx:33:\"size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg\",",
+          "src/components/ui/input.tsx:11:\"h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40\",",
+          "src/components/ui/radio-group.tsx:29:\"group/radio-group-item peer relative flex aspect-square size-4 shrink-0 rounded-full border border-input outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary\",",
+          "src/components/ui/radio-group.tsx:38:<span className=\"absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-foreground\" />",
+          "src/components/ui/switch.tsx:20:\"peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-transparent transition-all outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px] dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:bg-primary data-unchecked:bg-input dark:data-unchecked:bg-input/80 data-disabled:cursor-not-allowed data-disabled:opacity-50\",",
+          "src/components/ui/switch.tsx:27:className=\"pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] dark:data-checked:bg-primary-foreground group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0 dark:data-unchecked:bg-foreground\"",
+          "src/components/ui/tabs.tsx:28:\"group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none\","
+        ]
+      },
+      "tap_feedback": {
+        "count": 3,
+        "pattern": "tap-feedback",
+        "matches": [
+          "src/components/primitives/Chip.tsx:23:\"tap-feedback label-font inline-flex min-w-0 max-w-full items-center justify-center gap-2 rounded-md border text-sm transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50\",",
+          "src/components/primitives/OptionCard.tsx:20:\"tap-feedback flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-border bg-card px-4 py-2 text-sm transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30\",",
+          "src/components/primitives/SegmentedNav.tsx:42:\"tap-feedback label-font flex min-h-11 items-center justify-center gap-1.5 rounded-md border border-transparent px-3 text-sm text-muted-foreground transition-colors hover:text-foreground\","
+        ]
+      },
+      "native_controls": {
+        "count": 2,
+        "pattern": "<button|<select|<textarea",
+        "matches": [
+          "src/components/primitives/Chip.tsx:44:<button",
+          "src/components/primitives/FormSelect.tsx:28:<select className={formSelectClassName(className)} {...props}>"
+        ]
+      },
+      "status_tokens": {
+        "count": 1,
+        "pattern": "var\\(--status-success\\)|var\\(--destructive\\)",
+        "matches": [
+          "src/lib/ui-classes.ts:2:\"border-[color:var(--status-success)] bg-transparent text-[var(--status-success)] shadow-none disabled:opacity-100\";"
+        ]
+      },
+      "gold_glow": {
+        "count": 1,
+        "pattern": "shadow-\\[0_0_24px_var\\(--gold-glow\\)",
+        "matches": [
+          "src/components/ui/button.tsx:12:default: \"bg-primary text-primary-foreground shadow-[0_0_24px_var(--gold-glow)] [a]:hover:bg-primary/80\","
+        ]
+      }
+    }
+  }
+}

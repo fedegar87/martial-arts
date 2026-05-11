@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateProfileGrade } from "@/lib/actions/profile";
+import { FormSelect } from "@/components/primitives/FormSelect";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -90,20 +91,17 @@ function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
   return (
     <form action={handleSubmit} className="space-y-2">
       <input type="hidden" name="discipline" value={discipline} />
-      <label className="block space-y-1.5 text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <select
-          name="assignedLevel"
-          defaultValue={currentLevel}
-          className="border-input bg-background min-h-11 w-full rounded-lg border px-3 text-sm"
-        >
-          {grades.map((g) => (
-            <option key={g.value} value={g.value}>
-              {g.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <FormSelect
+        label={label}
+        name="assignedLevel"
+        defaultValue={currentLevel}
+      >
+        {grades.map((g) => (
+          <option key={g.value} value={g.value}>
+            {g.label}
+          </option>
+        ))}
+      </FormSelect>
 
       {error && (
         <Alert variant="destructive">
