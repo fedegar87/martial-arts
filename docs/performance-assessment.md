@@ -198,6 +198,24 @@ function handleClick() {
 ```
 
 ### C.8 — `unstable_cache` su dati statici per schoolId
+
+> **NON FATTIBILE con l'attuale `createClient()`** — testato e revertito.
+> In Next 15+ il body di `unstable_cache` esegue fuori dal request scope.
+> `createClient()` chiama `cookies()` (necessario per `@supabase/ssr` per
+> leggere la sessione utente), che richiede il request scope.
+> Risultato: ogni rotta che usa una query cachata fa 500 con
+> "cookies() was called outside a request scope".
+>
+> Per riabilitare C.8 servirebbe un client Supabase alternativo per le
+> letture catalogo, che non passi da `cookies()`. Opzioni:
+> - Service role client (no RLS) — solo per dati pubblici, rischio leak
+>   se applicato a query user-scoped per errore.
+> - Cambiare RLS delle tabelle statiche per consentire lettura anon
+>   (sono già `USING (true) FOR authenticated`, basterebbe estendere a
+>   `anon`). Lasciare un secondo `createClient` senza cookie store.
+>
+> Per ora **non si cacha**. Il ROI era marginale e il rischio elevato.
+
 Tabelle statiche: `skills`, `exam_programs`, `exam_skill_requirements`. Cambiano raramente.
 ```ts
 import { unstable_cache } from "next/cache";

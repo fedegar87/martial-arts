@@ -1,5 +1,4 @@
 import "server-only";
-import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Discipline, Skill, SkillCategory } from "@/lib/types";
 
@@ -48,19 +47,15 @@ export async function listSkillsByCategory(
   return (data as Skill[] | null) ?? [];
 }
 
-export const getSkillById = unstable_cache(
-  async (skillId: string): Promise<Skill | null> => {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("skills")
-      .select("*")
-      .eq("id", skillId)
-      .maybeSingle();
-    return (data as Skill | null) ?? null;
-  },
-  ["skill-by-id"],
-  { revalidate: 3600, tags: ["skills"] },
-);
+export async function getSkillById(skillId: string): Promise<Skill | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("skills")
+    .select("*")
+    .eq("id", skillId)
+    .maybeSingle();
+  return (data as Skill | null) ?? null;
+}
 
 export async function listSkillsAtGrade(
   discipline: Discipline,
@@ -92,28 +87,24 @@ export async function listSkillsForDiscipline(
   return (data as Skill[] | null) ?? [];
 }
 
-export const listSkillsForExam = unstable_cache(
-  async (examId: string): Promise<Skill[]> => {
-    const supabase = await createClient();
+export async function listSkillsForExam(examId: string): Promise<Skill[]> {
+  const supabase = await createClient();
 
-    const { data: reqs } = await supabase
-      .from("exam_skill_requirements")
-      .select("skill_id")
-      .eq("exam_id", examId);
+  const { data: reqs } = await supabase
+    .from("exam_skill_requirements")
+    .select("skill_id")
+    .eq("exam_id", examId);
 
-    if (!reqs || reqs.length === 0) return [];
+  if (!reqs || reqs.length === 0) return [];
 
-    const skillIds = (reqs as Array<{ skill_id: string }>).map((r) => r.skill_id);
+  const skillIds = (reqs as Array<{ skill_id: string }>).map((r) => r.skill_id);
 
-    const { data: skills } = await supabase
-      .from("skills")
-      .select("*")
-      .in("id", skillIds)
-      .order("category", { ascending: true })
-      .order("display_order", { ascending: true });
+  const { data: skills } = await supabase
+    .from("skills")
+    .select("*")
+    .in("id", skillIds)
+    .order("category", { ascending: true })
+    .order("display_order", { ascending: true });
 
-    return (skills as Skill[] | null) ?? [];
-  },
-  ["skills-for-exam"],
-  { revalidate: 3600, tags: ["skills", "exams"] },
-);
+  return (skills as Skill[] | null) ?? [];
+}
