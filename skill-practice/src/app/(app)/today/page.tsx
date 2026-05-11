@@ -6,6 +6,7 @@ import { getUnreadNewsCount } from "@/lib/queries/news";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getScheduledPlanItems, getScheduledSession } from "@/lib/session-scheduler";
 import { localDateKey } from "@/lib/date";
+import { timed } from "@/lib/perf";
 import { NewsBanner } from "@/components/news/NewsBanner";
 import { RestDayCard } from "@/components/today/RestDayCard";
 import { TodayEmptyState } from "@/components/today/TodayEmptyState";
@@ -17,16 +18,18 @@ import { gradeLabelForDiscipline } from "@/lib/grades";
 import type { PlanMode, TrainingSchedule, UserProfile } from "@/lib/types";
 
 export default async function TodayPage() {
-  const profile = await getCurrentProfile();
+  const profile = await timed("today.profile", () => getCurrentProfile());
   if (!profile) redirect("/login");
 
   const sourceFilter =
     profile.plan_mode === "custom" ? "manual" : "exam_program";
   const [items, logs, unreadNewsCount, schedule] = await Promise.all([
-    getUserPlanItems(profile.id, undefined, sourceFilter),
-    getThisWeekLogs(profile.id),
-    getUnreadNewsCount(profile),
-    getTrainingSchedule(profile.id),
+    timed("today.plan_items", () =>
+      getUserPlanItems(profile.id, undefined, sourceFilter),
+    ),
+    timed("today.week_logs", () => getThisWeekLogs(profile.id)),
+    timed("today.unread_news", () => getUnreadNewsCount(profile)),
+    timed("today.schedule", () => getTrainingSchedule(profile.id)),
   ]);
 
   const todayStr = localDateKey();

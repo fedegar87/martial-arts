@@ -2,11 +2,8 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildPracticeCalendar,
-  computeCurrentStreakFromLogs,
-  countPracticeDays,
   countRespectedSessionsUpTo,
   countSessionsUpTo,
-  type PracticeActivityLog,
   type PracticeDay,
 } from "@/lib/progress-logic";
 import {
@@ -23,7 +20,6 @@ export type { PracticeDay } from "@/lib/progress-logic";
 export type GeneralProgress = {
   practicedDaysTotal: number;
   currentStreak: number;
-  calendar: PracticeDay[];
 };
 
 export type ActiveCycleProgress = {
@@ -34,66 +30,59 @@ export type ActiveCycleProgress = {
   sessionTotal: number;
 };
 
-export type ProgressData = {
-  generalProgress: GeneralProgress;
-  activeCycleProgress: ActiveCycleProgress | null;
-};
-
-export async function getProgressData(
-  userId: string,
-  profile: UserProfile,
-): Promise<ProgressData> {
+export async function getGeneralProgress(userId: string): Promise<GeneralProgress> {
   const supabase = await createClient();
-
-  const [recentLogsResult, activityLogsResult, scheduleResult] = await Promise.all([
-    supabase
-      .from("practice_logs")
-      .select("*")
-      .eq("user_id", userId)
-      .gte("date", dateKeyDaysAgo(89))
-      .order("date", { ascending: true }),
-    supabase
-      .from("practice_logs")
-      .select("date, skill_id, completed, reps_done")
-      .eq("user_id", userId)
-      .order("date", { ascending: true }),
-    supabase
-      .from("training_schedule")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle(),
+  const [daysResult, streakResult] = await Promise.all([
+    supabase.rpc("count_practice_days", { p_user_id: userId }),
+    supabase.rpc("current_practice_streak", { p_user_id: userId }),
   ]);
 
-  const recentLogs = expectData<PracticeLog[]>(recentLogsResult, "practice_logs recenti") ?? [];
-  const activityLogs =
-    expectData<PracticeActivityLog[]>(activityLogsResult, "practice_logs storici") ?? [];
-  const schedule = expectMaybeData<TrainingSchedule>(scheduleResult, "training_schedule");
+  if (daysResult.error) {
+    throw new Error(`Errore in count_practice_days: ${daysResult.error.message}`);
+  }
+  if (streakResult.error) {
+    throw new Error(`Errore in current_practice_streak: ${streakResult.error.message}`);
+  }
 
   return {
-    generalProgress: {
-      practicedDaysTotal: countPracticeDays(activityLogs),
-      currentStreak: computeCurrentStreakFromLogs(activityLogs),
-      calendar: buildPracticeCalendar(recentLogs),
-    },
-    activeCycleProgress: await getActiveCycleProgress({ userId, profile, schedule }),
+    practicedDaysTotal: (daysResult.data as number | null) ?? 0,
+    currentStreak: (streakResult.data as number | null) ?? 0,
   };
 }
 
-async function getActiveCycleProgress({
-  userId,
-  profile,
-  schedule,
-}: {
-  userId: string;
-  profile: UserProfile;
-  schedule: TrainingSchedule | null;
-}): Promise<ActiveCycleProgress | null> {
+export async function getPracticeCalendarDays(userId: string): Promise<PracticeDay[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("practice_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("date", dateKeyDaysAgo(89))
+    .order("date", { ascending: true });
+
+  if (error) {
+    throw new Error(`Errore nel caricamento di practice_logs recenti: ${error.message}`);
+  }
+
+  return buildPracticeCalendar((data as PracticeLog[] | null) ?? []);
+}
+
+export async function getActiveCycleProgress(
+  userId: string,
+  profile: UserProfile,
+): Promise<ActiveCycleProgress | null> {
+  const supabase = await createClient();
+  const { data: scheduleRow } = await supabase
+    .from("training_schedule")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const schedule = scheduleRow as TrainingSchedule | null;
   const todayKey = localDateKey();
   if (!schedule || todayKey < schedule.start_date || todayKey > schedule.end_date) {
     return null;
   }
 
-  const supabase = await createClient();
   const [logsResult, planItemsResult] = await Promise.all([
     supabase
       .from("practice_logs")
@@ -111,9 +100,17 @@ async function getActiveCycleProgress({
       .eq("source", profile.plan_mode === "custom" ? "manual" : "exam_program"),
   ]);
 
-  const logs = expectData<PracticeLog[]>(logsResult, "practice_logs ciclo") ?? [];
-  const planItems = (expectData<ItemWithSkill[]>(planItemsResult, "user_plan_items") ?? [])
-    .filter((item) => item.skill);
+  if (logsResult.error) {
+    throw new Error(`Errore nel caricamento di practice_logs ciclo: ${logsResult.error.message}`);
+  }
+  if (planItemsResult.error) {
+    throw new Error(`Errore nel caricamento di user_plan_items: ${planItemsResult.error.message}`);
+  }
+
+  const logs = (logsResult.data as PracticeLog[] | null) ?? [];
+  const planItems = ((planItemsResult.data as ItemWithSkill[] | null) ?? []).filter(
+    (item) => item.skill,
+  );
   const scheduledItems = getScheduledPlanItems(planItems, schedule, profile.plan_mode);
   const rows = listSessionsInRange(
     schedule.start_date,
@@ -136,26 +133,6 @@ async function getActiveCycleProgress({
     respectedTotal: summary.sessionCompleted,
     sessionTotal: summary.sessionTotal,
   };
-}
-
-function expectData<T>(
-  result: { data: unknown; error: { message: string } | null },
-  label: string,
-): T | null {
-  if (result.error) {
-    throw new Error(`Errore nel caricamento di ${label}: ${result.error.message}`);
-  }
-  return result.data as T | null;
-}
-
-function expectMaybeData<T>(
-  result: { data: unknown; error: { message: string; code?: string } | null },
-  label: string,
-): T | null {
-  if (result.error) {
-    throw new Error(`Errore nel caricamento di ${label}: ${result.error.message}`);
-  }
-  return result.data as T | null;
 }
 
 function fmtDate(date: string): string {

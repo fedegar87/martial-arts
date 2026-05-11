@@ -18,13 +18,14 @@ export function PracticeCheckButton({ skillId, alreadyDone }: Props) {
   const [message, setMessage] = useState<string | null>(null);
 
   function handleClick() {
+    setDone(true);
     start(async () => {
       const result = await markPracticeDone(skillId);
       if (result && "error" in result) {
+        setDone(false);
         setMessage(result.error);
         return;
       }
-      setDone(true);
       setNoteOpen(true);
     });
   }

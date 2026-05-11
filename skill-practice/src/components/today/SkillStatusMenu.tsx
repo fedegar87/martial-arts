@@ -33,9 +33,9 @@ export function SkillStatusMenu({
   const [pending, startTransition] = useTransition();
 
   function run(action: () => Promise<unknown>) {
+    setOpen(false);
     startTransition(async () => {
       await action();
-      setOpen(false);
     });
   }
 

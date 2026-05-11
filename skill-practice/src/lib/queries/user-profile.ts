@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { UserProfile } from "@/lib/types";
 
@@ -7,44 +8,52 @@ export type CurrentProfileAccount = UserProfile & {
   school_name: string | null;
 };
 
-export async function getCurrentProfile(): Promise<UserProfile | null> {
+export const getCurrentUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
+  return user;
+});
 
-  const { data } = await supabase
-    .from("user_profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
+export const getCurrentProfile = cache(
+  async (): Promise<UserProfile | null> => {
+    const user = await getCurrentUser();
+    if (!user) return null;
 
-  return (data as UserProfile | null) ?? null;
-}
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
 
-export async function getCurrentProfileAccount(): Promise<CurrentProfileAccount | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+    return (data as UserProfile | null) ?? null;
+  },
+);
 
-  const { data } = await supabase
-    .from("user_profiles")
-    .select("*, school:schools(name)")
-    .eq("id", user.id)
-    .maybeSingle();
+export const getCurrentProfileAccount = cache(
+  async (): Promise<CurrentProfileAccount | null> => {
+    const user = await getCurrentUser();
+    if (!user) return null;
 
-  const row = data as
-    | (UserProfile & { school?: { name: string | null } | null })
-    | null;
-  if (!row) return null;
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("user_profiles")
+      .select("*, school:schools(name)")
+      .eq("id", user.id)
+      .maybeSingle();
 
-  const { school, ...profile } = row;
-  return {
-    ...profile,
-    email: user.email ?? null,
-    school_name: school?.name ?? null,
-  };
-}
+    const row = data as
+      | (UserProfile & { school?: { name: string | null } | null })
+      | null;
+    if (!row) return null;
+
+    const { school, ...profile } = row;
+    return {
+      ...profile,
+      email: user.email ?? null,
+      school_name: school?.name ?? null,
+    };
+  },
+);

@@ -24,14 +24,13 @@ export default async function SkillDetailPage({ params }: Props) {
   if (!profile) redirect("/login");
 
   const { skillId } = await params;
-  const skill = await getSkillById(skillId);
-  if (!skill) notFound();
-
-  const [planItems, personalNotes, todayLog] = await Promise.all([
+  const [skill, planItems, personalNotes, todayLog] = await Promise.all([
+    getSkillById(skillId),
     getUserPlanItemsBySkill(profile.id, skillId),
     getPersonalNotesForSkill(profile.id, skillId),
     getTodayLogForSkill(profile.id, skillId),
   ]);
+  if (!skill) notFound();
   const activeSource = profile.plan_mode === "custom" ? "manual" : "exam_program";
   const activePlanItem =
     planItems.find((item) => item.source === activeSource && !item.is_hidden) ??

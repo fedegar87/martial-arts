@@ -1,18 +1,17 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarDays } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { getProgressData } from "@/lib/queries/progress";
-import { ActiveCycleProgress } from "@/components/progress/ActiveCycleProgress";
-import { GeneralProgressSummary } from "@/components/progress/GeneralProgressSummary";
-import { PracticeCalendar } from "@/components/progress/PracticeCalendar";
+import { ActiveCycleSection } from "@/components/progress/sections/ActiveCycleSection";
+import { GeneralProgressSection } from "@/components/progress/sections/GeneralProgressSection";
+import { PracticeCalendarSection } from "@/components/progress/sections/PracticeCalendarSection";
+import { ProgressSectionSkeleton } from "@/components/progress/sections/ProgressSectionSkeleton";
 import { Button } from "@/components/ui/button";
 
 export default async function ProgressPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
-
-  const data = await getProgressData(profile.id, profile);
 
   return (
     <div className="space-y-6">
@@ -26,11 +25,15 @@ export default async function ProgressPage() {
         </Button>
       </header>
 
-      {data.activeCycleProgress && (
-        <ActiveCycleProgress progress={data.activeCycleProgress} />
-      )}
-      <GeneralProgressSummary progress={data.generalProgress} />
-      <PracticeCalendar days={data.generalProgress.calendar} />
+      <Suspense fallback={<ProgressSectionSkeleton heightClass="h-16" />}>
+        <ActiveCycleSection profile={profile} />
+      </Suspense>
+      <Suspense fallback={<ProgressSectionSkeleton heightClass="h-16" />}>
+        <GeneralProgressSection userId={profile.id} />
+      </Suspense>
+      <Suspense fallback={<ProgressSectionSkeleton heightClass="h-40" />}>
+        <PracticeCalendarSection userId={profile.id} />
+      </Suspense>
     </div>
   );
 }

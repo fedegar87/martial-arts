@@ -10,9 +10,11 @@ export default async function SetupPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  const schedule = await getTrainingSchedule(profile.id);
   const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const items = await getUserPlanItems(profile.id, undefined, sourceFilter);
+  const [schedule, items] = await Promise.all([
+    getTrainingSchedule(profile.id),
+    getUserPlanItems(profile.id, undefined, sourceFilter),
+  ]);
   const disciplineCounts = countByDiscipline(items);
 
   const programLabel =

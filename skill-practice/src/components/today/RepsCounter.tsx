@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { incrementRep, decrementRep } from "@/lib/actions/practice";
@@ -15,7 +15,12 @@ type Props = {
 export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const completed = repsDone >= repsTarget;
+  const [optimisticReps, applyDelta] = useOptimistic(
+    repsDone,
+    (current: number, delta: number) =>
+      Math.max(0, Math.min(repsTarget, current + delta)),
+  );
+  const completed = optimisticReps >= repsTarget;
 
   return (
     <div className="space-y-2">
@@ -24,9 +29,10 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
           type="button"
           size="icon"
           variant="outline"
-          disabled={pending || repsDone === 0}
+          disabled={pending || optimisticReps === 0}
           onClick={() =>
             startTransition(async () => {
+              applyDelta(-1);
               setError(null);
               const result = await decrementRep(skillId);
               if (result && "error" in result) setError(result.error);
@@ -37,7 +43,7 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
           <Minus className="h-4 w-4" />
         </Button>
         <span className="min-w-12 text-center text-sm tabular-nums">
-          {repsDone} / {repsTarget}
+          {optimisticReps} / {repsTarget}
         </span>
         <Button
           type="button"
@@ -51,6 +57,7 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
           }
           onClick={() =>
             startTransition(async () => {
+              applyDelta(1);
               setError(null);
               const result = await incrementRep(skillId);
               if (result && "error" in result) setError(result.error);

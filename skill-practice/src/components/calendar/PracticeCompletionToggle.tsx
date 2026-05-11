@@ -31,6 +31,8 @@ export function PracticeCompletionToggle({
 
   function handleClick() {
     const next = !checked;
+    const previous = checked;
+    setOptimisticDone(next);
     startTransition(async () => {
       setError(null);
       const result =
@@ -41,10 +43,9 @@ export function PracticeCompletionToggle({
           : await setPracticeCompletionForDate(skillId, dateKey, next);
 
       if ("error" in result) {
+        setOptimisticDone(previous);
         setError(result.error);
-        return;
       }
-      setOptimisticDone(next);
     });
   }
 
