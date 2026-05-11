@@ -13,32 +13,46 @@ const MartialArtistIconComponent = forwardRef<SVGSVGElement, LucideProps>(
       className={className}
       {...props}
     >
-      <circle cx="12" cy="5.5" r="2" fill={color} opacity="0.6" />
+      <circle cx="7.5" cy="4.5" r="1.9" fill={color} opacity="0.7" />
       <path
-        d="M6 14 L8 10 L16 10 L18 14 Z"
-        fill={color}
-        opacity="0.5"
-      />
-      <path
-        d="M10 10 L12 13 L14 10"
+        d="M7.5 6.5 L9.5 13.5"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
-        strokeLinejoin="round"
       />
-      <rect
-        x="5"
-        y="13.4"
-        width="14"
-        height="2.4"
-        rx="0.4"
+      <path
+        d="M7 8.5 L3 8"
+        stroke={color}
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+      <path
+        d="M8 9 L11 11"
+        stroke={color}
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+      <circle
+        cx="9.3"
+        cy="12.8"
+        r="1.3"
         style={{ fill: "var(--primary)" }}
       />
       <path
-        d="M5 15.8 L3.5 20.5 L20.5 20.5 L19 15.8 Z"
-        fill={color}
-        opacity="0.5"
+        d="M9 14 L6.8 21"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
       />
+      <path
+        d="M10 13.5 L21 9.5"
+        stroke={color}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <circle cx="21.2" cy="9.4" r="0.9" fill={color} opacity="0.9" />
     </svg>
   ),
 );
