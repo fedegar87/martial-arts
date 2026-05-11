@@ -17,7 +17,7 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
         description="Scegli giorni, durata e cadenza. Distribuiamo noi le forme sulle tue settimane."
         action={
           <Button asChild>
-            <Link href="/sessions/setup">Definisci sessioni</Link>
+            <Link href="/sessions/setup">Imposta allenamento</Link>
           </Button>
         }
       />
@@ -32,7 +32,7 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
         description="Aggiorna durata e cadenza per ripartire."
         action={
           <Button asChild>
-            <Link href="/sessions/setup">Rinnova sessioni</Link>
+            <Link href="/sessions/setup">Imposta allenamento</Link>
           </Button>
         }
       />

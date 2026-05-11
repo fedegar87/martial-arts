@@ -49,9 +49,9 @@ export function TodaySessionHeader({
           variant="secondary"
           className="h-12 flex-1 justify-center text-sm"
         >
-          <Link href="/sessions/setup" aria-label="Modifica sessioni">
+          <Link href="/sessions/setup" aria-label="Imposta allenamento">
             <SlidersHorizontal className="mr-2 h-5 w-5" />
-            Sessioni
+            Imposta allenamento
           </Link>
         </Button>
       </div>

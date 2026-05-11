@@ -107,7 +107,7 @@ export default async function ProfilePage() {
           <Button asChild variant="outline" className="w-full justify-start">
             <Link href="/sessions/setup">
               <CalendarPlus className="mr-2 h-4 w-4" />
-              Modifica sessioni
+              Imposta allenamento
             </Link>
           </Button>
           <Button asChild variant="outline" className="w-full justify-start">
