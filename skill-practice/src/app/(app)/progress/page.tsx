@@ -7,6 +7,7 @@ import { ActiveCycleSection } from "@/components/progress/sections/ActiveCycleSe
 import { GeneralProgressSection } from "@/components/progress/sections/GeneralProgressSection";
 import { PracticeCalendarSection } from "@/components/progress/sections/PracticeCalendarSection";
 import { ProgressSectionSkeleton } from "@/components/progress/sections/ProgressSectionSkeleton";
+import { TopPracticedSection } from "@/components/progress/sections/TopPracticedSection";
 import { Button } from "@/components/ui/button";
 
 export default async function ProgressPage() {
@@ -33,6 +34,9 @@ export default async function ProgressPage() {
       </Suspense>
       <Suspense fallback={<ProgressSectionSkeleton heightClass="h-40" />}>
         <PracticeCalendarSection userId={profile.id} />
+      </Suspense>
+      <Suspense fallback={<ProgressSectionSkeleton heightClass="h-56" />}>
+        <TopPracticedSection userId={profile.id} />
       </Suspense>
     </div>
   );

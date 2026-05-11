@@ -13,7 +13,13 @@ import {
 } from "@/lib/session-scheduler";
 import { buildSessionPeriodProgress } from "@/lib/session-progress";
 import { dateKeyDaysAgo, localDateKey } from "@/lib/date";
-import type { PracticeLog, TrainingSchedule, UserProfile } from "@/lib/types";
+import type {
+  Discipline,
+  PracticeLog,
+  SkillCategory,
+  TrainingSchedule,
+  UserProfile,
+} from "@/lib/types";
 
 export type { PracticeDay } from "@/lib/progress-logic";
 
@@ -28,6 +34,16 @@ export type ActiveCycleProgress = {
   dueUntilToday: number;
   respectedTotal: number;
   sessionTotal: number;
+};
+
+export type TopPracticedSkill = {
+  skillId: string;
+  skillName: string;
+  skillNameItalian: string | null;
+  discipline: Discipline;
+  category: SkillCategory;
+  practiceDays: number;
+  lastPracticedDate: string;
 };
 
 export async function getGeneralProgress(userId: string): Promise<GeneralProgress> {
@@ -133,6 +149,41 @@ export async function getActiveCycleProgress(
     respectedTotal: summary.sessionCompleted,
     sessionTotal: summary.sessionTotal,
   };
+}
+
+type TopPracticedSkillRow = {
+  skill_id: string;
+  skill_name: string;
+  skill_name_italian: string | null;
+  discipline: Discipline;
+  category: SkillCategory;
+  practice_days: number;
+  last_practiced_date: string;
+};
+
+export async function getTopPracticedSkills(
+  userId: string,
+  limit = 5,
+): Promise<TopPracticedSkill[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("top_practiced_skills", {
+    p_user_id: userId,
+    p_limit: limit,
+  });
+
+  if (error) {
+    throw new Error(`Errore in top_practiced_skills: ${error.message}`);
+  }
+
+  return ((data ?? []) as TopPracticedSkillRow[]).map((row) => ({
+    skillId: row.skill_id,
+    skillName: row.skill_name,
+    skillNameItalian: row.skill_name_italian,
+    discipline: row.discipline,
+    category: row.category,
+    practiceDays: row.practice_days,
+    lastPracticedDate: row.last_practiced_date,
+  }));
 }
 
 function fmtDate(date: string): string {
