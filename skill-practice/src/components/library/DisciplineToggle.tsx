@@ -1,4 +1,5 @@
-import { FolderTabs } from "@/components/shared/FolderTabs";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import type { Discipline } from "@/lib/types";
 
@@ -24,14 +25,29 @@ export function DisciplineToggle({
   if (visible.length < 2) return null;
 
   return (
-    <FolderTabs
-      ariaLabel="Disciplina"
-      items={visible.map((discipline) => ({
-        href: disciplineHref(basePath, discipline, extraParams),
-        label: DISCIPLINE_LABELS[discipline],
-        active: current === discipline,
-      }))}
-    />
+    <nav
+      aria-label="Disciplina"
+      className="flex w-full gap-1 rounded-md bg-muted/40 p-1"
+    >
+      {visible.map((discipline) => {
+        const active = current === discipline;
+        return (
+          <Link
+            key={discipline}
+            href={disciplineHref(basePath, discipline, extraParams)}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "label-font tap-feedback flex min-h-10 flex-1 items-center justify-center rounded-sm px-3 text-sm transition-colors",
+              active
+                ? "border border-border bg-card text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <span className="truncate">{DISCIPLINE_LABELS[discipline]}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
