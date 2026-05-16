@@ -3,7 +3,7 @@
 **Status:** Validato dal fondatore (terminologia corretta)
 **Ultimo aggiornamento:** 2026-04-25
 **Fonte:** Programma ufficiale FESK — https://www.feskfongttai.it/il-kung-fu/il-programma-d-insegnamento
-**Uso:** Seed data per `0004_seed_fesk.sql` (vedi `sprint-curriculum-fesk.md §6`)
+**Uso:** Seed data per `0004_seed_fesk.sql` (vedi `2026-04-25-curriculum-fesk-plan.md §6`)
 
 **Implementazione:** `skill-practice/scripts/generate-fesk-seed.mjs` espande questa mappatura in 137 skill e genera `skill-practice/supabase/migrations/0004_seed_fesk.sql`.
 
@@ -308,7 +308,7 @@ Sistema: **Wade-Giles italianizzato** (scuole italiane anni 70-80, lignaggio Cha
 
 ## 5. CONTEGGI PER VERIFICA SEED
 
-Allineati a `sprint-curriculum-fesk.md` par. 6.1:
+Allineati a `2026-04-25-curriculum-fesk-plan.md` par. 6.1:
 
 | Sezione | Count |
 |---|---|

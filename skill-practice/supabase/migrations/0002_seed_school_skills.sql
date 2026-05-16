@@ -1,3 +1,3 @@
 -- Seed Wing Chun rimosso. Sostituito dal curriculum FESK in 0004_seed_fesk.sql.
 -- Questo file è stato volutamente svuotato per preservare la cronologia delle migration
--- (Supabase richiede numerazione contigua). Vedi plan/sprint-curriculum-fesk.md.
+-- (Supabase richiede numerazione contigua). Vedi plan/2026-04-25-curriculum-fesk-plan.md.

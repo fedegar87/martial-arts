@@ -366,7 +366,7 @@ Ricevere €1.200-3.600/anno da una federazione associativa in Italia richiede u
 
 **Sviluppo prioritario anno 2:**
 - Pannello istruttore (Sprint 3 del piano tecnico) — abilita il maestro a vedere progressi degli allievi.
-- Eventuale notifiche push (richiesta probabile dopo 6 mesi d'uso).
+- Promemoria push già implementati come feature opt-in di allenamento (Sprint 1.16); eventuali notifiche scuola/marketing restano fuori scope.
 
 **Inquadramento fiscale:** valutare passaggio a P.IVA forfettario se quota €3.600 o se si attiva Modello E in parallelo.
 

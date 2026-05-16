@@ -1,6 +1,6 @@
 # Skill Practice
 
-PWA per la pratica guidata di arti marziali tradizionali (kung fu Wing Chun, predisposta multi-utente per federazione/scuole).
+PWA per la pratica guidata di arti marziali tradizionali, oggi centrata sul curriculum FESK Shaolin + T'ai Chi e predisposta per federazione/scuole.
 
 ## Struttura repository
 

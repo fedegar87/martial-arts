@@ -1,6 +1,6 @@
 # Architettura dell'app — analisi dettagliata
 
-Data analisi: 2026-05-11. Repo: `skill-practice/` (single project, Next.js 16 App Router).
+Data analisi: 2026-05-16. Repo: `skill-practice/` (single project, Next.js 16 App Router).
 
 Questo documento descrive lo stato corrente dell'architettura. Si concentra su cosa esiste oggi nel codice, non su cosa potrebbe esistere. Per readiness multi-scuola vedi [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md). Per scope, decisioni e roadmap vedi [../plan/current-plan.md](../plan/current-plan.md).
 
@@ -14,7 +14,7 @@ Caratteristiche architetturali:
 - **Tre livelli netti**: pagine in `src/app/`, presentazione in `src/components/`, dominio/dati in `src/lib/`.
 - **Postgres come centro logico**: gran parte della logica transazionale vive in funzioni RPC Supabase, non in TypeScript.
 - **Logica pura testabile** isolata in moduli `*-logic.ts` con suite `node --test` dedicate.
-- **PWA "manuale"**: `next-pwa` è installato ma non wirato; il service worker è in [skill-practice/public/sw.js](../skill-practice/public/sw.js).
+- **PWA "manuale"**: `next-pwa` è installato ma non wirato; il service worker è in [skill-practice/public/sw.js](../skill-practice/public/sw.js) e gestisce offline base + Web Push reminder.
 
 ## 2. Stack tecnico
 
@@ -29,6 +29,8 @@ Fonte: [skill-practice/package.json](../skill-practice/package.json).
 | Icone | lucide-react | ^1.11 |
 | Auth + DB | Supabase (Postgres + Auth) | `@supabase/ssr` ^0.10, `@supabase/supabase-js` ^2.104 |
 | PWA | service worker statico + manifest | `next-pwa` ^5.6 installato ma inutilizzato |
+| Push | Web Push + VAPID | `web-push` ^3.6 |
+| Scheduling | Vercel Cron | `/api/cron/training-reminders` |
 | Lint | ESLint 9 + `eslint-config-next` | — |
 | Test | `node --test` nativo | — |
 
@@ -37,7 +39,7 @@ Fonte: [skill-practice/package.json](../skill-practice/package.json).
 - `dev` → `next dev --webpack` (Turbopack disabilitato per bug locale, vedi [plan §3](../plan/current-plan.md))
 - `build` → `next build` (con Turbopack di build, verde)
 - `lint` → `eslint`
-- `test` → `node --test` sulle 10 suite in `src/lib/*.test.ts`
+- `test` → `node --test` sulle suite in `src/lib/*.test.ts`
 
 Non esiste uno script `typecheck` dedicato: i tipi sono verificati implicitamente da `next build`.
 
@@ -65,17 +67,18 @@ martial-arts/
     │   │   ├── (app)/                 # pagine app autenticate
     │   │   ├── (legal)/                # pubbliche: privacy, terms, cookies, disclaimer
     │   │   ├── auth/                   # callback, confirm, update-password
+    │   │   ├── api/cron/               # cron server-only
     │   │   └── layout.tsx              # shell HTML, font, theme
     │   ├── components/                # raggruppati per feature
     │   ├── lib/
-    │   │   ├── supabase/              # client.ts, server.ts, middleware.ts
+    │   │   ├── supabase/              # client.ts, server.ts, middleware.ts, admin.ts
     │   │   ├── queries/                # letture (server-only)
     │   │   ├── actions/                # mutazioni ("use server")
     │   │   ├── *-logic.ts              # logica pura
     │   │   ├── types.ts                # mirror DB + tipi UI
     │   │   └── *.test.ts               # suite node:test
     ├── supabase/
-    │   └── migrations/                 # 21 file SQL numerati 0001-0021
+    │   └── migrations/                 # 26 file SQL numerati 0001-0026
     └── scripts/generate-fesk-seed.mjs  # generatore seed FESK
 ```
 
@@ -98,6 +101,7 @@ Regole strutturali vincolanti ([skill-practice/CLAUDE.md](../skill-practice/CLAU
 - **`(auth)/`** — pubbliche: `login`, `forgot-password`.
 - **`(legal)/`** — pubbliche: `privacy`, `terms`, `cookies`, `disclaimer`.
 - **`auth/`** (non group) — `auth/callback/route.ts` (exchange code Supabase), `auth/confirm/route.ts` (invite/recovery con `token_hash`), `auth/update-password` (autenticato ma fuori `(app)`).
+- **`api/cron/`** — route handler server-only per job schedulati, oggi solo `training-reminders`.
 
 ### 4.2 Auth gate ([skill-practice/src/proxy.ts](../skill-practice/src/proxy.ts))
 
@@ -107,11 +111,9 @@ Flusso:
 
 1. `NextResponse.next` mutabile + `createServerClient` con cookies request-bound.
 2. `supabase.auth.getUser()` refresha il cookie di sessione.
-3. Path matchato contro `PROTECTED_PREFIXES` (`/hub`, `/today`, `/programma`, `/library`, `/skill`, `/plan`, `/profile`, `/onboarding`, `/news`, `/progress`, `/sessions`) e `AUTHENTICATED_ONLY` (`/auth/update-password`).
+3. Path matchato contro `PROTECTED_PREFIXES` (`/hub`, `/today`, `/programma`, `/library`, `/skill`, `/plan`, `/profile`, `/onboarding`, `/news`, `/progress`, `/calendar`, `/sessions`) e `AUTHENTICATED_ONLY` (`/auth/update-password`).
 4. Se manca user e il path è protetto → redirect a `/login?next=<path>`. Nota: `login` oggi ignora `next` e manda alla destinazione calcolata da `resolveLandingDestination`; l'allowlist in [skill-practice/src/lib/auth-validation.ts](../skill-practice/src/lib/auth-validation.ts) protegge invece i redirect di `auth/callback` e `auth/confirm`.
 5. Matcher esclude `_next/static`, `_next/image`, `favicon.ico`, `manifest.json`, `sw.js`, asset immagine.
-
-`/calendar` è una particolarità attuale: non è nel matcher applicativo del proxy, ma la pagina fa comunque `getCurrentProfile()` server-side e redirige a `/login` senza sessione. Conviene allinearlo a `PROTECTED_PREFIXES` al prossimo hardening.
 
 ### 4.3 Entrypoint Supabase
 
@@ -120,6 +122,7 @@ Il progetto mantiene tre entrypoint separati per i diversi contesti App Router:
 - [skill-practice/src/lib/supabase/client.ts](../skill-practice/src/lib/supabase/client.ts) — `createBrowserClient` per eventuali Client Components; al momento non è usato per letture dati.
 - [skill-practice/src/lib/supabase/server.ts](../skill-practice/src/lib/supabase/server.ts) — `createServerClient` con cookies da `next/headers`, `try/catch` su `cookieStore.set` per i Server Components read-only.
 - [skill-practice/src/lib/supabase/middleware.ts](../skill-practice/src/lib/supabase/middleware.ts) — helper invocato da `src/proxy.ts` per refresh sessione.
+- [skill-practice/src/lib/supabase/admin.ts](../skill-practice/src/lib/supabase/admin.ts) — `createClient` service-role solo server-only, usato dal cron reminder per leggere utenti/subscription e scrivere delivery.
 
 ### 4.4 Server Components per le letture
 
@@ -186,6 +189,11 @@ PWA: registrazione SW in [skill-practice/src/components/pwa/ServiceWorkerRegiste
 | 0017-0018 | Hardening RPC esami |
 | 0019 | Semplificazione `plan_status` (collasso `review`→`maintenance`) |
 | 0021 | Unique log giornaliero + RPC `update_plan_item_last_practiced_at` |
+| 0022 | Aggregati progresso lato SQL (`count_practice_days`, `current_practice_streak`) |
+| 0023 | RLS performance hardening con `(SELECT auth.uid())` |
+| 0024 | Indice composito catalogo skill |
+| 0025 | RPC `top_practiced_skills` |
+| 0026 | Preferenze reminder, push subscription e storico delivery |
 
 Convenzione: niente modifiche manuali dal pannello Supabase; ogni cambio passa da migration ([skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md) §"Pattern dati"). Workflow operativo per applicare migration: SQL copia-incolla nel SQL Editor Supabase (CLI non in PATH, app su Vercel + DB cloud).
 
@@ -207,14 +215,18 @@ Convenzione: niente modifiche manuali dal pannello Supabase; ogni cambio passa d
 - `news_items` — bacheca per scuola, lette/non lette via `last_news_seen_at`.
 - `account_deletion_requests` — coda richieste cancellazione, unique parziale `WHERE status = 'pending'`.
 - `weekly_reflections` (Sprint 2 successivamente collassato).
+- `notification_preferences` — opt-in promemoria, orario, fuso orario e preferenza nomi esercizi.
+- `push_subscriptions` — endpoint Web Push per browser/device, revocabili con `revoked_at`.
+- `notification_deliveries` — tentativi di invio, deduplica `(subscription_id, kind, date)`.
 
 ### 5.3 RLS
 
 RLS abilitata **su ogni tabella al momento della sua introduzione** (vincolo [skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md) §"Pattern dati"):
 
 - **Statiche**: `FOR SELECT TO authenticated USING (true)`. Lettura pubblica per ogni utente loggato. Adatto a single-tenant, falla in multi-tenant.
-- **Dinamiche**: `USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid())`. L'utente vede e scrive solo i propri record.
+- **Dinamiche**: `USING (user_id = (SELECT auth.uid())) WITH CHECK (user_id = (SELECT auth.uid()))`. L'utente vede e scrive solo i propri record.
 - **`account_deletion_requests`**: utente INSERT/SELECT proprie; admin (`user_profiles.role = 'admin'`) SELECT/UPDATE tutte.
+- **`notification_deliveries`**: utente SELECT proprie; INSERT/UPDATE riservati al cron via service role.
 
 **Trigger SECURITY DEFINER:**
 
@@ -253,24 +265,29 @@ Tutta isolata in moduli "puri" (no I/O, no dipendenze server) sotto [skill-pract
 | [landing.ts](../skill-practice/src/lib/landing.ts) | `resolveLandingDestination` (`/today` o `/onboarding`). |
 | [auth-validation.ts](../skill-practice/src/lib/auth-validation.ts) | Email regex, password 8-72, allowlist `next` per callback/confirm Supabase. |
 | [youtube.ts](../skill-practice/src/lib/youtube.ts) | Parse di `watch?v=`, `embed/`, `shorts/`, `youtu.be`. |
+| [push-notifications.ts](../skill-practice/src/lib/push-notifications.ts) | Tipi e helper puri per subscription, orario e payload del reminder. |
 
 Algoritmi chiave da capire prima di toccare il dominio: `session-scheduler.ts` (per la distribuzione delle forme) e `grades.ts` (per la semantica numerica della scala FESK — `-1` non è "primo livello avanzato" generico, è 1° Chieh).
 
 ## 7. PWA
 
-[skill-practice/public/sw.js](../skill-practice/public/sw.js) (57 righe) è scritto a mano:
+[skill-practice/public/sw.js](../skill-practice/public/sw.js) è scritto a mano:
 
 - Cache `kung-fu-practice-v2`.
 - Precache `/offline.html`, `/manifest.json`, `/icon.svg`.
 - `install` → `skipWaiting`.
 - `activate` → cleanup cache vecchie + `clients.claim()`.
 - `fetch` solo su GET same-origin; trattamento speciale per `/_next/static/`.
+- `push` mostra una notifica semplice: titolo, body, tag, data URL.
+- `notificationclick` chiude la notifica e apre/focalizza `/today`.
 
 [skill-practice/public/manifest.json](../skill-practice/public/manifest.json): `display: standalone`, theme `#0f0f0f`, lingua `it`, icone SVG + PNG 192/512 + maskable 512.
 
-[skill-practice/src/components/pwa/ServiceWorkerRegister.tsx](../skill-practice/src/components/pwa/ServiceWorkerRegister.tsx) registra `/sw.js` solo in produzione. `next-pwa` resta come dipendenza ma non è wirato in `next.config.ts`: rimozione bloccata da Windows che tiene aperti file in `node_modules`.
+[skill-practice/src/components/pwa/ServiceWorkerRegister.tsx](../skill-practice/src/components/pwa/ServiceWorkerRegister.tsx) registra `/sw.js` solo in produzione. L'attivazione dei promemoria può registrare lo stesso service worker on demand anche in localhost. `next-pwa` resta come dipendenza ma non è wirato in `next.config.ts`: rimozione bloccata da Windows che tiene aperti file in `node_modules`.
 
 Comportamento offline: navigazioni autenticate non sono cachate (decisione di privacy: il logout non deve lasciare contenuto utente nel SW).
+
+Promemoria allenamento: opt-in da `/today` o `/profile`, subscription salvata in Supabase, invio da [training-reminder-sender.ts](../skill-practice/src/lib/training-reminder-sender.ts) tramite Vercel Cron + `web-push`.
 
 ## 8. Sicurezza
 
@@ -287,6 +304,7 @@ Modello di minaccia da [plan §14](../plan/current-plan.md): MVP single-user, as
 - Logout client-side pulisce `localStorage`/`sessionStorage`/Cache best-effort.
 - Min password 8 caratteri (NIST 2024 baseline, nessuna regex composta).
 - Provisioning utenti solo admin (`Send invitation` via Supabase dashboard), no self-signup pubblico.
+- Cron reminder protetto da `CRON_SECRET`; VAPID private key e service role restano server-only.
 
 **Buchi noti:**
 
@@ -296,7 +314,7 @@ Modello di minaccia da [plan §14](../plan/current-plan.md): MVP single-user, as
 
 ## 9. Testing
 
-[skill-practice/package.json](../skill-practice/package.json) `test` → `node --test` nativo su 10 file `*.test.ts` in [skill-practice/src/lib/](../skill-practice/src/lib/): `youtube`, `practice-logic`, `progress-logic`, `session-scheduler`, `calendar-logic`, `landing`, `onboarding-state`, `auth-validation`, `grades`, `seed-fesk`.
+[skill-practice/package.json](../skill-practice/package.json) `test` → `node --test` nativo sui file `*.test.ts` in [skill-practice/src/lib/](../skill-practice/src/lib/): `youtube`, `practice-logic`, `progress-logic`, `session-scheduler`, `calendar-logic`, `landing`, `onboarding-state`, `auth-validation`, `grades`, `seed-fesk`, `push-notifications`.
 
 **Coverage:** solo logica pura. Niente test su componenti, queries, actions, RPC, RLS. Nessuna suite E2E (no Playwright, no Vitest, no Jest). Verifica di queries/actions/policies è manuale tramite walkthrough nell'app.
 
@@ -306,7 +324,7 @@ Modello di minaccia da [plan §14](../plan/current-plan.md): MVP single-user, as
 - **Build:** `next build` con Turbopack di build (verde).
 - **Lint:** `eslint` + `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript`.
 - **Type-check:** implicito nel build (nessuno script dedicato).
-- **Hosting:** Vercel free tier, auto-deploy da `main`. Variabili di ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in Project Settings.
+- **Hosting:** Vercel free tier, auto-deploy da `main`. Variabili di ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`) in Project Settings.
 - **DB:** Supabase Frankfurt EU. Migration applicate copia-incolla nel SQL Editor (CLI non in PATH).
 - **Video:** YouTube unlisted, no infrastruttura propria.
 - **Costo totale a regime FESK:** 0 € (tutto su free tier).
@@ -317,7 +335,7 @@ Modello di minaccia da [plan §14](../plan/current-plan.md): MVP single-user, as
 2. **Logica pura isolata e testata** — i moduli `*-logic.ts` sono unit-testabili senza DB e senza Next. Refactor della UI non rompe la matematica delle sessioni.
 3. **RPC Postgres per le transazioni** — attivazione modalità, cambi piano, hide/restore: tutto atomico lato DB. Niente race da TypeScript.
 4. **RLS dal primo migration** — ogni tabella protetta da subito, nessuna policy "permissive temporanea".
-5. **PWA leggera** — SW manuale 57 righe, niente blackbox `next-pwa`. Comportamento prevedibile.
+5. **PWA leggera** — SW manuale, niente blackbox `next-pwa`. Comportamento prevedibile.
 6. **Predisposizione multi-utente già nel modello** — `school_id` sulle entità statiche e su `user_profiles`, ruoli (`student`/`instructor`/`admin`), trigger anti-self-escalation. Falsa multi-tenancy a livello policy ma fondazione corretta.
 7. **Documentazione viva** — il piano in [plan/current-plan.md](../plan/current-plan.md) è la fonte di verità, aggiornato a ogni Sprint, con archiviazione dei brief superati.
 

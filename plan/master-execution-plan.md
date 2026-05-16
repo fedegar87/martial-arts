@@ -93,22 +93,25 @@ Questi punti richiedono controllo manuale o ambiente esterno:
 
 | Rotta | Tipo build | Stato |
 |---|---:|---|
-| `/` | dynamic | Redirect auth/onboarding/today |
+| `/` | dynamic | Landing + CTA auth/onboarding/hub |
 | `/auth/callback` | dynamic route | Callback Supabase |
+| `/auth/confirm` | dynamic route | Invite/recovery token_hash |
+| `/auth/update-password` | dynamic | Aggiornamento password con cookie breve |
+| `/forgot-password` | static | Richiesta reset password |
 | `/login` | static | Email/password |
 | `/onboarding` | dynamic | Onboarding multi-disciplina |
-| `/today` | dynamic | Pratica giornaliera, filtro disciplina, status menu |
-| `/library` | dynamic | Mio livello |
-| `/library/all` | dynamic | Tutto + filtri |
-| `/library/exam` | dynamic | Lista esami |
-| `/library/exam/[examId]` | dynamic | Skill richieste |
-| `/library/program` | dynamic | Programma completo |
+| `/hub` | dynamic | Home permanente |
+| `/today` | dynamic | Pratica giornaliera, sessione schedulata, reminder prompt |
+| `/calendar` | dynamic | Calendario unificato sessioni + pratica libera |
+| `/library` | dynamic | Catalogo Scuola Chang con filtri |
+| `/programma` | dynamic | Programma completo |
 | `/skill/[skillId]` | dynamic | Dettaglio skill + VideoPlayer |
-| `/profile` | dynamic | Gradi + modalita piano |
+| `/profile` | dynamic | Account, gradi, programma, allenamento, privacy, reminder |
 | `/plan/exam` | dynamic | Piano da esame |
 | `/plan/custom` | dynamic | Selezione libera |
-| `/progress` | dynamic | Progresso con calendario, reflection, toggle disciplina e sezioni curriculum/radar/timeline |
+| `/progress` | dynamic | Progressi ciclo + storico + calendario pratica |
 | `/news` | dynamic | Bacheca reale con feed, pinned/eventi e mark-as-seen |
+| `/api/cron/training-reminders` | dynamic route | Cron promemoria push protetto da `CRON_SECRET` |
 
 ### 2.3 Componenti inventariati
 
@@ -168,11 +171,11 @@ Nota operativa: il seed 0004 usa `https://www.youtube.com/watch?v=PLACEHOLDER` p
 | Piano | Stato dopo audit | Correzione da tenere a mente |
 |---|---|---|
 | `current-plan.md` | Parzialmente superato | D4 news e D6 note sono ancora aperte; progress e FESK sono gia stati anticipati |
-| `sprint-curriculum-fesk.md` | Implementato localmente | Necessario smoke test DB remoto; termini FESK aperti restano founder review |
+| `2026-04-25-curriculum-fesk-plan.md` | Implementato localmente | Necessario smoke test DB remoto; termini FESK aperti restano founder review |
 | `curriculum-mapping-fesk.md` | Usato come riferimento seed | In sezione 6 restano 6 termini da chiarire |
-| `sprint-video-player.md` | Implementato | Serve solo verifica manuale Network tab su browser reale |
-| `sprint-plan-ux.md` | Implementato | Rotte `/plan/exam`, `/plan/custom`, `/library/program` presenti |
-| `sprint-progresso.md` | Implementato con parity minima | Toggle disciplina presente; Suspense/skeleton granulari restano polish opzionale |
+| `2026-04-25-video-player-plan.md` | Implementato | Serve solo verifica manuale Network tab su browser reale |
+| `2026-04-25-program-plan-mode-selection-plan.md` | Implementato | Rotte `/plan/exam`, `/plan/custom`, `/programma` presenti |
+| `2026-04-25-progress-tab-plan.md` | Implementato con parity minima | Toggle disciplina presente; Suspense/skeleton granulari restano polish opzionale |
 | `visual-identity-plan.md` | Implementato | Font reali caricati, Space Mono applicato ai livelli, label badge e sepia placeholder video |
 | `positioning-analysis.md` | Da aggiornare dopo progress | P1 di fatto chiusa; P2/P4/P5 restano decisioni/narrativa |
 
@@ -465,7 +468,7 @@ Questa sezione non va implementata prima della Fase 6, salvo richiesta esplicita
 | Fase chiusa | File |
 |---|---|
 | Fase 0 | `plan/current-plan.md`, se cambia stato Supabase o setup |
-| Fase 1 | `plan/visual-identity-plan.md`, `plan/sprint-progresso.md` se si completa parity |
+| Fase 1 | `plan/visual-identity-plan.md`, `plan/2026-04-25-progress-tab-plan.md` se si completa parity |
 | Fase 2 | `plan/current-plan.md` D4/Sprint 2 |
 | Fase 3 | `plan/current-plan.md` D6/Sprint 2 |
 | Fase 4 | `plan/current-plan.md` stack PWA/deploy |

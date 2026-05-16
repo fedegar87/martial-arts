@@ -517,7 +517,7 @@ Modifiche da riportare nel piano principale a chiusura sprint:
 - §4.2: aggiornare `UserProfile` con doppio livello
 - §5: aggiungere `lib/grades.ts`, `lib/labels.ts`, componenti badge
 - §9 Sprint 1: aggiungere riga "1.5 — Curriculum FESK ✅" come completato
-- §12: sostituire seed Wing Chun con riferimento a questo file (`vedi sprint-curriculum-fesk.md §6`)
+- §12: sostituire seed Wing Chun con riferimento a questo file (`vedi 2026-04-25-curriculum-fesk-plan.md §6`)
 - §17.5 Runbook: aggiornare istruzioni di insert (con `discipline`, `practice_mode`, `minimum_grade_value`)
 
 ---

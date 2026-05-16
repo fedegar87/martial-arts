@@ -50,10 +50,10 @@ Inoltre:
 | Claim dell'analisi | Stato nei piani | Verdetto |
 |---|---|---|
 | PWA installabile | `current-plan.md` §3 + Sprint 1 task #18 | ✅ Reale |
-| Curriculum FESK ~130 skill Shaolin + T'ai Chi | `sprint-curriculum-fesk.md` §6.1 (137 totali) | ✅ Reale, numero da correggere a 137 |
+| Curriculum FESK ~130 skill Shaolin + T'ai Chi | `2026-04-25-curriculum-fesk-plan.md` §6.1 (137 totali) | ✅ Reale, numero da correggere a 137 |
 | Tre modi: programma esame / ripasso / piano libero | `current-plan.md` §7.3 + Sprint 2 task #12 | ✅ Reale (libero in Sprint 2) |
 | Logica focus/review/maintenance con rotazione | `current-plan.md` §6.1 + D5 aperta | ⚠️ Reale ma sovrastimato (rotazione semplice, non SRS) |
-| Doppio livello Shaolin + T'ai Chi | `sprint-curriculum-fesk.md` §5.5 | ✅ Reale dopo Sprint 1.5 |
+| Doppio livello Shaolin + T'ai Chi | `2026-04-25-curriculum-fesk-plan.md` §5.5 | ✅ Reale dopo Sprint 1.5 |
 | Tab Progresso con 5 visualizzazioni | **Nessun piano** | ❌ Non esiste — overclaim |
 | Bacheca comunicazioni federazione | `current-plan.md` §9 Sprint 2 | ✅ Pianificato |
 | Architettura multi-utente predisposta | `current-plan.md` §4 + §14.3 RLS | ✅ Reale |
@@ -195,7 +195,7 @@ Riconosce che si sono avvicinati ma non arrivati. Non li liquida, non li gonfia.
 ### 4.2 Cosa NON regge — overclaim
 
 **Overclaim 1 — Tab Progresso con 5 visualizzazioni (§3.1, §3.3, §3.5).**
-Citato 3 volte come differenziatore core. **Non esiste in nessun piano.** `current-plan.md` §7.1 dichiara 3 tab (Oggi / Libreria / Profilo). La tab Profilo ha "progresso settimanale", non 5 visualizzazioni. `sprint-curriculum-fesk.md` non le aggiunge.
+Citato 3 volte come differenziatore core. **Non esiste in nessun piano.** `current-plan.md` §7.1 dichiara 3 tab (Oggi / Libreria / Profilo). La tab Profilo ha "progresso settimanale", non 5 visualizzazioni. `2026-04-25-curriculum-fesk-plan.md` non le aggiunge.
 
 Decisione richiesta: costruirle (→ aggiungerle a `current-plan.md` §9 Sprint 2/3) o rimuoverle dall'analisi.
 
@@ -205,7 +205,7 @@ Oggi è una rotazione semplice per `lastPracticedAt` (`current-plan.md` §6.1, ~
 Riformulazione onesta: gli stati focus/review/maintenance sono un **modello pedagogico** (non un algoritmo) che gli admin-tool non hanno perché non si pongono il problema. "Architetturale e non copiabile" sovravvende: si replica con due colonne in tabella + un IF.
 
 **Overclaim 3 — doppia disciplina come differenziatore generico (§3.5 punto 2).**
-Reale e implementata in `sprint-curriculum-fesk.md`, ma specifica per Chang Dsu Yao. Vale per Scenario B. La maggior parte delle scuole MA insegna **un** sistema, quindi non è "rilevante per qualsiasi scuola".
+Reale e implementata in `2026-04-25-curriculum-fesk-plan.md`, ma specifica per Chang Dsu Yao. Vale per Scenario B. La maggior parte delle scuole MA insegna **un** sistema, quindi non è "rilevante per qualsiasi scuola".
 
 **Numero — "~130 skill" → 137.**
 Dettaglio ma se il documento esce, controlla i conteggi.
@@ -232,7 +232,7 @@ L'analisi è strategicamente corretta nelle linee guida ma gonfia il prodotto su
 
 | # | Issue | Azione richiesta | Owner | Stato |
 |---|---|---|---|---|
-| **P1** | Tab Progresso con 5 visualizzazioni | Costruirla in Sprint 1.8 (`plan/sprint-progresso.md`) e aggiornare `current-plan.md` alla chiusura | founder/agent | 🟢 Decisa |
+| **P1** | Tab Progresso con 5 visualizzazioni | Costruirla in Sprint 1.8 (`plan/2026-04-25-progress-tab-plan.md`) e aggiornare `current-plan.md` alla chiusura | founder/agent | 🟢 Decisa |
 | **P2** | Riformulare focus/review/maintenance da "architetturale" a "framework pedagogico" | Editare §3.5 punto 3 e §3.8 punto 4 | founder/agent | 🟡 Aperta |
 | **P3** | Aggiornare conteggio skill da ~130 a 137 | Edit §3.1 | agent | 🟢 Chiusa |
 | **P4** | Aggiungere test di falsificazione esplicito | Riempire §6 di questo doc | founder | 🟡 Aperta |

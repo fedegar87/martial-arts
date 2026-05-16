@@ -13,7 +13,7 @@ Audit basato su lettura codice e build locale:
 
 - `npm run lint` passa
 - `npm run build` passa
-- Route reali: `/login`, `/onboarding`, `/today`, `/library`, `/library/all`, `/library/exam`, `/library/exam/[examId]`, `/library/program`, `/skill/[skillId]`, `/plan/exam`, `/plan/custom`, `/profile`, `/progress`, `/news`
+- Route reali al 2026-05-16: `/`, `/login`, `/forgot-password`, `/auth/update-password`, `/onboarding`, `/hub`, `/today`, `/calendar`, `/library`, `/programma`, `/skill/[skillId]`, `/plan/exam`, `/plan/custom`, `/profile`, `/progress`, `/news`
 - Componenti UX principali letti: `BottomNav`, `TodaySkillCard`, `VideoPlayer`, `LibraryNav`, `DisciplineToggle`, `CustomSelectionForm`, `ExamModeForm`, `PlanModeSection`, componenti `progress`
 
 Limite dell'audit: non e' stato fatto un walkthrough browser con account Supabase reale. Quindi questa analisi valuta la UX implementata nel codice, non lo stato del DB remoto o dei video reali.

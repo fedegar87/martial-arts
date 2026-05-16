@@ -3,8 +3,8 @@
 **Status:** Implemented in code — richiede migrations applicate e walkthrough reale
 **Versione:** v1
 **Ultimo aggiornamento:** 2026-04-25
-**Dipende da:** `current-plan.md`, `sprint-curriculum-fesk.md`
-**Compatibile con (non blocca):** `sprint-video-player.md`
+**Dipende da:** `current-plan.md`, `2026-04-25-curriculum-fesk-plan.md`
+**Compatibile con (non blocca):** `2026-04-25-video-player-plan.md`
 
 ---
 
@@ -30,7 +30,7 @@ Queste tre lacune compromettono l'usabilità centrale dell'app.
 
 Aggiunge:
 - 1 colonna su `user_profiles` (`plan_mode`)
-- 3 nuove rotte (`/library/program`, `/plan/exam`, `/plan/custom`)
+- 3 nuove rotte pianificate (`/library/program`, `/plan/exam`, `/plan/custom`). Stato finale 2026-05-16: la vista programma vive in `/programma`.
 - 9 nuovi componenti (vedi §7)
 - 3 nuove Server Action in `lib/actions/plan.ts`
 
@@ -48,7 +48,7 @@ Il toggle "Programma" diventa la **quarta** sotto-vista della libreria, accanto 
 
 | # | Decisione | Risoluzione |
 |---|-----------|-------------|
-| **P1** | Posizione della vista Programma | **Quarta sotto-vista della libreria** (URL `/library/program`). Non in profilo, non in nuova tab. È contenuto di consultazione, appartiene alla libreria |
+| **P1** | Posizione della vista Programma | **Decisione originale:** quarta sotto-vista della libreria (`/library/program`). **Stato finale:** route autonoma `/programma`, coerente con BottomNav e hub |
 | **P2** | Default `plan_mode` per nuovo utente | **`exam`** se l'utente in onboarding ha selezionato un esame da preparare, altrimenti **`custom`**. Coerente con il flusso esistente |
 | **P3** | Grouping in Programma view | Per ogni grado, mostrare **solo le skill introdotte a quel grado** (`min_grade_value == grade_value`), **non** la lista cumulativa. L'utente vede chiaramente "cosa è nuovo" a ciascun esame. La cumulatività resta nella vista "Per esame" |
 | **P4** | Soglia di lock nei gradi futuri | Lock se `grade.value < user.assigned_level_<discipline>` (numericamente più piccolo = grado più alto = ancora da raggiungere). Mostrato in grigio + lucchetto, tap mostra toast "Sblocca al raggiungimento di X° Chi" |
@@ -251,7 +251,7 @@ export async function activateExamMode(input: {
 ### 7.4 Componenti
 
 - `src/app/(app)/plan/exam/page.tsx`
-- `src/components/plan/ExamSelector.tsx` (Client, doppio dropdown + submit)
+- `src/components/plan/ExamModeForm.tsx` (Client, doppio dropdown + submit)
 
 ---
 
@@ -476,7 +476,7 @@ src/
 │   │   └── LockedToast.tsx                       # Toast sblocco grado futuro
 │   ├── plan/
 │   │   ├── PlanModeSwitchModal.tsx               # Modale conferma cambio
-│   │   ├── ExamSelector.tsx                      # Doppio dropdown esami
+│   │   ├── ExamModeForm.tsx                      # Doppio dropdown esami
 │   │   ├── SkillCheckList.tsx                    # Container selezione libera
 │   │   ├── SkillCheckRow.tsx                     # Riga singola con checkbox
 │   │   ├── GradeQuickSelect.tsx                  # Chip "X° Chi (N)"
@@ -529,7 +529,7 @@ URL pattern:
 | 6 | Aggiornare BottomNav/Library tabs | `library/page.tsx` o `library/layout.tsx`: aggiungere link "Programma" alla nav sotto-viste | frontend-design | Tab "Programma" visibile, navigation attiva, search param disciplina propagato |
 | 7 | PlanModeSection nel profilo | `components/profile/PlanModeSection.tsx` + integrazione in `profile/page.tsx` | frontend-design | Mostra modalità attuale, esame/i preparato/i, count skill nel piano, due bottoni azione |
 | 8 | PlanModeSwitchModal | `components/plan/PlanModeSwitchModal.tsx` + Server Actions hook | frontend-design | Modale shadcn Dialog, copy chiara su cosa viene eliminato/preservato, conferma → Server Action → redirect |
-| 9 | ExamSelector (modalità A) | `app/(app)/plan/exam/page.tsx` + `ExamSelector.tsx` | frontend-design | Doppio dropdown, mostra solo prossimo grado per disciplina, opzione "nessun esame", T'ai Chi nascosto se livello=0, submit → `activateExamMode` |
+| 9 | ExamModeForm (modalità A) | `app/(app)/plan/exam/page.tsx` + `ExamModeForm.tsx` | frontend-design | Doppio dropdown, mostra solo prossimo grado per disciplina, opzione "nessun esame", T'ai Chi nascosto se livello=0, submit → `activateExamMode` |
 | 10 | SkillCheckList (modalità B) | `app/(app)/plan/custom/page.tsx` + `SkillCheckList`, `SkillCheckRow`, `GradeQuickSelect`, `SelectedCounter` | frontend-design | Toggle disciplina, raggruppamento per categoria, chip per grado tri-state (selected/partial/unselected), contatore sticky, bottone salva disabilitato se 0 |
 | 11 | SkillStatusMenu in Today | `today/SkillStatusMenu.tsx` + bottone `⋮` su `TodaySkillCard` | frontend-design | Menu Sheet/Popover shadcn, opzioni focus/review/maintenance + nascondi, conferma → Server Action |
 | 12 | TodayEmptyState | `today/TodayEmptyState.tsx` + branch in `today/page.tsx` | frontend-design | Se `plan_mode='custom'` e 0 skill → card "Nessuna forma selezionata. [Apri selezione]" link a `/plan/custom` |

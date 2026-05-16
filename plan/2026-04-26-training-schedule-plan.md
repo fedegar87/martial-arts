@@ -2086,7 +2086,7 @@ Non fare in questa esecuzione:
 
 - Materializzazione delle sessioni in DB (approccio 1).
 - Editing per-singola-sessione (sposta forme, salta giorno, note di sessione).
-- Notifiche push o reminder.
+- Notifiche push o reminder in Sprint 1.9. Superato da Sprint 1.16: vedi `2026-05-16-training-reminder-push-notifications-plan.md`.
 - Modifiche a `getTodayPractice` legacy (resta come fallback se `training_schedule == null` — di fatto non più usato in `today/page.tsx` ma ancora presente nel codice; rimozione futura).
 - Drill-down sul calendario (`SessionDetailSheet` non implementato in questo cut).
 - Filtro disciplina su Today (rimosso temporaneamente in Task 15 per semplicità — riaggiungerlo in un follow-up se serve).
