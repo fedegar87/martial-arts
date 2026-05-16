@@ -25,6 +25,8 @@ export default async function TodayPage() {
 
   const sourceFilter =
     profile.plan_mode === "custom" ? "manual" : "exam_program";
+  const pushVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
+  const pushEnabled = Boolean(pushVapidKey);
   const [items, logs, unreadNewsCount, schedule, reminderSettings] = await Promise.all([
     timed("today.plan_items", () =>
       getUserPlanItems(profile.id, undefined, sourceFilter),
@@ -32,7 +34,9 @@ export default async function TodayPage() {
     timed("today.week_logs", () => getThisWeekLogs(profile.id)),
     timed("today.unread_news", () => getUnreadNewsCount(profile)),
     timed("today.schedule", () => getTrainingSchedule(profile.id)),
-    timed("today.reminders", () => getTrainingReminderSettings(profile.id)),
+    pushEnabled
+      ? timed("today.reminders", () => getTrainingReminderSettings(profile.id))
+      : Promise.resolve(null),
   ]);
 
   const todayStr = localDateKey();
@@ -163,10 +167,10 @@ export default async function TodayPage() {
         cadenceWeeks={schedule.cadence_weeks}
         weekDoneCount={weekDoneCount}
       />
-      {completedCount < dailyCount && (
+      {pushEnabled && reminderSettings && completedCount < dailyCount && (
         <TrainingReminderPrompt
           settings={reminderSettings}
-          publicVapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
+          publicVapidKey={pushVapidKey}
           exerciseCount={dailyCount - completedCount}
         />
       )}

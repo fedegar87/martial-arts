@@ -24,25 +24,29 @@ export default async function ProfilePage() {
   if (!profile) redirect("/login");
 
   const planSource = profile.plan_mode === "custom" ? "manual" : "exam_program";
-	  const [
-	    examShaolin,
-	    examTaichi,
-	    planCount,
-	    schedule,
-	    reminderSettings,
-	    pendingDeletionRequest,
-	  ] = await Promise.all([
+  const pushVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
+  const pushEnabled = Boolean(pushVapidKey);
+  const [
+    examShaolin,
+    examTaichi,
+    planCount,
+    schedule,
+    reminderSettings,
+    pendingDeletionRequest,
+  ] = await Promise.all([
     profile.preparing_exam_id
       ? getExamProgramById(profile.preparing_exam_id)
       : Promise.resolve(null),
     profile.preparing_exam_taichi_id
       ? getExamProgramById(profile.preparing_exam_taichi_id)
       : Promise.resolve(null),
-	    getUserPlanCount(profile.id, planSource),
-	    getTrainingSchedule(profile.id),
-	    getTrainingReminderSettings(profile.id),
-	    getPendingAccountDeletionRequest(profile.id),
-	  ]);
+    getUserPlanCount(profile.id, planSource),
+    getTrainingSchedule(profile.id),
+    pushEnabled
+      ? getTrainingReminderSettings(profile.id)
+      : Promise.resolve(null),
+    getPendingAccountDeletionRequest(profile.id),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -120,11 +124,13 @@ export default async function ProfilePage() {
 	              Calendario
 	            </Link>
 	          </Button>
-	          <TrainingReminderSettings
-	            settings={reminderSettings}
-	            hasSchedule={Boolean(schedule)}
-	            publicVapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
-	          />
+          {pushEnabled && reminderSettings && (
+            <TrainingReminderSettings
+              settings={reminderSettings}
+              hasSchedule={Boolean(schedule)}
+              publicVapidKey={pushVapidKey}
+            />
+          )}
 	        </CardContent>
 	      </Card>
 
