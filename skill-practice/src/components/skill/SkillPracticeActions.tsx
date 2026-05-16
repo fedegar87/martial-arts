@@ -24,7 +24,6 @@ export function SkillPracticeActions({
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(practicedToday);
-  const [noteOpen, setNoteOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const helperText =
     planMode === "custom"
@@ -44,7 +43,6 @@ export function SkillPracticeActions({
         return;
       }
       setDone(true);
-      setNoteOpen(true);
     });
   }
 
@@ -67,8 +65,6 @@ export function SkillPracticeActions({
         </Button>
         <PracticeNoteButton
           skillId={skillId}
-          open={noteOpen}
-          onOpenChange={setNoteOpen}
           showStatus={false}
         />
       </div>
