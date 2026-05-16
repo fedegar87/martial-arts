@@ -24,14 +24,14 @@ export default function PrivacyPage() {
           body: [
             "L'app tratta dati di account come email, nome visualizzato, scuola, ruolo, data di creazione e stato della sessione.",
             "L'app tratta dati di pratica come gradi, discipline, esami in preparazione, piano personale, log di allenamento, ripetizioni, note personali, calendario sessioni e riflessioni settimanali.",
-            "L'app tratta dati tecnici necessari al funzionamento, come identificativi di sessione, log tecnici del provider, indirizzi IP e dati di sicurezza gestiti dai servizi infrastrutturali.",
+	            "L'app tratta dati tecnici necessari al funzionamento, come identificativi di sessione, log tecnici del provider, indirizzi IP, dati di sicurezza gestiti dai servizi infrastrutturali e, se l'utente attiva i promemoria, endpoint e chiavi tecniche della subscription push del browser.",
             "Le note libere possono contenere informazioni decise dall'utente. Non inserire dati sanitari, dati di terzi o dati sensibili non necessari alla pratica.",
           ],
         },
         {
           title: "Finalita",
           body: [
-            "I dati servono per autenticare l'utente, generare il piano di pratica, mostrare progressi, mantenere il diario tecnico e comunicare aggiornamenti della scuola.",
+	            "I dati servono per autenticare l'utente, generare il piano di pratica, mostrare progressi, mantenere il diario tecnico, comunicare aggiornamenti della scuola e inviare promemoria di allenamento se attivati dall'utente.",
             "Ruolo e scuola sono usati per autorizzare funzioni riservate e non sono modificabili in autonomia dall'utente.",
             "I dati tecnici servono per sicurezza, prevenzione abusi, continuita del servizio, manutenzione e risoluzione di errori.",
           ],
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
         {
           title: "Fornitori, responsabili e trasferimenti",
           body: [
-            "L'app usa Supabase per autenticazione e database. I video possono essere caricati da YouTube in modalita youtube-nocookie solo quando l'utente avvia la riproduzione.",
+	            "L'app usa Supabase per autenticazione e database. I promemoria push usano il servizio notifiche del browser o del sistema operativo scelto dall'utente. I video possono essere caricati da YouTube in modalita youtube-nocookie solo quando l'utente avvia la riproduzione.",
             "[PLACEHOLDER: inserire elenco aggiornato dei responsabili/sub-responsabili, regione di hosting, DPA firmati, misure di sicurezza e meccanismo di trasferimento extra SEE se applicabile.]",
             "[PLACEHOLDER: indicare se Supabase, YouTube/Google, Vercel o altri fornitori trattano dati fuori dallo Spazio Economico Europeo e con quali garanzie: decisione di adeguatezza, EU-US Data Privacy Framework, SCC o altra base.]",
             "Eventuali analytics, crash reporting, strumenti marketing o profilazione non sono attivi in questa versione e dovranno essere dichiarati prima dell'attivazione.",

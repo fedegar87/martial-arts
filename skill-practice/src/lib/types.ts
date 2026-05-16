@@ -118,6 +118,40 @@ export type TrainingSchedule = {
   updated_at: string;
 };
 
+export type NotificationPreference = {
+  user_id: string;
+  training_reminders_enabled: boolean;
+  reminder_time: string;
+  time_zone: string;
+  include_exercise_names: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PushSubscriptionRecord = {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent: string | null;
+  created_at: string;
+  last_seen_at: string;
+  revoked_at: string | null;
+};
+
+export type NotificationDelivery = {
+  id: string;
+  user_id: string;
+  subscription_id: string | null;
+  kind: "training_reminder";
+  date: string;
+  status: "pending" | "sent" | "failed" | "skipped";
+  error: string | null;
+  sent_at: string | null;
+  created_at: string;
+};
+
 export type NewsItem = {
   id: string;
   school_id: string;

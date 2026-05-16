@@ -4,10 +4,12 @@ import { getUserPlanItems } from "@/lib/queries/plan";
 import { getThisWeekLogs } from "@/lib/queries/practice-log";
 import { getUnreadNewsCount } from "@/lib/queries/news";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
+import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
 import { getScheduledPlanItems, getScheduledSession } from "@/lib/session-scheduler";
 import { localDateKey } from "@/lib/date";
 import { timed } from "@/lib/perf";
 import { NewsBanner } from "@/components/news/NewsBanner";
+import { TrainingReminderPrompt } from "@/components/pwa/TrainingReminderPrompt";
 import { RestDayCard } from "@/components/today/RestDayCard";
 import { TodayEmptyState } from "@/components/today/TodayEmptyState";
 import { TodayPracticeSections } from "@/components/today/TodayPracticeSections";
@@ -23,13 +25,14 @@ export default async function TodayPage() {
 
   const sourceFilter =
     profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const [items, logs, unreadNewsCount, schedule] = await Promise.all([
+  const [items, logs, unreadNewsCount, schedule, reminderSettings] = await Promise.all([
     timed("today.plan_items", () =>
       getUserPlanItems(profile.id, undefined, sourceFilter),
     ),
     timed("today.week_logs", () => getThisWeekLogs(profile.id)),
     timed("today.unread_news", () => getUnreadNewsCount(profile)),
     timed("today.schedule", () => getTrainingSchedule(profile.id)),
+    timed("today.reminders", () => getTrainingReminderSettings(profile.id)),
   ]);
 
   const todayStr = localDateKey();
@@ -160,6 +163,13 @@ export default async function TodayPage() {
         cadenceWeeks={schedule.cadence_weeks}
         weekDoneCount={weekDoneCount}
       />
+      {completedCount < dailyCount && (
+        <TrainingReminderPrompt
+          settings={reminderSettings}
+          publicVapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
+          exerciseCount={dailyCount - completedCount}
+        />
+      )}
       <TodayPracticeSections
         session={session}
         todayLogs={todayLogs}

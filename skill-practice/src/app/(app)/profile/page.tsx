@@ -7,11 +7,13 @@ import { getExamProgramById } from "@/lib/queries/exam-programs";
 import { getUserPlanCount } from "@/lib/queries/plan";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getPendingAccountDeletionRequest } from "@/lib/queries/account";
+import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
 import { SignOutButton } from "@/components/profile/SignOutButton";
 import { GradeEditor } from "@/components/profile/GradeEditor";
 import { ChangePasswordSection } from "@/components/profile/ChangePasswordSection";
 import { PlanModeSection } from "@/components/profile/PlanModeSection";
 import { PrivacyDataSection } from "@/components/profile/PrivacyDataSection";
+import { TrainingReminderSettings } from "@/components/profile/TrainingReminderSettings";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,23 +24,25 @@ export default async function ProfilePage() {
   if (!profile) redirect("/login");
 
   const planSource = profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const [
-    examShaolin,
-    examTaichi,
-    planCount,
-    schedule,
-    pendingDeletionRequest,
-  ] = await Promise.all([
+	  const [
+	    examShaolin,
+	    examTaichi,
+	    planCount,
+	    schedule,
+	    reminderSettings,
+	    pendingDeletionRequest,
+	  ] = await Promise.all([
     profile.preparing_exam_id
       ? getExamProgramById(profile.preparing_exam_id)
       : Promise.resolve(null),
     profile.preparing_exam_taichi_id
       ? getExamProgramById(profile.preparing_exam_taichi_id)
       : Promise.resolve(null),
-    getUserPlanCount(profile.id, planSource),
-    getTrainingSchedule(profile.id),
-    getPendingAccountDeletionRequest(profile.id),
-  ]);
+	    getUserPlanCount(profile.id, planSource),
+	    getTrainingSchedule(profile.id),
+	    getTrainingReminderSettings(profile.id),
+	    getPendingAccountDeletionRequest(profile.id),
+	  ]);
 
   return (
     <div className="space-y-6">
@@ -104,20 +108,25 @@ export default async function ProfilePage() {
           <div className="text-muted-foreground text-sm">
             {scheduleSummary(schedule)}
           </div>
-          <Button asChild variant="outline" className="w-full justify-start">
-            <Link href="/sessions/setup">
-              <CalendarPlus className="mr-2 h-4 w-4" />
-              Imposta allenamento
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="w-full justify-start">
-            <Link href="/calendar">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Calendario
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+	          <Button asChild variant="outline" className="w-full justify-start">
+	            <Link href="/sessions/setup">
+	              <CalendarPlus className="mr-2 h-4 w-4" />
+	              Imposta allenamento
+	            </Link>
+	          </Button>
+	          <Button asChild variant="outline" className="w-full justify-start">
+	            <Link href="/calendar">
+	              <CalendarDays className="mr-2 h-4 w-4" />
+	              Calendario
+	            </Link>
+	          </Button>
+	          <TrainingReminderSettings
+	            settings={reminderSettings}
+	            hasSchedule={Boolean(schedule)}
+	            publicVapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
+	          />
+	        </CardContent>
+	      </Card>
 
       <ChangePasswordSection />
 

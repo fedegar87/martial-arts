@@ -25,14 +25,22 @@ export default function CookiesPage() {
             "[PLACEHOLDER: se vengono attivati analytics, crash reporting o marketing, aggiungere categoria, fornitori, finalita, durata e pulsante/area per modificare o revocare il consenso.]",
           ],
         },
-        {
-          title: "PWA e cache",
-          body: [
-            "La PWA puo salvare risorse statiche e una pagina offline nel browser per migliorare caricamento e continuita del servizio.",
-            "Le pagine private autenticate non vengono salvate intenzionalmente nella cache del service worker.",
-            "Al logout l'app prova a cancellare cache, localStorage e sessionStorage dal dispositivo dell'utente.",
-          ],
-        },
+	        {
+	          title: "PWA e cache",
+	          body: [
+	            "La PWA puo salvare risorse statiche e una pagina offline nel browser per migliorare caricamento e continuita del servizio.",
+	            "Le pagine private autenticate non vengono salvate intenzionalmente nella cache del service worker.",
+	            "Al logout l'app prova a cancellare cache, localStorage e sessionStorage dal dispositivo dell'utente.",
+	          ],
+	        },
+	        {
+	          title: "Notifiche push",
+	          body: [
+	            "I promemoria di allenamento sono disattivati di default e richiedono un'azione esplicita dell'utente.",
+	            "Se attivati, il browser salva una subscription tecnica e il server conserva endpoint e chiavi pubbliche necessarie per inviare il promemoria.",
+	            "L'utente puo disattivare i promemoria dal profilo o revocare il permesso dalle impostazioni del browser o del sistema operativo.",
+	          ],
+	        },
         {
           title: "Video YouTube",
           body: [
@@ -52,10 +60,11 @@ export default function CookiesPage() {
           title: "Tabella operativa da completare",
           body: [
             "[PLACEHOLDER: Cookie/sessione auth - nome reale - dominio - durata - finalita - tecnico si/no.]",
-            "[PLACEHOLDER: Cache PWA - chiave cache reale - durata - finalita - modalita cancellazione.]",
-            "[PLACEHOLDER: YouTube embed - dati comunicati - evento di attivazione - base giuridica/consenso se richiesto.]",
-          ],
-        },
+	            "[PLACEHOLDER: Cache PWA - chiave cache reale - durata - finalita - modalita cancellazione.]",
+	            "[PLACEHOLDER: Push subscription - endpoint/chiavi tecniche - durata - finalita - modalita revoca.]",
+	            "[PLACEHOLDER: YouTube embed - dati comunicati - evento di attivazione - base giuridica/consenso se richiesto.]",
+	          ],
+	        },
       ]}
     />
   );

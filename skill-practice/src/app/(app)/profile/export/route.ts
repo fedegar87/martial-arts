@@ -15,10 +15,13 @@ export async function GET() {
     profileResult,
     planItemsResult,
     practiceLogsResult,
-    trainingScheduleResult,
-    weeklyReflectionsResult,
-    deletionRequestsResult,
-  ] = await Promise.all([
+	    trainingScheduleResult,
+	    notificationPreferencesResult,
+	    pushSubscriptionsResult,
+	    notificationDeliveriesResult,
+	    weeklyReflectionsResult,
+	    deletionRequestsResult,
+	  ] = await Promise.all([
     supabase
       .from("user_profiles")
       .select("*, school:schools(name)")
@@ -35,14 +38,29 @@ export async function GET() {
       .eq("user_id", user.id)
       .order("date", { ascending: true })
       .order("created_at", { ascending: true }),
-    supabase
-      .from("training_schedule")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle(),
-    supabase
-      .from("weekly_reflections")
-      .select("*")
+	    supabase
+	      .from("training_schedule")
+	      .select("*")
+	      .eq("user_id", user.id)
+	      .maybeSingle(),
+	    supabase
+	      .from("notification_preferences")
+	      .select("*")
+	      .eq("user_id", user.id)
+	      .maybeSingle(),
+	    supabase
+	      .from("push_subscriptions")
+	      .select("id, endpoint, user_agent, created_at, last_seen_at, revoked_at")
+	      .eq("user_id", user.id)
+	      .order("created_at", { ascending: true }),
+	    supabase
+	      .from("notification_deliveries")
+	      .select("*")
+	      .eq("user_id", user.id)
+	      .order("created_at", { ascending: true }),
+	    supabase
+	      .from("weekly_reflections")
+	      .select("*")
       .eq("user_id", user.id)
       .order("week_start", { ascending: true }),
     supabase
@@ -61,11 +79,14 @@ export async function GET() {
     },
     profile: profileResult.data ?? null,
     plan_items: planItemsResult.data ?? [],
-    practice_logs: practiceLogsResult.data ?? [],
-    training_schedule: trainingScheduleResult.data ?? null,
-    weekly_reflections: weeklyReflectionsResult.data ?? [],
-    account_deletion_requests: deletionRequestsResult.data ?? [],
-  };
+	    practice_logs: practiceLogsResult.data ?? [],
+	    training_schedule: trainingScheduleResult.data ?? null,
+	    notification_preferences: notificationPreferencesResult.data ?? null,
+	    push_subscriptions: pushSubscriptionsResult.data ?? [],
+	    notification_deliveries: notificationDeliveriesResult.data ?? [],
+	    weekly_reflections: weeklyReflectionsResult.data ?? [],
+	    account_deletion_requests: deletionRequestsResult.data ?? [],
+	  };
 
   const fileDate = exportedAt.slice(0, 10);
   return new NextResponse(JSON.stringify(payload, null, 2), {

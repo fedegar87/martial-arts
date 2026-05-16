@@ -37,6 +37,41 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
+self.addEventListener("push", (event) => {
+  const payload = readPushPayload(event);
+  if (!payload) return;
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      tag: payload.tag,
+      data: {
+        url: payload.url || "/today",
+      },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const targetUrl = new URL(event.notification.data?.url || "/today", self.location.origin);
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        for (const client of clients) {
+          const clientUrl = new URL(client.url);
+          if (clientUrl.origin === targetUrl.origin) {
+            return client.focus().then(() => client.navigate(targetUrl.href));
+          }
+        }
+        return self.clients.openWindow(targetUrl.href);
+      }),
+  );
+});
+
 async function cacheFirst(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -53,5 +88,24 @@ async function networkOnlyWithOffline(request) {
   } catch {
     const cache = await caches.open(CACHE_NAME);
     return (await cache.match(OFFLINE_URL)) ?? Response.error();
+  }
+}
+
+function readPushPayload(event) {
+  if (!event.data) return null;
+
+  try {
+    const payload = event.data.json();
+    if (!payload || typeof payload.title !== "string" || typeof payload.body !== "string") {
+      return null;
+    }
+    return {
+      title: payload.title,
+      body: payload.body,
+      url: typeof payload.url === "string" ? payload.url : "/today",
+      tag: typeof payload.tag === "string" ? payload.tag : "training-reminder",
+    };
+  } catch {
+    return null;
   }
 }

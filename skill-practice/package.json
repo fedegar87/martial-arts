@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none src/lib/youtube.test.ts src/lib/practice-logic.test.ts src/lib/progress-logic.test.ts src/lib/session-scheduler.test.ts src/lib/calendar-logic.test.ts src/lib/landing.test.ts src/lib/onboarding-state.test.ts src/lib/auth-validation.test.ts src/lib/grades.test.ts src/lib/seed-fesk.test.ts",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none src/lib/youtube.test.ts src/lib/practice-logic.test.ts src/lib/progress-logic.test.ts src/lib/session-scheduler.test.ts src/lib/calendar-logic.test.ts src/lib/landing.test.ts src/lib/onboarding-state.test.ts src/lib/auth-validation.test.ts src/lib/grades.test.ts src/lib/seed-fesk.test.ts src/lib/push-notifications.test.ts",
     "ui:audit": "node scripts/ui-audit.mjs"
   },
   "dependencies": {
@@ -23,13 +23,15 @@
     "react-dom": "19.2.4",
     "shadcn": "^4.5.0",
     "tailwind-merge": "^3.5.0",
-    "tw-animate-css": "^1.4.0"
+    "tw-animate-css": "^1.4.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
