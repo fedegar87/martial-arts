@@ -3,8 +3,6 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { CalendarDays, CalendarPlus, ShieldCheck } from "lucide-react";
 import { getCurrentProfileAccount } from "@/lib/queries/user-profile";
-import { getExamProgramById } from "@/lib/queries/exam-programs";
-import { getUserPlanCount } from "@/lib/queries/plan";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getPendingAccountDeletionRequest } from "@/lib/queries/account";
 import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
@@ -23,24 +21,9 @@ export default async function ProfilePage() {
   const profile = await getCurrentProfileAccount();
   if (!profile) redirect("/login");
 
-  const planSource = profile.plan_mode === "custom" ? "manual" : "exam_program";
   const pushVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const pushEnabled = Boolean(pushVapidKey);
-  const [
-    examShaolin,
-    examTaichi,
-    planCount,
-    schedule,
-    reminderSettings,
-    pendingDeletionRequest,
-  ] = await Promise.all([
-    profile.preparing_exam_id
-      ? getExamProgramById(profile.preparing_exam_id)
-      : Promise.resolve(null),
-    profile.preparing_exam_taichi_id
-      ? getExamProgramById(profile.preparing_exam_taichi_id)
-      : Promise.resolve(null),
-    getUserPlanCount(profile.id, planSource),
+  const [schedule, reminderSettings, pendingDeletionRequest] = await Promise.all([
     getTrainingSchedule(profile.id),
     pushEnabled
       ? getTrainingReminderSettings(profile.id)
@@ -95,12 +78,7 @@ export default async function ProfilePage() {
           <CardTitle className="text-base">Programma</CardTitle>
         </CardHeader>
         <CardContent>
-          <PlanModeSection
-            planMode={profile.plan_mode}
-            examShaolin={examShaolin}
-            examTaichi={examTaichi}
-            planCount={planCount}
-          />
+          <PlanModeSection planMode={profile.plan_mode} />
         </CardContent>
       </Card>
 
@@ -112,18 +90,20 @@ export default async function ProfilePage() {
           <div className="text-muted-foreground text-sm">
             {scheduleSummary(schedule)}
           </div>
-	          <Button asChild variant="outline" className="w-full justify-start">
-	            <Link href="/sessions/setup">
-	              <CalendarPlus className="mr-2 h-4 w-4" />
-	              Imposta allenamento
-	            </Link>
-	          </Button>
-	          <Button asChild variant="outline" className="w-full justify-start">
-	            <Link href="/calendar">
-	              <CalendarDays className="mr-2 h-4 w-4" />
-	              Calendario
-	            </Link>
-	          </Button>
+          {!schedule && (
+            <Button asChild variant="outline" className="w-full justify-start">
+              <Link href="/sessions/setup">
+                <CalendarPlus className="mr-2 h-4 w-4" />
+                Imposta allenamento
+              </Link>
+            </Button>
+          )}
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link href="/calendar">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Calendario
+            </Link>
+          </Button>
           {pushEnabled && reminderSettings && (
             <TrainingReminderSettings
               settings={reminderSettings}

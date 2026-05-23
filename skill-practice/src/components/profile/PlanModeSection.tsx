@@ -12,21 +12,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { switchToCustomMode } from "@/lib/actions/plan";
-import type { ExamProgram, PlanMode } from "@/lib/types";
+import type { PlanMode } from "@/lib/types";
 
 type Props = {
   planMode: PlanMode;
-  examShaolin?: ExamProgram | null;
-  examTaichi?: ExamProgram | null;
-  planCount: number;
 };
 
-export function PlanModeSection({
-  planMode,
-  examShaolin,
-  examTaichi,
-  planCount,
-}: Props) {
+export function PlanModeSection({ planMode }: Props) {
   const [pending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -44,22 +36,6 @@ export function PlanModeSection({
 
   return (
     <div className="space-y-4">
-      <div>
-        <div className="text-sm font-medium">
-          {planMode === "custom" ? "Selezione personale" : "Programma esame"}
-        </div>
-        <p className="text-muted-foreground text-sm">
-          {planCount} contenuti attivi nel piano
-        </p>
-      </div>
-
-      {planMode === "exam" && (
-        <div className="space-y-1 text-sm">
-          <ExamLine label="Shaolin" exam={examShaolin} />
-          <ExamLine label="T'ai Chi" exam={examTaichi} />
-        </div>
-      )}
-
       <div className="flex flex-wrap gap-2">
         <Button asChild variant={planMode === "exam" ? "secondary" : "outline"}>
           <Link href="/plan/exam">Programma esame</Link>
@@ -73,6 +49,9 @@ export function PlanModeSection({
           Selezione personale
         </Button>
       </div>
+      <Button asChild variant="ghost" className="w-full justify-start">
+        <Link href="/programma">Vedi programma</Link>
+      </Button>
       <Sheet open={confirmOpen} onOpenChange={setConfirmOpen}>
         <SheetContent side="bottom" className="material-sheet pb-[env(safe-area-inset-bottom)]">
           <SheetHeader>
@@ -96,21 +75,6 @@ export function PlanModeSection({
           </SheetFooter>
         </SheetContent>
       </Sheet>
-    </div>
-  );
-}
-
-function ExamLine({
-  label,
-  exam,
-}: {
-  label: string;
-  exam?: ExamProgram | null;
-}) {
-  return (
-    <div className="flex justify-between gap-3">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right">{exam?.level_name ?? "nessuno"}</span>
     </div>
   );
 }

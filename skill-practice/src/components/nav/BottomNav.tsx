@@ -4,9 +4,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, BookOpenText, CalendarDays, Megaphone, Target } from "lucide-react";
 
-const NAV_ITEMS = [
-  { href: "/today", label: "Allenamento", shortLabel: "Allenamento", Icon: CalendarDays },
-  { href: "/programma", label: "Programma", shortLabel: "Programma", Icon: Target },
+type NavItem = {
+  href: string;
+  label: string;
+  shortLabel: string;
+  Icon: typeof CalendarDays;
+  match?: string[];
+};
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    href: "/today",
+    label: "Allenamento",
+    shortLabel: "Allenamento",
+    Icon: CalendarDays,
+    match: ["/calendar", "/sessions"],
+  },
+  {
+    href: "/programma",
+    label: "Programma",
+    shortLabel: "Programma",
+    Icon: Target,
+    match: ["/plan"],
+  },
   {
     href: "/library",
     label: "Scuola Chang",
@@ -28,8 +48,11 @@ export function BottomNav() {
   return (
     <nav className="app-nav material-bar hairline" aria-label="Navigazione principale">
       <div className="app-nav__inner">
-        {NAV_ITEMS.map(({ href, label, shortLabel, Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+        {NAV_ITEMS.map(({ href, label, shortLabel, Icon, match }) => {
+          const matches = [href, ...(match ?? [])];
+          const active = matches.some(
+            (m) => pathname === m || pathname.startsWith(m + "/"),
+          );
           return (
             <Link
               key={href}
