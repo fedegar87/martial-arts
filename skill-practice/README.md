@@ -48,3 +48,16 @@ npm run build
 ```
 
 La Supabase CLI non e assunta disponibile nel PATH: se non c'e, validare le migration via review SQL e applicarle con il workflow previsto dal progetto.
+
+## Deploy su Vercel Hobby
+
+Il piano Hobby accetta cron Vercel al massimo giornalieri. I promemoria ogni 15 minuti sono quindi attivati da GitHub Actions con `.github/workflows/training-reminders.yml` alla root del repo, non da `vercel.json`.
+
+Configura questi secret nel repository GitHub:
+
+```text
+TRAINING_REMINDER_CRON_URL=https://<dominio-produzione>/api/cron/training-reminders
+CRON_SECRET=<stesso valore configurato su Vercel>
+```
+
+`CRON_SECRET` deve essere presente anche nelle Environment Variables del progetto Vercel per l'ambiente Production.
