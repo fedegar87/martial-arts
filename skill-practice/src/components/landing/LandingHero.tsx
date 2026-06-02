@@ -32,7 +32,7 @@ export function LandingHero({ ctaHref }: { ctaHref: string }) {
           apprendere e non esserne mai sazio
         </p>
 
-        <p className="landing-hero__author landing-anim-author mt-2 text-sm text-muted-foreground/70">
+        <p className="landing-hero__author landing-anim-author mt-2 text-sm text-muted-foreground">
           — Confucio
         </p>
 

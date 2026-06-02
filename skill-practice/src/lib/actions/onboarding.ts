@@ -84,3 +84,34 @@ export async function selectExam(
 
   redirect("/hub");
 }
+
+export async function finishWithoutExam(formData: FormData): Promise<void> {
+  const practicesShaolin = formData.get("practicesShaolin") === "on";
+  const practicesTaichi = formData.get("practicesTaichi") === "on";
+
+  const rawShaolin = Number(formData.get("assignedLevelShaolin"));
+  const rawTaichi = Number(formData.get("assignedLevelTaichi"));
+  const assignedLevelShaolin =
+    practicesShaolin && Number.isFinite(rawShaolin) ? rawShaolin : 8;
+  const assignedLevelTaichi =
+    practicesTaichi && Number.isFinite(rawTaichi) ? rawTaichi : 0;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await supabase
+    .from("user_profiles")
+    .update({
+      assigned_level_shaolin: assignedLevelShaolin,
+      assigned_level_taichi: assignedLevelTaichi,
+      plan_mode: "custom",
+      preparing_exam_id: null,
+      preparing_exam_taichi_id: null,
+    })
+    .eq("id", user.id);
+
+  redirect("/hub");
+}

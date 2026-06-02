@@ -75,7 +75,7 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
             </h3>
             {group.categories.map((cat) => (
               <div key={cat.category} className="space-y-1">
-                <h4 className="text-muted-foreground/70 text-[11px] font-semibold tracking-wide uppercase">
+                <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
                   {cat.category}
                 </h4>
                 <ul className="divide-border bg-card divide-y rounded-lg border">

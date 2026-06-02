@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { selectExam } from "@/lib/actions/onboarding";
+import { finishWithoutExam, selectExam } from "@/lib/actions/onboarding";
 import { FormSelect } from "@/components/primitives/FormSelect";
 import { OptionCard } from "@/components/primitives/OptionCard";
 import { Button } from "@/components/ui/button";
@@ -193,6 +193,15 @@ export function OnboardingForm({ exams, displayName }: Props) {
             className="w-full"
           >
             {pending ? "Creazione piano..." : "Inizia"}
+          </Button>
+          <Button
+            type="submit"
+            formAction={finishWithoutExam}
+            variant="outline"
+            disabled={pending}
+            className="w-full"
+          >
+            Continua senza esame (allenamento libero)
           </Button>
           <LegalLinks className="justify-center" />
         </form>

@@ -37,7 +37,9 @@ export function GradeEditor({
         grades={TAICHI_GRADES}
       />
       <p className="text-muted-foreground text-xs">
-        Cambiando grado l&apos;esame in preparazione passa al livello successivo.
+        Quando aggiorni il grado, il programma d&apos;esame della disciplina
+        viene riportato al livello che stai preparando ora. Lo storico delle
+        pratiche resta.
       </p>
     </div>
   );
@@ -52,19 +54,37 @@ type FieldProps = {
 
 function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
   const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(currentLevel);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function handleSubmit(formData: FormData) {
+  const gradeChanged = value !== currentLevel;
+
+  function runUpdate() {
     startTransition(async () => {
       setError(null);
+      const formData = new FormData();
+      formData.set("discipline", discipline);
+      formData.set("assignedLevel", String(value));
       const result = await updateProfileGrade(null, formData);
       if (result && "error" in result) {
         setError(result.error);
         return;
       }
+      setConfirming(false);
       setEditing(false);
+      setSuccess(true);
     });
+  }
+
+  function handleSave() {
+    if (gradeChanged && !confirming) {
+      setConfirming(true);
+      return;
+    }
+    runUpdate();
   }
 
   if (!editing) {
@@ -75,12 +95,25 @@ function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
           <div className="text-sm font-medium">
             {gradeLabelForDiscipline(discipline, currentLevel)}
           </div>
+          {success && (
+            <div
+              className="mt-1 text-xs"
+              style={{ color: "var(--status-success)" }}
+              role="status"
+            >
+              Grado aggiornato.
+            </div>
+          )}
         </div>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setEditing(true)}
+          onClick={() => {
+            setSuccess(false);
+            setValue(currentLevel);
+            setEditing(true);
+          }}
         >
           Modifica
         </Button>
@@ -89,12 +122,15 @@ function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-2">
-      <input type="hidden" name="discipline" value={discipline} />
+    <div className="space-y-2">
       <FormSelect
         label={label}
         name="assignedLevel"
-        defaultValue={currentLevel}
+        value={value}
+        onChange={(event) => {
+          setValue(Number(event.target.value));
+          setConfirming(false);
+        }}
       >
         {grades.map((g) => (
           <option key={g.value} value={g.value}>
@@ -103,6 +139,15 @@ function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
         ))}
       </FormSelect>
 
+      {confirming && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Cambiando grado, il programma d&apos;esame della disciplina verrà
+            ricreato per il nuovo livello. Lo storico delle pratiche resta.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -110,8 +155,8 @@ function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
       )}
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Salvataggio..." : "Salva"}
+        <Button type="button" onClick={handleSave} disabled={pending}>
+          {pending ? "Salvataggio..." : confirming ? "Conferma" : "Salva"}
         </Button>
         <Button
           type="button"
@@ -119,12 +164,14 @@ function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
           disabled={pending}
           onClick={() => {
             setError(null);
+            setConfirming(false);
+            setValue(currentLevel);
             setEditing(false);
           }}
         >
           Annulla
         </Button>
       </div>
-    </form>
+    </div>
   );
 }
