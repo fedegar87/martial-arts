@@ -75,7 +75,7 @@ Per il razionale completo vedi `archive/`:
 |------------|--------|------|
 | Frontend | Next.js 14+ App Router + TypeScript | — |
 | UI | Tailwind CSS + shadcn/ui | Componenti accessibili pronti |
-| PWA | Service worker statico + manifest | `public/sw.js` registrato in produzione; `next-pwa` resta installato ma non usato |
+| PWA | Service worker statico + manifest | `public/sw.js` registrato in produzione; `next-pwa` rimosso il 2026-06-02 |
 | Database | Supabase (PostgreSQL + Auth) | Auth predisposta multi-utente |
 | Push reminder | Web Push + VAPID + Vercel Cron | Subscription salvate in Supabase; invio server-only via `web-push` |
 | Video | YouTube unlisted embed | Zero infrastruttura video |
@@ -90,7 +90,7 @@ Per il razionale completo vedi `archive/`:
 - Tailwind v4 (config via `globals.css` `@theme`, niente `tailwind.config.ts` per shadcn)
 - shadcn preset usato: **Nova** (Lucide + Geist), base color: **neutral**
 - `npm run dev` forza `next dev --webpack`: Turbopack dev ha dato panic locale su `/login`; `npm run build` resta verde con Turbopack
-- `next-pwa@5.6` resta installato ma **non usato**. Offline locale implementato con `public/sw.js` + `ServiceWorkerRegister`; rimozione pacchetto da fare quando Windows non blocca `node_modules`
+- `next-pwa` **rimosso il 2026-06-02** (era fermo al Pages Router, incompatibile con App Router/Next 16, mai importato). Offline locale implementato con `public/sw.js` + `ServiceWorkerRegister`
 - Per breaking changes complete vedi `skill-practice/node_modules/next/dist/docs/01-app/`
 
 ---
