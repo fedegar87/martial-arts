@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Moon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Props = {
@@ -20,8 +22,17 @@ export function RestDayCard({ nextTrainingDate }: Props) {
           <Moon className="h-4 w-4" /> Giorno di riposo
         </CardTitle>
       </CardHeader>
-      <CardContent className="text-muted-foreground text-sm">
-        {label ? <p>Prossima sessione: {label}.</p> : <p>Nessuna sessione futura programmata.</p>}
+      <CardContent className="text-muted-foreground space-y-3 text-sm">
+        {label ? (
+          <p>Prossima sessione: {label}.</p>
+        ) : (
+          <>
+            <p>Il ciclo è concluso. Imposta nuove sessioni per ripartire.</p>
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/sessions/setup">Imposta allenamento</Link>
+            </Button>
+          </>
+        )}
       </CardContent>
     </Card>
   );

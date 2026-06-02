@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function AppError({
@@ -14,9 +15,12 @@ export default function AppError({
       <p className="text-muted-foreground mt-2 text-sm">
         Non è stato possibile caricare la pagina. Riprova.
       </p>
-      <Button onClick={reset} className="mt-4">
-        Riprova
-      </Button>
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <Button onClick={reset}>Riprova</Button>
+        <Button asChild variant="ghost">
+          <Link href="/hub">Torna alla home</Link>
+        </Button>
+      </div>
     </div>
   );
 }

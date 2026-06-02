@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useTransition, useOptimistic } from "react";
+import { useEffect, useState, useTransition, useOptimistic } from "react";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
@@ -35,6 +35,7 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
       ),
   );
   const [, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const filtered = optimistic.filter(
     (it) => scope === "both" || it.skill.discipline === scope,
@@ -51,9 +52,10 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
   function applyStatus(skillId: string, next: PlanStatus) {
     startTransition(async () => {
       setOptimistic({ skillId, status: next });
+      setError(null);
       const result = await updatePlanItemStatus(skillId, next);
       if (result && "error" in result) {
-        console.error("Errore aggiornamento status:", result.error);
+        setError(result.error);
       }
     });
   }
@@ -67,6 +69,11 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {error && (
+          <p role="status" className="text-destructive text-xs">
+            {error}
+          </p>
+        )}
         {filtered.length > 0 && <PolarHeader />}
         {grouped.map((group) => (
           <div key={group.discipline} className="space-y-2">

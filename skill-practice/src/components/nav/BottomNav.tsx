@@ -32,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Scuola Chang",
     shortLabel: "Scuola",
     Icon: BookOpenText,
+    match: ["/skill"],
   },
   {
     href: "/progress",

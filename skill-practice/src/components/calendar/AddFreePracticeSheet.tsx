@@ -39,6 +39,15 @@ export function AddFreePracticeSheet({
     () => new Set(scheduledSkillIds),
     [scheduledSkillIds],
   );
+  const formattedDate = useMemo(
+    () =>
+      new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("it-IT", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }),
+    [dateKey],
+  );
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return skills;
@@ -75,7 +84,9 @@ export function AddFreePracticeSheet({
       <SheetContent side="bottom" className="max-h-[85vh] overflow-hidden">
         <SheetHeader>
           <SheetTitle>Aggiungi pratica libera</SheetTitle>
-          <SheetDescription>{dateKey}</SheetDescription>
+          <SheetDescription className="capitalize">
+            {formattedDate}
+          </SheetDescription>
         </SheetHeader>
         <div className="space-y-3 overflow-hidden px-4 pb-4">
           <label className="relative block">
