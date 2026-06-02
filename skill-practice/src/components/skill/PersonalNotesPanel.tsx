@@ -18,7 +18,7 @@ export function PersonalNotesPanel({ notes }: Props) {
       <div className="space-y-3">
         {notes.map((note) => (
           <article key={note.id} className="surface-inset rounded-md p-3">
-            <time className="label-font text-primary text-[0.68rem]">
+            <time className="label-font text-primary text-xs">
               {formatDate(note.date)}
             </time>
             <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">

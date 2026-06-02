@@ -20,7 +20,7 @@ export function MetricStrip({ metrics }: Props) {
           <div className="font-mono text-xl font-semibold leading-none">
             {metric.value}
           </div>
-          <div className="label-font text-muted-foreground mt-1 text-[0.68rem]">
+          <div className="label-font text-muted-foreground mt-1 text-xs">
             {metric.label}
           </div>
         </div>

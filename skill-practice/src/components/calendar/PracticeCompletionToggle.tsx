@@ -56,8 +56,7 @@ export function PracticeCompletionToggle({
         type="button"
         variant={checked ? "outline" : "secondary"}
         size="sm"
-        role="switch"
-        aria-checked={checked}
+        aria-pressed={checked}
         disabled={disabled || pending}
         onClick={handleClick}
         className={

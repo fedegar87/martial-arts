@@ -22,6 +22,7 @@ export function PracticeCalendar({ days }: Props) {
         <div className="grid grid-cols-[1.75rem_1fr] gap-2">
           <div aria-hidden />
           <div
+            aria-hidden
             className="grid gap-1 text-[0.62rem] leading-none text-muted-foreground"
             style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
           >
@@ -33,7 +34,10 @@ export function PracticeCalendar({ days }: Props) {
           </div>
         </div>
         <div className="grid grid-cols-[1.75rem_1fr] gap-2">
-          <div className="grid grid-rows-7 gap-1 text-right text-[0.62rem] leading-none text-muted-foreground">
+          <div
+            aria-hidden
+            className="grid grid-rows-7 gap-1 text-right text-[0.62rem] leading-none text-muted-foreground"
+          >
             {WEEKDAY_LABELS.map((label, index) => (
               <span key={index} className="flex items-center justify-end">
                 {label}
@@ -41,6 +45,8 @@ export function PracticeCalendar({ days }: Props) {
             ))}
           </div>
           <div
+            role="img"
+            aria-label={`Mappa pratica ultimi 90 giorni: ${practicedCount} giorni con pratica`}
             className="grid gap-1"
             style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
           >
@@ -50,8 +56,8 @@ export function PracticeCalendar({ days }: Props) {
                   day ? (
                     <div
                       key={day.date}
+                      aria-hidden
                       title={`${formatDate(day.date)}: ${day.practiced ? "praticato" : "non praticato"}`}
-                      aria-label={`${formatDate(day.date)}: ${day.practiced ? "praticato" : "non praticato"}`}
                       className={`aspect-square min-h-2 rounded-sm border ${cellStyle(day.practiced)}`}
                     />
                   ) : (
