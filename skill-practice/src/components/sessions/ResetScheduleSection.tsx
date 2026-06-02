@@ -40,7 +40,7 @@ export function ResetScheduleSection() {
   return (
     <section className="border-t border-border pt-6 mt-6 space-y-3">
       <div className="space-y-1">
-        <h2 className="label-font text-xs uppercase text-muted-foreground">
+        <h2 className="section-label">
           Zona ripristino
         </h2>
         <p className="text-sm text-muted-foreground">

@@ -163,7 +163,7 @@ export function LibraryFilters({
 
         <div className="space-y-4 border-t border-border/70 p-3">
           <div className="space-y-2">
-            <h2 className="text-muted-foreground text-xs font-medium uppercase">
+            <h2 className="section-label">
               Categorie
             </h2>
             <div
@@ -198,7 +198,7 @@ export function LibraryFilters({
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-muted-foreground text-xs font-medium uppercase">
+            <h2 className="section-label">
               Media
             </h2>
             <div className="flex">

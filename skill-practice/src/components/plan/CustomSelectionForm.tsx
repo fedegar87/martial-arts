@@ -153,7 +153,7 @@ function DeleteCustomSelectionSection({
   return (
     <section className="space-y-3 border-t border-border pt-5">
       <div className="space-y-1">
-        <h2 className="label-font text-muted-foreground text-sm">
+        <h2 className="section-label">
           Gestione selezione
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -242,7 +242,7 @@ function SkillGroup({
 
   return (
     <section className="space-y-2">
-      <h2 className="label-font text-muted-foreground text-sm">
+      <h2 className="section-label">
         {SKILL_CATEGORY_LABELS[category]}
       </h2>
       <div className="divide-border overflow-hidden rounded-lg border">

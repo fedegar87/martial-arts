@@ -132,7 +132,7 @@ export default async function ProgrammaPage({ searchParams }: Props) {
               <div className="space-y-6">
                 {(Object.keys(grouped) as SkillCategory[]).map((category) => (
                   <section key={category} className="space-y-2">
-                    <h2 className="text-muted-foreground text-sm font-medium uppercase tracking-wide">
+                    <h2 className="section-label">
                       {SKILL_CATEGORY_LABELS[category]}
                     </h2>
                     <div className="space-y-2">

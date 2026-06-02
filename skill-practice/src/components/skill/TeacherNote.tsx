@@ -27,8 +27,8 @@ export function TeacherNote({ note, compact = false }: Props) {
       <div className="flex gap-3">
         <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="min-w-0 space-y-1">
-          <div className="font-medium">Nota del maestro</div>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <div className="label-font text-primary text-xs">Nota del maestro</div>
+          <p className="text-sm leading-relaxed text-muted-foreground italic">
             {note}
           </p>
         </div>
