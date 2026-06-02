@@ -38,6 +38,11 @@ export function TodaySessionSummary({
           style={{ width: `${completionPercent}%` }}
         />
       </div>
+      {completionPercent === 100 && (
+        <p className="label-font text-xs text-primary">
+          Pratica di oggi completata
+        </p>
+      )}
       <p className="text-xs text-muted-foreground">
         Ripasso: {cadenceText(cadenceWeeks)}.
       </p>

@@ -30,18 +30,6 @@ export const PLAN_STATUS_VISUALS: Record<PlanStatus, PlanStatusVisual> = {
   },
 };
 
-export const COMPLETION_VISUALS = {
-  done: {
-    label: "Fatto oggi",
-    className:
-      "border-[color:var(--status-success)] bg-transparent text-[var(--status-success)]",
-  },
-  pending: {
-    label: "Da fare",
-    className: "border-border bg-transparent text-muted-foreground",
-  },
-};
-
 export const CURRICULUM_MARKER_VISUALS = {
   available: {
     label: "Accessibile",

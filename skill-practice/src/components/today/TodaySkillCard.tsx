@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
 import { StatusBadge } from "@/components/skill/StatusBadge";
-import { PracticeCompletionBadge } from "@/components/skill/PracticeCompletionBadge";
 import { TeacherNote } from "@/components/skill/TeacherNote";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
@@ -32,13 +31,13 @@ export function TodaySkillCard({
 
   return (
     <Card
-      className={
+      className={`transition-colors duration-[var(--duration-transition)] ease-[var(--ease-spring-smooth)] ${
         completedToday
           ? "border-[color:var(--status-success)]"
           : status === "focus"
-            ? "border-primary/40 shadow-[0_0_24px_var(--gold-glow)]"
+            ? "border-primary/40"
             : "border-transparent"
-      }
+      }`}
     >
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -52,7 +51,6 @@ export function TodaySkillCard({
           </div>
           <div className="flex flex-wrap gap-1">
             <StatusBadge status={status} />
-            <PracticeCompletionBadge completed={completedToday} />
             <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
             <SkillStatusMenu
               skillId={skill.id}
