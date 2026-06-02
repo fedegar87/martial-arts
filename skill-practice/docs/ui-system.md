@@ -108,6 +108,22 @@ Da evitare nei componenti dominio:
 - success/destructive duplicati fuori da primitive o `src/lib/ui-classes.ts`;
 - `tap-feedback` fuori da primitive o componenti documentati.
 
+## Superfici e ombre
+
+Mappa delle superfici (token in `globals.css`):
+
+- pagina / sfondo app = `--surface-base`
+- card e sezioni raggruppate = `--surface-grouped` (`bg-card`)
+- chrome sovrapposto (header, sheet, nav) = `--surface-elevated`, applicato via `material-bar` / `material-sheet`
+- nota / contenuto incassato = `--surface-inset` (classe `surface-inset`)
+
+Esistono due tier di "card su pagina", entrambi intenzionali:
+
+- **Card standard** (`<Card>` shadcn): `rounded-md` + ombra ambient `shadow-[0_0_40px_rgba(0,0,0,0.35)]`. Default per contenuto e controlli (today, profilo, programma, skill).
+- **Data card** (`/progress`): `rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]`. Variante piu' piatta per le sezioni dati/statistiche; lo skeleton di sezione condivide lo stesso trattamento per evitare shadow-pop al caricamento.
+
+Non introdurre un terzo trattamento: nuova superficie di contenuto/controllo usa `<Card>`, nuova sezione dati in `/progress` usa la data card.
+
 ## Eccezioni brand
 
 Landing, hub, news, progress e video player possono restare piu' espressivi. Le eccezioni devono riguardare identita' o contenuto editoriale, non controlli operativi come bottoni, chip, tab o conferme destructive.

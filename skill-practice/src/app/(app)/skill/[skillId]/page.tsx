@@ -7,6 +7,7 @@ import {
   getTodayLogForSkill,
 } from "@/lib/queries/practice-log";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
+import { BackButton } from "@/components/skill/BackButton";
 import { PersonalNotesPanel } from "@/components/skill/PersonalNotesPanel";
 import { SkillPracticeActions } from "@/components/skill/SkillPracticeActions";
 import { TeacherNote } from "@/components/skill/TeacherNote";
@@ -43,6 +44,7 @@ export default async function SkillDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <BackButton />
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">{skill.name}</h1>
         {skill.name_italian && (

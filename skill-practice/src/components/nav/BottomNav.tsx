@@ -64,9 +64,12 @@ export function BottomNav() {
                 active ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              {active && (
-                <span className="app-nav__active-dot" aria-hidden="true" />
-              )}
+              <span
+                aria-hidden="true"
+                className={`app-nav__active-dot transition-opacity duration-[var(--duration-feedback)] ${
+                  active ? "opacity-100" : "opacity-0"
+                }`}
+              />
               <Icon className="h-5 w-5" />
               <span className="app-nav__label">{shortLabel}</span>
             </Link>
