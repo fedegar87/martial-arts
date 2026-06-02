@@ -25,35 +25,32 @@ export function TodaySessionHeader({
 
   return (
     <header className="material-bar sticky top-0 z-30 -mx-4 border-b border-border px-4 pt-3 pb-3">
-      <div className="space-y-1">
-        <p className="label-font text-primary text-xs uppercase">
-          {eyebrowParts.join(" · ")}
-        </p>
-        <h1 className="text-3xl font-semibold capitalize tracking-tight">
-          {dayName}
-        </h1>
-      </div>
-      <div className="mt-3 flex gap-2 border-t border-border/50 pt-3">
-        <Button
-          asChild
-          variant="secondary"
-          className="h-12 flex-1 justify-center text-sm"
-        >
-          <Link href="/calendar" aria-label="Calendario">
-            <CalendarDays className="mr-2 h-5 w-5" />
-            Calendario
-          </Link>
-        </Button>
-        <Button
-          asChild
-          variant="secondary"
-          className="h-12 flex-1 justify-center text-sm"
-        >
-          <Link href="/sessions/setup" aria-label="Imposta allenamento">
-            <SlidersHorizontal className="mr-2 h-5 w-5" />
-            Imposta allenamento
-          </Link>
-        </Button>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className="label-font text-primary text-xs uppercase">
+            {eyebrowParts.join(" · ")}
+          </p>
+          <h1 className="text-2xl font-semibold capitalize tracking-tight">
+            {dayName}
+          </h1>
+        </div>
+        <div className="flex shrink-0 gap-1">
+          <Button asChild variant="ghost" size="icon" aria-label="Apri calendario">
+            <Link href="/calendar">
+              <CalendarDays className="h-5 w-5" />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            aria-label="Imposta allenamento"
+          >
+            <Link href="/sessions/setup">
+              <SlidersHorizontal className="h-5 w-5" />
+            </Link>
+          </Button>
+        </div>
       </div>
     </header>
   );

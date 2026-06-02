@@ -90,14 +90,12 @@ export default async function ProfilePage() {
           <div className="text-muted-foreground text-sm">
             {scheduleSummary(schedule)}
           </div>
-          {!schedule && (
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/sessions/setup">
-                <CalendarPlus className="mr-2 h-4 w-4" />
-                Imposta allenamento
-              </Link>
-            </Button>
-          )}
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link href="/sessions/setup">
+              <CalendarPlus className="mr-2 h-4 w-4" />
+              {schedule ? "Modifica allenamento" : "Imposta allenamento"}
+            </Link>
+          </Button>
           <Button asChild variant="outline" className="w-full justify-start">
             <Link href="/calendar">
               <CalendarDays className="mr-2 h-4 w-4" />
