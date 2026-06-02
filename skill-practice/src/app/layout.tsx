@@ -2,18 +2,12 @@ import type { Metadata } from "next";
 import {
   Bebas_Neue,
   Cormorant_Garamond,
-  Geist,
   Noto_Serif_TC,
   Space_Mono,
   Spectral,
 } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 const displayFont = Cormorant_Garamond({
   variable: "--font-display",
@@ -130,7 +124,7 @@ export default function RootLayout({
   return (
     <html
       lang="it"
-      className={`dark ${geistSans.variable} ${displayFont.variable} ${bodyFont.variable} ${labelFont.variable} ${monoFont.variable} ${serifTcFont.variable} h-full antialiased`}
+      className={`dark ${displayFont.variable} ${bodyFont.variable} ${labelFont.variable} ${monoFont.variable} ${serifTcFont.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground min-h-full flex flex-col">
         <ServiceWorkerRegister />

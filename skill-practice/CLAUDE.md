@@ -15,7 +15,7 @@ Non sostituire questi pezzi senza approvazione esplicita (e aggiornamento del pi
 - **Next.js 14+ App Router** + TypeScript strict
 - **Tailwind CSS** + **shadcn/ui** — niente altre UI library
 - **Supabase** (Auth + Postgres) — no localStorage/IndexedDB come storage primario
-- **next-pwa** per service worker e manifest
+- **Service worker statico** in `public/sw.js` (registrato da `ServiceWorkerRegister`) + manifest in `public/manifest.json` — niente `next-pwa` (era fermo al Pages Router, mai importato, rimosso)
 - **YouTube unlisted embed** — niente upload video, niente signed URL, niente storage video proprio
 - **Vercel** per hosting
 

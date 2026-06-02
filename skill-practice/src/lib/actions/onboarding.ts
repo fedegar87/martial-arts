@@ -82,7 +82,7 @@ export async function selectExam(
   });
   if (planError) return { error: planError.message };
 
-  redirect("/hub");
+  redirect("/today");
 }
 
 export async function finishWithoutExam(formData: FormData): Promise<void> {
@@ -113,5 +113,5 @@ export async function finishWithoutExam(formData: FormData): Promise<void> {
     })
     .eq("id", user.id);
 
-  redirect("/hub");
+  redirect("/today");
 }
