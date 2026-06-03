@@ -1,5 +1,7 @@
 # Review fixes — implementation plan (2026-05-29)
 
+> **Stato al 2026-06-03:** Track A ✅ implementato · Track B ✅ migration `0028` applicata (isolamento multi-tenant attivo) · Track C = backlog **non-bloccante**, in gran parte aperto (fatto: rimozione `next-pwa`; restano tipi `Database`, CSP, guard onboarding per-pagina, error-handling query, caching catalogo, ecc.). A8 parziale: `typecheck` ok, `.github/workflows/ci.yml` creato ma non ancora committato. Doc tenuto in `docs/plans/` (non in `completed/`) finché il Track C resta aperto.
+
 **Goal:** Apply the reconciled review actions. Track A (pre-first-federation, single-tenant-safe) is implemented now; Track B (pre-second-federation, multi-tenant) is delivered as a migration + copy-paste SQL because the DB is cloud-only and the Supabase CLI is not in PATH (see `feedback_db_changes_workflow`); Track C is non-blocking.
 
 **Architecture:** Next.js 16 App Router + Supabase. UI/config/CSS changes are code-only and safe in single-tenant. RLS/tenant changes are migration files the owner pastes into the Supabase SQL Editor.
