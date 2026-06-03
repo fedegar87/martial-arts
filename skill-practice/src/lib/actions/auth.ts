@@ -29,7 +29,7 @@ export async function login(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: error.message };
+    return { error: loginErrorMessage(error.message) };
   }
 
   // Sblocco esplicito: salta la landing e vai direttamente alla destination corretta.
@@ -149,6 +149,20 @@ export async function changePassword(
   }
 
   return { success: "Password aggiornata." };
+}
+
+function loginErrorMessage(message: string): string {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("invalid login credentials")) {
+    return "Email o password non corretti.";
+  }
+  if (normalized.includes("email not confirmed")) {
+    return "Devi prima confermare l'email dall'invito ricevuto.";
+  }
+  if (normalized.includes("rate") || normalized.includes("too many")) {
+    return "Troppi tentativi. Riprova tra qualche minuto.";
+  }
+  return "Accesso non riuscito. Riprova.";
 }
 
 async function getAppOrigin(): Promise<string> {
