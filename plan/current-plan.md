@@ -411,7 +411,7 @@ skill-practice/
 
 ### 5.1 Migrations (cronologia)
 
-Sequenza al 2026-05-16. Tutte applicate via SQL Editor Supabase (CLI non in PATH, vedi `feedback_db_changes_workflow`).
+Sequenza aggiornata al 2026-06-03. 0001–0027 applicate via SQL Editor Supabase (CLI non in PATH, vedi `feedback_db_changes_workflow`). **0028 creata ma NON ancora applicata** (vedi nota sotto la tabella).
 
 | # | Nome | Scopo |
 |---|------|-------|
@@ -435,6 +435,10 @@ Sequenza al 2026-05-16. Tutte applicate via SQL Editor Supabase (CLI non in PATH
 | 0024 | `skills_composite_index` | Indice composito `(school_id, discipline, minimum_grade_value DESC, display_order)` |
 | 0025 | `top_practiced_skills` | RPC classifica skill praticate — Sprint 1.15 |
 | 0026 | `training_reminder_push_notifications` | Preferenze reminder, subscription push e storico delivery — Sprint 1.16 |
+| 0027 | `more_skill_video_urls` | Popolamento URL video FESK aggiuntivi |
+| 0028 | `multitenant_isolation` | ⚠️ **Creata, da applicare.** Track B isolamento multi-tenant: RLS letture statiche per-scuola, `WITH CHECK` tenant su `user_plan_items`/`practice_logs`, `handle_new_user` da metadata invito, `save_custom_selection` per scuola, `account_deletion_requests.school_id` + policy admin per scuola. NO-OP in single-tenant; barriera reale alla 2ª federazione |
+
+> ⚠️ **0028 pendente:** applicare via Supabase SQL Editor **dopo uno snapshot del DB** (riscrive policy di sicurezza). Verifica post-apply single-tenant: login, Libreria, Programma, Calendario, segna pratica. Quando arriverà la 2ª federazione, l'invito utenti deve passare `school_id` (e `display_name`) nei `user_metadata`, altrimenti con più scuole `handle_new_user` fallisce di proposito.
 
 ### 5.2 Note vincolanti sulla struttura
 
