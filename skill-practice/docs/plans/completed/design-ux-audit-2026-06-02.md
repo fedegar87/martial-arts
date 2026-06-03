@@ -1,6 +1,8 @@
 # Report di design — skill-practice, refresh mirato ispirato ai migliori player 2026
 
-> Documento di riferimento. Generato il 2026-06-02 da un audit multi-agente (mappa codebase + ricerca di mercato + audit multi-lente + verifica avversariale). 39 finding confermati, 17 scartati perché appesantivano o violavano le esclusioni hard del piano (§10). Nessuna modifica al codice è stata applicata: è un piano di intervento.
+> **✅ IMPLEMENTATO il 2026-06-02** — commit `eaab60c..d53cdc8` su `main`, deploy Vercel READY. Eseguiti i blocchi A1-A6, B1/B3, C1-C6, D1/D2, E1-E4, F1-F3, G1/G2; scartati in esecuzione F4 (haptics, no-op iOS) e G3 (refactor, over per MVP). Documento conservato come storico dell'intervento.
+>
+> Documento di riferimento. Generato il 2026-06-02 da un audit multi-agente (mappa codebase + ricerca di mercato + audit multi-lente + verifica avversariale). 39 finding confermati, 17 scartati perché appesantivano o violavano le esclusioni hard del piano (§10).
 >
 > **Revisione incrociata 2026-06-02:** una seconda lettura ha corretto due errori fattuali (A1 e A2), limato due reason sovradette (A6, C4) e aggiunto dettagli implementativi (D2 fallback, E1 focus-ring) + una checklist di verifica (§8). Le correzioni sono recepite qui sotto.
 
