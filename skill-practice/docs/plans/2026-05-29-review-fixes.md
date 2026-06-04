@@ -67,7 +67,29 @@ Paired code (safe single-tenant, do with the migration): thread `profile.school_
 
 ---
 
-## Phase 3 — Track C (non-blocking)
-Generated `Database` type (or update the doc); unify query error-handling; static-catalog caching; CSP; migration applied-state tracking; remove `next-pwa`; split `session-progress` test into its own file + cover the `not_started` branch; per-page onboarding guard via `requireOnboardedProfile()` (P3, 11 routes); progress first-run CTA; reminder schedule note.
+## Phase 3 — Track C (non-blocking) — BACKLOG
 
-> **Note (legal):** filling the privacy/terms placeholders + the minors-consent field requires the federation's controller/DPO data and is owner/legal work, not implemented here.
+Backlog vivo, aggiornato al 2026-06-04. Non urgente, non bloccante. Spuntare man mano.
+
+**Sicurezza / hardening**
+- [ ] **Guard onboarding per-pagina** — helper `requireOnboardedProfile()` sulle ~11 route protette (P3). Oggi il check è centralizzato (proxy/landing); il guard impedisce a un utente non onboardato di entrare via deep-link saltando l'onboarding. *Effort M. Valore medio-alto.*
+- [ ] **CSP** (Content-Security-Policy) — header anti-XSS, da calibrare con embed YouTube + Supabase + stili inline. *Effort M. Difensivo.*
+
+**Qualità codice / DX**
+- [ ] **Tipi `Database` generati** — `supabase gen types typescript` invece di mantenerli a mano in `src/lib/types.ts`. Frizione: Supabase CLI non in PATH (vedi `feedback_db_changes_workflow`). In alternativa, tenere aggiornato il blocco a mano e documentarlo. *Effort S–M.*
+- [ ] **Unificare error-handling delle query** — `lib/queries/*` gestiscono gli errori Supabase in modo incoerente; standardizzare (throw vs null) così l'error boundary `(app)/error.tsx` si comporta in modo prevedibile. *Effort M.*
+- [ ] **Split test `session-progress`** in file dedicato + coprire il ramo `not_started`. *Effort S.*
+
+**Performance / infra**
+- [ ] **Caching catalogo statico** — cachare letture skills/exam_programs per tagliare round-trip. ⚠️ Bloccato: `unstable_cache` gira fuori dal request scope e `createClient()` usa `cookies()` → serve un client Supabase senza cookie store (vedi commit `a81492f` che rimosse unstable_cache). *Effort M, non banale.*
+- [ ] **Migration applied-state tracking** — ledger di quali migration sono applicate (oggi solo la tabella manuale in `plan/current-plan.md §5.1`, niente CLI). *Effort S, organizzativo.*
+- [x] **Rimuovere `next-pwa`** — ✅ fatto il 2026-06-02 (commit `eaab60c`).
+
+**UX**
+- [ ] **Progress first-run CTA** — empty state con call-to-action su `/progress` quando non c'è ancora alcun dato. *Effort S.*
+- [ ] **Nota schedule reminder** — chiarire/documentare lo stato del cron promemoria (su Vercel Hobby era stato messo in pausa; vedi `feedback_vercel_silent_deploy_failures` e storia CI). *Effort S, doc.*
+
+**Legale (non è codice)**
+- [ ] Riempire i placeholder privacy/terms + campo consenso minori: richiede dati titolare/DPO della federazione → lavoro owner/legale, non implementabile in codice.
+
+> **Quick win consigliati per ripartire:** guard onboarding per-pagina (sicurezza) e tipi `Database` (DX); first-run CTA su `/progress` e split test sono S facili.
