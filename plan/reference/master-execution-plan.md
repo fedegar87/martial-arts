@@ -37,7 +37,7 @@ Stato Git prima della modifica:
 
 ```text
 ## main...origin/main
-?? plan/master-execution-plan.md
+?? plan/reference/master-execution-plan.md
 ```
 
 Comandi eseguiti in `skill-practice`:
@@ -468,12 +468,12 @@ Questa sezione non va implementata prima della Fase 6, salvo richiesta esplicita
 | Fase chiusa | File |
 |---|---|
 | Fase 0 | `plan/current-plan.md`, se cambia stato Supabase o setup |
-| Fase 1 | `plan/visual-identity-plan.md`, `plan/2026-04-25-progress-tab-plan.md` se si completa parity |
+| Fase 1 | `plan/reference/visual-identity-plan.md`, `plan/completed/2026-04-25-progress-tab-plan.md` se si completa parity |
 | Fase 2 | `plan/current-plan.md` D4/Sprint 2 |
 | Fase 3 | `plan/current-plan.md` D6/Sprint 2 |
 | Fase 4 | `plan/current-plan.md` stack PWA/deploy |
-| Fase 5 | `plan/curriculum-mapping-fesk.md`, eventualmente rigenerare seed |
-| Fase 6 | `plan/positioning-analysis.md`, decisione Scenario B |
+| Fase 5 | `plan/reference/curriculum-mapping-fesk.md`, eventualmente rigenerare seed |
+| Fase 6 | `plan/reference/positioning-analysis.md`, decisione Scenario B |
 | Scenario B | `plan/current-plan.md` Sprint 3 task completati |
 
 ---

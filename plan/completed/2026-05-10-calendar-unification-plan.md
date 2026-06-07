@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16 App Router, TypeScript strict, Tailwind, shadcn/ui, Supabase. Nessuna nuova dipendenza.
 
-**Design doc:** `plan/2026-05-10-calendar-unification-design.md`
+**Design doc:** `plan/completed/2026-05-10-calendar-unification-design.md`
 
 **Baseline:** `npm test` = 77 test passano (verificato dall'utente).
 
@@ -736,13 +736,13 @@ git commit -m "refactor(routing): rinomina route /journal in /calendar e aggiorn
 Sostituire l'attuale entry D11:
 
 ```
-| **D11** | Diario calendario | **`/journal` è la vista canonica di tracking/correzione.** Compone `practice_logs`, schedule e piano attivo in una DayView; `/sessions/calendar` resta vista filtrata sulle sessioni. `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/2026-05-07-calendar-overhaul-design.md` |
+| **D11** | Diario calendario | **`/journal` è la vista canonica di tracking/correzione.** Compone `practice_logs`, schedule e piano attivo in una DayView; `/sessions/calendar` resta vista filtrata sulle sessioni. `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `archive/2026-05-07-calendar-overhaul-design-superseded.md` |
 ```
 
 con:
 
 ```
-| **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/2026-05-10-calendar-unification-design.md` |
+| **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/completed/2026-05-10-calendar-unification-design.md` |
 ```
 
 **Step 2: §4 (rotte)**
@@ -769,16 +769,16 @@ git commit -m "docs(plan): aggiorna D11 e §4/§5 con calendario unificato /cale
 ### Task 16: Marcare design 2026-05-07 come superseded
 
 **Files:**
-- Modify: `plan/2026-05-07-calendar-overhaul-design.md` (front-matter)
+- Modify: `archive/2026-05-07-calendar-overhaul-design-superseded.md` (front-matter)
 
 **Step 1: Aggiungere/aggiornare front-matter**
 
-In testa al file `plan/2026-05-07-calendar-overhaul-design.md`, aggiungere o aggiornare il front-matter YAML:
+In testa al file `archive/2026-05-07-calendar-overhaul-design-superseded.md`, aggiungere o aggiornare il front-matter YAML:
 
 ```yaml
 ---
 status: superseded
-superseded_by: plan/2026-05-10-calendar-unification-design.md
+superseded_by: plan/completed/2026-05-10-calendar-unification-design.md
 superseded_date: 2026-05-10
 ---
 ```
@@ -788,7 +788,7 @@ superseded_date: 2026-05-10
 **Step 2: Commit**
 
 ```bash
-git add plan/2026-05-07-calendar-overhaul-design.md
+git add archive/2026-05-07-calendar-overhaul-design-superseded.md
 git commit -m "docs(plan): marca 2026-05-07-calendar-overhaul-design come superseded"
 ```
 

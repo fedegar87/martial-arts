@@ -1,5 +1,5 @@
 -- Sprint 1.5 — seed curriculum FESK.
--- Generato da scripts/generate-fesk-seed.mjs usando plan/curriculum-mapping-fesk.md.
+-- Generato da scripts/generate-fesk-seed.mjs usando plan/reference/curriculum-mapping-fesk.md.
 
 BEGIN;
 

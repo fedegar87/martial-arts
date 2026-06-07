@@ -3,7 +3,7 @@
 **Status:** nuova analisi UX separata dal master plan
 **Data:** 2026-04-25
 **Scope:** esperienza implementata oggi in `skill-practice`, navigazione, moduli, tabs, pratica, libreria/programma, profilo, progresso e possibile landing pubblica
-**Non modifica:** `plan/master-execution-plan.md`
+**Non modifica:** `plan/reference/master-execution-plan.md`
 
 ---
 

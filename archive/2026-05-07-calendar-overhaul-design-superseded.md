@@ -1,12 +1,12 @@
 ---
 status: superseded
-superseded_by: plan/2026-05-10-calendar-unification-design.md
+superseded_by: plan/completed/2026-05-10-calendar-unification-design.md
 superseded_date: 2026-05-10
 date: 2026-05-07
 supersedes: nessuno (estende §6.4 e §7 di plan/current-plan.md)
 related:
-  - plan/2026-04-26-training-schedule-design.md
-  - plan/2026-05-04-plan-status-simplification-design.md
+  - plan/completed/2026-04-26-training-schedule-design.md
+  - plan/completed/2026-05-04-plan-status-simplification-design.md
 ---
 
 # Calendario generale, segna-pratica retroattiva, vista forme della scuola, forme extra-curriculum

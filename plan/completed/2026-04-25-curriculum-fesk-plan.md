@@ -276,7 +276,7 @@ export type UserProfile = {
 
 ## 6. SEED DATA
 
-> **Fonte canonica risolta:** `plan/curriculum-mapping-fesk.md` contiene la mappatura validata dal fondatore. La migration `0004_seed_fesk.sql` è generata da `skill-practice/scripts/generate-fesk-seed.mjs`.
+> **Fonte canonica risolta:** `plan/reference/curriculum-mapping-fesk.md` contiene la mappatura validata dal fondatore. La migration `0004_seed_fesk.sql` è generata da `skill-practice/scripts/generate-fesk-seed.mjs`.
 
 Vedi §3.1 → §3.9 del prompt sorgente per **l'elenco completo delle ~137 skill**, già strutturato come array TS. Il seed va trasformato in SQL nella migration `0004_seed_fesk.sql`.
 

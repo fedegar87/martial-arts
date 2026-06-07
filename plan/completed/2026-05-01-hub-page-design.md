@@ -418,6 +418,6 @@ Niente animazione mount. È statico, scrolla normalmente.
 ## 10. Riferimenti
 
 - Piano principale: `plan/current-plan.md` (§7 navigazione, §15.6 landing, §16 design system)
-- Landing design: `plan/2026-04-26-landing-page-design.md`
-- Visual identity: `plan/visual-identity-plan.md`
-- Implementation plan: `plan/2026-05-01-hub-page-plan.md`
+- Landing design: `plan/completed/2026-04-26-landing-page-design.md`
+- Visual identity: `plan/reference/visual-identity-plan.md`
+- Implementation plan: `plan/completed/2026-05-01-hub-page-plan.md`

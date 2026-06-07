@@ -1,6 +1,6 @@
 # Auth Password Management Implementation Plan
 
-Design reference: `plan/2026-05-02-auth-password-management-design.md`
+Design reference: `plan/completed/2026-05-02-auth-password-management-design.md`
 
 Goal: add a practical password lifecycle for school testers: admin invite, set password from invite/recovery link, forgot password, and authenticated password change.
 

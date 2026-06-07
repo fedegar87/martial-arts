@@ -68,7 +68,7 @@ assertCount("T'ai Chi tue_shou+ta_lu+chin_na", (categoryCounts.get("taichi:tue_s
 assertCount("T'ai Chi armi", (categoryCounts.get("taichi:armi_forma") ?? 0) + (categoryCounts.get("taichi:armi_combattimento") ?? 0), 8);
 
 const sql = `-- Sprint 1.5 — seed curriculum FESK.
--- Generato da scripts/generate-fesk-seed.mjs usando plan/curriculum-mapping-fesk.md.
+-- Generato da scripts/generate-fesk-seed.mjs usando plan/reference/curriculum-mapping-fesk.md.
 
 BEGIN;
 

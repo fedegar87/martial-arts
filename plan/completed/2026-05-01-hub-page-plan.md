@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16 App Router, React 19, TypeScript strict, Tailwind v4, lucide-react (già in deps), Noto Serif TC (già caricato per landing). Niente nuove dipendenze.
 
-**Design source of truth:** `plan/2026-05-01-hub-page-design.md`.
+**Design source of truth:** `plan/completed/2026-05-01-hub-page-design.md`.
 
 ---
 
@@ -966,7 +966,7 @@ In §7 (Navigazione), aggiungere subito sopra §7.1:
 
 Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
 
-In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile che riporta a `/hub`. È non-sticky di design: l'AppHeader scrolla via per non collidere con sticky pre-esistenti su `/today` e `/sessions/calendar`. Vedi `plan/2026-05-01-hub-page-design.md`.
+In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile che riporta a `/hub`. È non-sticky di design: l'AppHeader scrolla via per non collidere con sticky pre-esistenti su `/today` e `/sessions/calendar`. Vedi `plan/completed/2026-05-01-hub-page-design.md`.
 ```
 
 **Step 13.3 — Aggiornare §15.6 landing page**
@@ -976,9 +976,9 @@ Sostituire l'attuale §15.6 con:
 ```markdown
 ### 15.6 Landing page e hub
 
-Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/2026-04-26-landing-page-design.md`.
+Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/completed/2026-04-26-landing-page-design.md`.
 
-Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 6 tile che mostrano le aree dell'app e fungono da crocevia panoramico. Vedi `plan/2026-05-01-hub-page-design.md`.
+Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 6 tile che mostrano le aree dell'app e fungono da crocevia panoramico. Vedi `plan/completed/2026-05-01-hub-page-design.md`.
 
 Il flusso completo: landing `/` → Entra → `/hub` → scegli area → BottomNav per saltare fra aree → ideogramma 丙午 in `AppHeader` per tornare al hub. Login/onboarding redirigono a `/hub`. Logout torna a `/` (landing).
 
@@ -1067,7 +1067,7 @@ Implementazione completa quando tutti gli step da 1 a 14.2 sono verdi.
 
 ## Riferimenti
 
-- Design doc: `plan/2026-05-01-hub-page-design.md`
-- Landing design: `plan/2026-04-26-landing-page-design.md`
+- Design doc: `plan/completed/2026-05-01-hub-page-design.md`
+- Landing design: `plan/completed/2026-04-26-landing-page-design.md`
 - Piano principale: `plan/current-plan.md`
 - Skill `superpowers:executing-plans` per l'esecuzione task-per-task

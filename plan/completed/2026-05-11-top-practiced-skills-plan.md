@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 14 App Router · TypeScript strict · Supabase (Postgres + RLS + RPC) · Tailwind + shadcn/ui · lucide-react
 
-**Design di riferimento:** [plan/2026-05-11-top-practiced-skills-design.md](2026-05-11-top-practiced-skills-design.md)
+**Design di riferimento:** [plan/completed/2026-05-11-top-practiced-skills-design.md](2026-05-11-top-practiced-skills-design.md)
 
 **Nota su TDD:** il design esplicita "niente test unitari" — il lavoro è puro SQL + mapping di shape + UI; non c'è logica JS pura da coprire. La verifica è `npm run lint && npm run build` + smoke test SQL + accettazione manuale UI (coerente con `skill-practice/CLAUDE.md`).
 

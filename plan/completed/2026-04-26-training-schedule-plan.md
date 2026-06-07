@@ -4,7 +4,7 @@
 
 **Goal:** Sostituire l'empty state di `/today` con un setup wizard per definire giorni, durata, cadenza e ripetizioni; calcolare al volo le sessioni nei training day; aggiungere calendario navigabile fino a `end_date` e tracking ripetizioni in `practice_logs`.
 
-**Architecture:** Approccio computed (vedi `plan/2026-04-26-training-schedule-design.md` §1, Q5). Una riga `training_schedule` per utente contiene le regole; la funzione pura `getScheduledSession(date, schedule, items)` distribuisce focus / review / maintenance via bucket deterministico. `practice_logs` estesa con `reps_target`/`reps_done` (snapshot) per il counter ripetizioni.
+**Architecture:** Approccio computed (vedi `plan/completed/2026-04-26-training-schedule-design.md` §1, Q5). Una riga `training_schedule` per utente contiene le regole; la funzione pura `getScheduledSession(date, schedule, items)` distribuisce focus / review / maintenance via bucket deterministico. `practice_logs` estesa con `reps_target`/`reps_done` (snapshot) per il counter ripetizioni.
 
 **Tech Stack:** Next.js 16 App Router, Server Components + Server Actions, Supabase (Postgres + RLS), Tailwind v4 + shadcn/ui (preset Nova). Test con `node --test` (file `.test.ts` accanto al sorgente, vedi `src/lib/practice-logic.test.ts`).
 
@@ -2066,10 +2066,10 @@ git commit -m "chore: registra session-scheduler.test.ts in npm test"
 - §4.2 — aggiungere `TrainingSchedule` ai tipi dinamici, estendere `PracticeLog` con `reps_target: number | null` e `reps_done: number`.
 - §5 — aggiungere `(app)/sessions/setup/`, `(app)/sessions/calendar/`, `components/sessions/`.
 - §6 — nuovo §6.4 "Schedulazione sessioni":
-  > Quando l'utente completa il setup, una riga in `training_schedule` definisce giorni, durata, cadenza e ripetizioni. La funzione pura `getScheduledSession(date, schedule, items)` distribuisce le forme: focus ogni sessione, review/maintenance via bucket deterministico (cycle = `cadence_weeks * weekdays.length`, maintenance = doppio). Vedi `plan/2026-04-26-training-schedule-design.md` per i dettagli.
+  > Quando l'utente completa il setup, una riga in `training_schedule` definisce giorni, durata, cadenza e ripetizioni. La funzione pura `getScheduledSession(date, schedule, items)` distribuisce le forme: focus ogni sessione, review/maintenance via bucket deterministico (cycle = `cadence_weeks * weekdays.length`, maintenance = doppio). Vedi `plan/completed/2026-04-26-training-schedule-design.md` per i dettagli.
 - §7.2 — sostituire il wireframe di Today con uno aggiornato che include il counter `2/3` per le ripetizioni e annotare il nuovo header "Modifica sessioni" + icona calendario.
 - §9 — aggiungere alla lista degli sprint operativi:
-  > **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql`, route `/sessions/setup` e `/sessions/calendar`, algoritmo `lib/session-scheduler.ts`, reps tracking su `practice_logs`. Design: `plan/2026-04-26-training-schedule-design.md`.
+  > **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql`, route `/sessions/setup` e `/sessions/calendar`, algoritmo `lib/session-scheduler.ts`, reps tracking su `practice_logs`. Design: `plan/completed/2026-04-26-training-schedule-design.md`.
 
 **Step 2: Commit**
 

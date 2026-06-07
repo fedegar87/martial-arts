@@ -3,7 +3,7 @@ status: design-approved
 date: 2026-05-04
 supersedes: parte di §6.1, §6.4 di plan/current-plan.md
 related:
-  - plan/2026-04-26-training-schedule-design.md
+  - plan/completed/2026-04-26-training-schedule-design.md
 ---
 
 # Semplificazione PlanStatus: da 3 a 2 livelli (focus / mantenimento)

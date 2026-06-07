@@ -232,7 +232,7 @@ L'analisi è strategicamente corretta nelle linee guida ma gonfia il prodotto su
 
 | # | Issue | Azione richiesta | Owner | Stato |
 |---|---|---|---|---|
-| **P1** | Tab Progresso con 5 visualizzazioni | Costruirla in Sprint 1.8 (`plan/2026-04-25-progress-tab-plan.md`) e aggiornare `current-plan.md` alla chiusura | founder/agent | 🟢 Decisa |
+| **P1** | Tab Progresso con 5 visualizzazioni | Costruirla in Sprint 1.8 (`plan/completed/2026-04-25-progress-tab-plan.md`) e aggiornare `current-plan.md` alla chiusura | founder/agent | 🟢 Decisa |
 | **P2** | Riformulare focus/review/maintenance da "architetturale" a "framework pedagogico" | Editare §3.5 punto 3 e §3.8 punto 4 | founder/agent | 🟡 Aperta |
 | **P3** | Aggiornare conteggio skill da ~130 a 137 | Edit §3.1 | agent | 🟢 Chiusa |
 | **P4** | Aggiungere test di falsificazione esplicito | Riempire §6 di questo doc | founder | 🟡 Aperta |

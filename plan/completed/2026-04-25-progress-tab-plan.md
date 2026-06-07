@@ -4,8 +4,8 @@
 **Versione:** v1
 **Ultimo aggiornamento:** 2026-04-25
 **Sostituisce:** task #14 di Sprint 2 in `current-plan.md` (versione minimale "progresso settimanale + countdown esame")
-**Dipende da:** `plan/2026-04-25-curriculum-fesk-plan.md` (schema 0003 + seed 0004 applicati, `lib/grades.ts`, `lib/labels.ts`, doppia disciplina)
-**Compatibile con:** `plan/2026-04-25-video-player-plan.md` (1.6) — indipendente, ma se 1.6 è chiuso prima si riusa `VideoPlayer` (non strettamente necessario qui)
+**Dipende da:** `plan/completed/2026-04-25-curriculum-fesk-plan.md` (schema 0003 + seed 0004 applicati, `lib/grades.ts`, `lib/labels.ts`, doppia disciplina)
+**Compatibile con:** `plan/completed/2026-04-25-video-player-plan.md` (1.6) — indipendente, ma se 1.6 è chiuso prima si riusa `VideoPlayer` (non strettamente necessario qui)
 
 ---
 

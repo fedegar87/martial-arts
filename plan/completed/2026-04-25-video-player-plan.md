@@ -4,7 +4,7 @@
 **Versione:** v1
 **Ultimo aggiornamento:** 2026-04-25
 **Sostituisce:** `src/components/skill/YouTubeEmbed.tsx`
-**Dipende da:** `plan/current-plan.md` (Sprint 1) e `plan/2026-04-25-curriculum-fesk-plan.md` (per i nuovi nomi categoria + `practice_mode`)
+**Dipende da:** `plan/current-plan.md` (Sprint 1) e `plan/completed/2026-04-25-curriculum-fesk-plan.md` (per i nuovi nomi categoria + `practice_mode`)
 
 ---
 

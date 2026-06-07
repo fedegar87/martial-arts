@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 14 App Router, TypeScript strict, Supabase, `node:test` (test runner integrato), Tailwind, shadcn/ui.
 
-**Design source of truth:** `plan/2026-05-10-progress-redesign-design.md`.
+**Design source of truth:** `plan/completed/2026-05-10-progress-redesign-design.md`.
 
 ---
 
@@ -982,7 +982,7 @@ progress-logic.ts (computePlanProgress, buildCurriculumCells,
 computeBestStreakFromLogs, countPracticedSkills, countGlobalFormReps,
 computeCurrentStreak/computeBestStreak legacy basati su count).
 
-Vedi plan/2026-05-10-progress-redesign-design.md per il design.
+Vedi plan/completed/2026-05-10-progress-redesign-design.md per il design.
 EOF
 )"
 ```

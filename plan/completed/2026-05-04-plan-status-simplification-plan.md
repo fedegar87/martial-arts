@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 14 App Router, TypeScript strict, Supabase Postgres + RLS, Vitest, Tailwind + shadcn/ui.
 
-**Reference design:** [plan/2026-05-04-plan-status-simplification-design.md](2026-05-04-plan-status-simplification-design.md)
+**Reference design:** [plan/completed/2026-05-04-plan-status-simplification-design.md](2026-05-04-plan-status-simplification-design.md)
 
 ---
 

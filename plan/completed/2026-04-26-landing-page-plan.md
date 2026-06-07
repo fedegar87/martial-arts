@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16 App Router, TypeScript, Tailwind CSS v4, SVGR (`@svgr/webpack`), `next/font/google` (Noto Serif TC), Server Components, no client JS.
 
-**Design doc di riferimento:** `plan/2026-04-26-landing-page-design.md`
+**Design doc di riferimento:** `plan/completed/2026-04-26-landing-page-design.md`
 
 ---
 
@@ -740,7 +740,7 @@ In `plan/current-plan.md` sezione §15.6 "Landing page", sostituisci il blocco e
 ```markdown
 ### 15.6 Landing page
 
-Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/2026-04-26-landing-page-design.md` per il design e `plan/2026-04-26-landing-page-plan.md` per l'implementazione.
+Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/completed/2026-04-26-landing-page-design.md` per il design e `plan/completed/2026-04-26-landing-page-plan.md` per l'implementazione.
 
 Non è una landing promozionale né di onboarding: è solo identità visiva (cavallo di fuoco + citazione di Confucio) prima della pratica. Sempre visibile, anche per utente loggato.
 
@@ -821,7 +821,7 @@ git commit --allow-empty -m "feat(landing): feature completa, DoD verificato"
 
 ## Esclusioni esplicite (non implementare)
 
-Da `plan/2026-04-26-landing-page-design.md` §9:
+Da `plan/completed/2026-04-26-landing-page-design.md` §9:
 
 - Niente copy esplicativa "cos'è skill-practice"
 - Niente form di registrazione/waiting list

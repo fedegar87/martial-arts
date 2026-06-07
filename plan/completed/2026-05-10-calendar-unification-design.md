@@ -1,7 +1,7 @@
 ---
 status: design
 date: 2026-05-10
-supersedes: plan/2026-05-07-calendar-overhaul-design.md (parziale: D11 viene rivisto)
+supersedes: archive/2026-05-07-calendar-overhaul-design-superseded.md (parziale: D11 viene rivisto)
 related_decisions: D11 (current-plan.md)
 ---
 
@@ -107,7 +107,7 @@ Da `/today` si raggiungono entrambe (bottone "Calendario" sticky in alto → `/s
 | `plan/current-plan.md` D11 (riga 60) | Riscrivere: ora la vista canonica è `/calendar`, `/sessions/calendar` non esiste più. Riferimento a questo design doc. |
 | `plan/current-plan.md` §4 (rotte) | Sostituire `/journal` e `/sessions/calendar` con `/calendar`. |
 | `plan/current-plan.md` §5 (struttura cartelle) | Aggiornare riferimenti a `components/journal/` → `components/calendar/`, `queries/journal.ts` → `queries/calendar.ts`, ecc. |
-| `plan/2026-05-07-calendar-overhaul-design.md` | Marcare come superato (front-matter `superseded_by`). |
+| `archive/2026-05-07-calendar-overhaul-design-superseded.md` | Marcare come superato (front-matter `superseded_by`). |
 
 ## 7. Pagina `/calendar` — struttura finale
 

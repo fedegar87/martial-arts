@@ -23,9 +23,9 @@ L'analisi ricevuta (allegata in §11 per riferimento) è nel complesso solida e 
 
 | Cosa ha detto l'LLM | Realtà |
 |---|---|
-| "FESK = Federazione Europea Scuola Kung Fu" | Inventato. Il codebase ([curriculum-mapping-fesk.md:5](curriculum-mapping-fesk.md#L5)) cita solo il dominio `feskfongttai.it`. L'espansione corretta non è confermata. **Non usare nessuna espansione finché non verificata.** |
+| "FESK = Federazione Europea Scuola Kung Fu" | Inventato. Il codebase ([curriculum-mapping-fesk.md:5](reference/curriculum-mapping-fesk.md#L5)) cita solo il dominio `feskfongttai.it`. L'espansione corretta non è confermata. **Non usare nessuna espansione finché non verificata.** |
 | "Maestro Bestetti, patrimonio tecnico del Maestro Bestetti" | Inventato. Nessun nome di maestro è mai stato dichiarato. **Rimuovere ogni riferimento personale dalla comunicazione al direttivo.** |
-| "Espansione ad altre federazioni Chang (3-4 organizzazioni in Italia ed Europa)" | Speculativo. "Chang" nel codebase è solo il nome di una tile dell'hub ([hub-page-design.md:228](2026-05-01-hub-page-design.md#L228)) che corrisponde alla libreria. Nessun mercato di "federazioni Chang" è stato verificato. **Tenere come opzione teorica, non come piano.** |
+| "Espansione ad altre federazioni Chang (3-4 organizzazioni in Italia ed Europa)" | Speculativo. "Chang" nel codebase è solo il nome di una tile dell'hub ([hub-page-design.md:228](completed/2026-05-01-hub-page-design.md#L228)) che corrisponde alla libreria. Nessun mercato di "federazioni Chang" è stato verificato. **Tenere come opzione teorica, non come piano.** |
 
 ### 1.2 Punti forti da preservare
 
