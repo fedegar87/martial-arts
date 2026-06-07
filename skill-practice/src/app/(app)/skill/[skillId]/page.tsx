@@ -98,7 +98,6 @@ export default async function SkillDetailPage({ params }: Props) {
           skillId={skillId}
           inPersonalSelection={inPersonalSelection}
           practicedToday={practicedToday}
-          planMode={profile.plan_mode}
         />
       </div>
     </div>

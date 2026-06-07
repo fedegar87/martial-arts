@@ -16,6 +16,7 @@ import { savePracticeNote } from "@/lib/actions/practice";
 type Props = {
   skillId: string;
   compact?: boolean;
+  block?: boolean;
   showStatus?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -24,6 +25,7 @@ type Props = {
 export function PracticeNoteButton({
   skillId,
   compact = false,
+  block = false,
   showStatus = true,
   open,
   onOpenChange,
@@ -53,12 +55,17 @@ export function PracticeNoteButton({
       <Button
         type="button"
         variant="outline"
-        size={compact ? "sm" : "icon"}
+        size={block ? "default" : compact ? "sm" : "icon"}
+        className={block ? "h-11 w-full" : undefined}
         aria-label="Aggiungi nota pratica"
         onClick={() => setSheetOpen(true)}
       >
-        <NotebookPen className={compact ? "mr-1 h-3.5 w-3.5" : "h-4 w-4"} />
-        {compact && "Nota"}
+        <NotebookPen
+          className={
+            block ? "mr-2 h-4 w-4" : compact ? "mr-1 h-3.5 w-3.5" : "h-4 w-4"
+          }
+        />
+        {(block || compact) && "Nota"}
       </Button>
       {showStatus && message && (
         <p className="text-muted-foreground text-xs" role="status">
