@@ -25,7 +25,7 @@ export default async function HubPage() {
       <HubBackground />
       <section className="hub-page relative z-10 mx-auto">
         <h1 className="hub-anim-heading mt-8 text-[22px] font-medium text-foreground">
-          Dove vuoi praticare oggi?
+          Dove vuoi andare?
         </h1>
         <p className="hub-anim-subtitle mt-1 text-sm text-muted-foreground">
           Scegli un&apos;area.
