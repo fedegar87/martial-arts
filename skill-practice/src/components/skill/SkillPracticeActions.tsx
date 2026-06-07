@@ -25,14 +25,6 @@ export function SkillPracticeActions({
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(practicedToday);
   const [message, setMessage] = useState<string | null>(null);
-  const helperText =
-    planMode === "custom"
-      ? inPersonalSelection
-        ? "La pratica libera aggiorna lo storico. Questo contenuto è nella selezione personale e può comparire nelle sessioni."
-        : "La pratica libera aggiorna lo storico senza cambiare le sessioni. Aggiungi il contenuto alle sessioni se vuoi ripassarlo con cadenza regolare."
-      : inPersonalSelection
-        ? "La pratica libera aggiorna lo storico senza cambiare il programma esame. Questo contenuto è salvato nella selezione personale, che resta inattiva."
-        : "La pratica libera aggiorna lo storico senza cambiare il programma esame. Aggiungere il contenuto alla selezione personale non la rende attiva.";
 
   function handleFreePracticeDone() {
     startTransition(async () => {
@@ -74,10 +66,6 @@ export function SkillPracticeActions({
         inPersonalSelection={inPersonalSelection}
         planMode={planMode}
       />
-
-      <p className="text-xs leading-relaxed text-muted-foreground">
-        {helperText}
-      </p>
 
       {message && (
         <p className="text-destructive text-xs" role="status">

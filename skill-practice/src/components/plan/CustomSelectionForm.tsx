@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
-import { gradeLabel } from "@/lib/grades";
+import { EXTRA_GRADE_VALUE, gradeLabel } from "@/lib/grades";
 import type { Discipline, Skill, SkillCategory } from "@/lib/types";
 
 type Props = {
@@ -46,7 +46,11 @@ export function CustomSelectionForm({
     for (const [, skills] of groupedSkills) {
       for (const skill of skills) grades.add(skill.minimum_grade_value);
     }
-    return [...grades].sort((a, b) => b - a);
+    return [...grades].sort((a, b) => {
+      if (a === EXTRA_GRADE_VALUE) return 1;
+      if (b === EXTRA_GRADE_VALUE) return -1;
+      return b - a;
+    });
   }, [groupedSkills]);
   const selectedCount = selected.size;
 

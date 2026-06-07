@@ -11,6 +11,11 @@ import type { Discipline } from "./types";
 
 export type Grade = { value: number; label: string };
 
+// Grado-sentinella per skill fuori dal programma cinture (sezione "Altro").
+// Fuori dalla scala -7..8, quindi non entra nella selezione esami.
+export const EXTRA_GRADE_VALUE = 99;
+export const EXTRA_GRADE_LABEL = "Altro";
+
 export const SHAOLIN_GRADES: Grade[] = [
   { value: 8, label: "8° Chi" },
   { value: 7, label: "7° Chi" },
@@ -35,6 +40,7 @@ export const TAICHI_GRADES: Grade[] = [
 ];
 
 export function gradeLabel(value: number): string {
+  if (value === EXTRA_GRADE_VALUE) return EXTRA_GRADE_LABEL;
   return SHAOLIN_GRADES.find((g) => g.value === value)?.label ?? `${value}`;
 }
 
@@ -46,6 +52,7 @@ export function gradeLabelForDiscipline(
   discipline: Discipline,
   value: number,
 ): string {
+  if (value === EXTRA_GRADE_VALUE) return EXTRA_GRADE_LABEL;
   return (
     gradesForDiscipline(discipline).find((g) => g.value === value)?.label ??
     `${value}`

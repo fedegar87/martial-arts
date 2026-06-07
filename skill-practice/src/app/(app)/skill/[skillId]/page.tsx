@@ -11,14 +11,33 @@ import { BackButton } from "@/components/skill/BackButton";
 import { PersonalNotesPanel } from "@/components/skill/PersonalNotesPanel";
 import { SkillPracticeActions } from "@/components/skill/SkillPracticeActions";
 import { TeacherNote } from "@/components/skill/TeacherNote";
-import { LevelBadge } from "@/components/skill/LevelBadge";
-import { StatusBadge } from "@/components/skill/StatusBadge";
-import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
-import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
-import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
-import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
+import { gradeLabelForDiscipline } from "@/lib/grades";
 
 type Props = { params: Promise<{ skillId: string }> };
+
+function LabeledVideo({
+  url,
+  label,
+  skillName,
+}: {
+  url: string;
+  label: string | null;
+  skillName: string;
+}) {
+  return (
+    <figure className="space-y-2">
+      {label && (
+        <figcaption className="text-muted-foreground text-sm font-medium">
+          {label}
+        </figcaption>
+      )}
+      <VideoPlayer
+        videoUrl={url}
+        title={label ? `${skillName} — ${label}` : skillName}
+      />
+    </figure>
+  );
+}
 
 export default async function SkillDetailPage({ params }: Props) {
   const profile = await getCurrentProfile();
@@ -32,10 +51,6 @@ export default async function SkillDetailPage({ params }: Props) {
     getTodayLogForSkill(profile.id, skillId),
   ]);
   if (!skill) notFound();
-  const activeSource = profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const activePlanItem =
-    planItems.find((item) => item.source === activeSource && !item.is_hidden) ??
-    null;
   const manualPlanItem =
     planItems.find((item) => item.source === "manual" && !item.is_hidden) ??
     null;
@@ -45,35 +60,34 @@ export default async function SkillDetailPage({ params }: Props) {
   return (
     <div className="space-y-6">
       <BackButton />
-      <header className="space-y-2">
+      <header className="space-y-1">
         <h1 className="text-2xl font-semibold">{skill.name}</h1>
-        {skill.name_italian && (
-          <p className="text-muted-foreground">{skill.name_italian}</p>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          <DisciplineBadge discipline={skill.discipline} />
-          <span className="text-muted-foreground text-sm">
-            {SKILL_CATEGORY_LABELS[skill.category]}
-          </span>
-          <LevelBadge level={skill.minimum_grade_value} />
-          {activePlanItem && (
-            <>
-              <StatusBadge status={activePlanItem.status} />
-              <SkillStatusMenu
-                skillId={skill.id}
-                currentStatus={activePlanItem.status}
-                showHide={false}
-              />
-            </>
-          )}
-          <VideoAvailabilityBadge videoUrl={skill.video_url} />
-        </div>
+        <p className="text-muted-foreground text-sm">
+          {[
+            skill.name_italian,
+            gradeLabelForDiscipline(skill.discipline, skill.minimum_grade_value),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
       </header>
 
-      <VideoPlayer
-        videoUrl={skill.video_url}
-        title={skill.name}
-      />
+      {skill.secondary_video_url ? (
+        <div className="space-y-4">
+          <LabeledVideo
+            url={skill.video_url}
+            label={skill.video_label}
+            skillName={skill.name}
+          />
+          <LabeledVideo
+            url={skill.secondary_video_url}
+            label={skill.secondary_video_label}
+            skillName={skill.name}
+          />
+        </div>
+      ) : (
+        <VideoPlayer videoUrl={skill.video_url} title={skill.name} />
+      )}
 
       <TeacherNote note={skill.teacher_notes} />
 

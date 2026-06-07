@@ -12,7 +12,11 @@ import { CatalogMarkerLegend } from "@/components/library/CatalogMarkerLegend";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { DISCIPLINE_LABELS, SKILL_CATEGORY_LABELS } from "@/lib/labels";
-import { gradesForDiscipline } from "@/lib/grades";
+import {
+  EXTRA_GRADE_LABEL,
+  EXTRA_GRADE_VALUE,
+  gradesForDiscipline,
+} from "@/lib/grades";
 import { hasPlayableVideo } from "@/lib/youtube";
 import type { Discipline, PlanStatus, Skill, SkillCategory } from "@/lib/types";
 
@@ -172,6 +176,13 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
                 planStatusLabelPrefix={planStatusLabelPrefix}
               />
             ))}
+          <GradeSection
+            title={EXTRA_GRADE_LABEL}
+            skills={byGrade[EXTRA_GRADE_VALUE] ?? []}
+            locked={false}
+            planStatusBySkillId={planStatusBySkillId}
+            planStatusLabelPrefix={planStatusLabelPrefix}
+          />
         </div>
       )}
     </div>

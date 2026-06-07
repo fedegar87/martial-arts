@@ -44,6 +44,9 @@ export type Skill = {
   practice_mode: PracticeMode;
   description: string | null;
   video_url: string;
+  video_label: string | null;
+  secondary_video_url: string | null;
+  secondary_video_label: string | null;
   thumbnail_url: string | null;
   teacher_notes: string | null;
   estimated_duration_seconds: number | null;
