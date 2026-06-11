@@ -4,8 +4,14 @@
 **Data:** 2026-06-04
 **Status:** desk research + mappa assunzioni v0
 **Canvas collegato:** `plan/reference/business/business-model-canvas-draft.md`
+**Aggiornamento Sessione 2:** `plan/reference/business/validation-lab/2026-06-10-session-2-where-to-play.md`
 
 ---
+
+> Nota 2026-06-11: la Sessione 2 ha raffinato il segmento iniziale in
+> "scuole strutturate analogiche/frammentate con maestro sponsor". Questa mappa
+> resta valida come registro assunzioni, ma le prossime validazioni vanno
+> orientate prima su quel cluster.
 
 ## 0. Scopo
 
@@ -141,10 +147,11 @@ Assunzione aggiornata:
 
 | ID | Assunzione | Evidenza desk | Rischio | Se falsa... | Test |
 |---|---|---|---|---|---|
-| CS1 | Maestri, allievi intermedi, scuole e federazioni sono i segmenti corretti. | I dati CONI indicano una base organizzata di discipline marziali; il prodotto e' costruito attorno a curriculum/gradi. | P0 | Il modello parla alle persone sbagliate. | 10 interviste allievi + 5 maestri + 1-2 decisori. |
+| CS1 | Maestri, allievi intermedi, scuole e federazioni sono gli stakeholder corretti. | I dati CONI indicano una base organizzata di discipline marziali; il prodotto e' costruito attorno a curriculum/gradi. | P0 | Il modello parla alle persone sbagliate. | 10 interviste allievi + 5 maestri + 1-2 decisori. |
 | CS2 | Gli allievi intermedi/pre-esame hanno un pain piu' forte dei principianti. | Coerente con logica di curriculum progressivo, ma non provato da dati esterni. | P0 | L'uso resta basso o episodico. | Pilota su gruppo pre-esame e gruppo intermedio; confrontare retention. |
 | CS3 | Maestri sono influencer/abilitatori, non solo utenti. | Nel contesto scuola il maestro controlla fiducia, programma e canale. | P0 | Il canale scuola non porta adozione. | Misurare quanti allievi entrano dopo invito del maestro. |
 | CS4 | Scuole/federazioni sono pagatori piu' plausibili degli allievi singoli. | Pricing competitor e complessita' B2C suggeriscono modello B2B/B2B2C. | P0 | Non c'e' ricavo senza passare a B2C. | Pricing conversation post-report con scuola/federazione. |
+| CS5 | Il miglior early adopter operativo e' una scuola strutturata analogica/frammentata con maestro sponsor. | Emerso dalla Sessione 2: massimo valore dove esistono curriculum/materiali, ma la distribuzione e' ancora manuale o dispersa. | P0 | Si rischia di validare con un target troppo lento o troppo destrutturato. | 3-5 interviste maestri/scuole candidate + verifica segnali early adopter. |
 
 ### 3.2 Proposta di Valore
 
@@ -220,6 +227,7 @@ Assunzione aggiornata:
 
 | Priorita' | Assunzione | Esperimento minimo | Soglia positiva | Soglia negativa |
 |---|---|---|---|---|
+| P0-0 | Scuola strutturata analogica/frammentata e' il cluster early adopter giusto | 3-5 interviste maestri/scuole candidate usando i criteri Sessione 2 | Almeno 2 candidati mostrano curriculum/materiali/esami + champion disponibile | Nessun candidato accessibile o problema non sentito |
 | P0-1 | Il problema contenuti sparsi e' prioritario | 10 interviste allievi + 5 maestri | 7/10 allievi e 3/5 maestri raccontano episodi concreti | Risposte vaghe o "non e' un problema" |
 | P0-2 | Maestro spinge adozione | Pilota con maestro sponsor | Maestro invita, ricorda e usa app come riferimento | Maestro non la cita o delega tutto al founder |
 | P0-3 | Allievi usano oltre novelty effect | Pilota 60-90 giorni | >25% invitati attivi settimana 6 | <10% invitati attivi settimana 6 |
@@ -320,7 +328,7 @@ Implicazione:
 | Rischio | Gravita' | Cosa fare |
 |---|---|---|
 | Budoo ha gia' abbastanza campus/e-learning per coprire il bisogno | Alta | Testare se il bisogno e' "organizzare contenuti" o "guidare pratica quotidiana" |
-| Una scuola strutturata preferisce un all-in-one | Alta | Target iniziale: scuole/federazione che vogliono pedagogia, non gestionale |
+| Una scuola strutturata preferisce un all-in-one | Alta | Target iniziale: scuole strutturate analogiche/frammentate che vogliono pedagogia, non gestionale |
 | Il nostro prezzo basso non basta se budoo promette piu' valore | Media | Vendere focus e semplicitia', non solo prezzo |
 | Budoo chiarisce privacy/compliance e diventa piu' rassicurante | Media | Non basare la differenziazione solo su dubbi privacy altrui |
 | Budoo aggiunge pratica guidata/SRS | Alta | Rafforzare curriculum specifico, esperienza utente e relazione con maestri |

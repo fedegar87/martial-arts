@@ -14,6 +14,8 @@
 > Regola pratica: ipotesi e dati si aggiornano qui; quando un'evidenza cambia il modello di business,
 > si riporta la conseguenza nei blocchi del canvas. La §13 della appendice qui sotto e' bozza non
 > validata; non confonderla con le sezioni operative 1-12.
+> Le singole attivita del lab, quando diventano troppo estese per il workbook, vivono in
+> `validation-lab/`.
 
 ---
 
@@ -157,19 +159,20 @@ Compilare durante il corso:
 ### 2.4 Ipotesi critiche da ordinare
 
 Assegnare priorita' 1-5. Le ipotesi con alto rischio e poca evidenza vanno testate per prime.
+Scala: 1 = da testare subito nella Sessione 3; 5 = da testare solo dopo evidenze di problema, champion e uso.
 
 | # | Ipotesi | Tipo | Rischio | Evidenza oggi | Priorita' |
 |---|---|---|---|---|---|
-| H1 | Gli allievi intermedi riconoscono il problema "non so cosa praticare oggi" | problema | alto | esperienza + desk | |
-| H2 | Il momento esame rende il bisogno urgente | problema | medio | plausibile | |
-| H3 | I maestri vogliono ridurre domande ripetitive e impreparazione | problema/buyer | alto | desk + esperienza | |
-| H4 | Gli allievi userebbero una proposta giornaliera almeno 2-3 volte a settimana | comportamento | alto | non verificata | |
-| H5 | Il video della propria scuola/federazione conta piu' di un video generico | valore | medio | plausibile | |
-| H6 | Il maestro accetta che l'app supporti la pratica senza sostituire la lezione | adozione | alto | non verificata | |
-| H7 | La federazione vede valore nella standardizzazione del curriculum | buyer | alto | non verificata | |
-| H8 | La federazione o 2-3 scuole accetterebbero un pilota di 90 giorni | canale | medio | non verificata | |
-| H9 | Dopo il pilota, una quota annuale 1.200-2.400 EUR e' sostenibile | monetizzazione | alto | non verificata | |
-| H10 | Il setup contenuti non diventa il vero collo di bottiglia | operativa | alto | parzialmente mitigata da curriculum esistente | |
+| H1 | Gli allievi intermedi riconoscono il problema "non so cosa praticare oggi" | problema | alto | esperienza + desk | 1 |
+| H2 | Il momento esame rende il bisogno urgente | problema | medio | plausibile | 2 |
+| H3 | I maestri vogliono ridurre domande ripetitive e impreparazione | problema/buyer | alto | desk + esperienza | 1 |
+| H4 | Gli allievi userebbero una proposta giornaliera almeno 2-3 volte a settimana | comportamento | alto | non verificata | 3 |
+| H5 | Il video della propria scuola/federazione conta piu' di un video generico | valore | medio | plausibile | 2 |
+| H6 | Il maestro accetta che l'app supporti la pratica senza sostituire la lezione | adozione | alto | non verificata | 1 |
+| H7 | La federazione vede valore nella standardizzazione del curriculum | buyer | alto | non verificata | 4 |
+| H8 | La federazione o 2-3 scuole accetterebbero un pilota di 90 giorni | canale | medio | non verificata | 2 |
+| H9 | Dopo il pilota, una quota annuale 1.200-2.400 EUR e' sostenibile | monetizzazione | alto | non verificata | 5 |
+| H10 | Il setup contenuti non diventa il vero collo di bottiglia | operativa | alto | parzialmente mitigata da curriculum esistente | 2 |
 
 ### 2.5 Criteri di apprendimento del lab
 
@@ -200,20 +203,26 @@ Assegnare priorita' 1-5. Le ipotesi con alto rischio e poca evidenza vanno testa
 
 ### 3.2 Segmento early adopter scelto
 
-Compilare dopo il lab:
+Scelta consolidata dopo Sessione 2 / lavoro Miro:
 
-- Segmento:
-- Perche' questo segmento ora:
-- Criteri per riconoscerlo:
-- Dove trovarlo:
-- Chi decide:
-- Chi influenza:
-- Primo contatto utile:
+- Segmento: scuola strutturata ma ancora analogica/frammentata, con curriculum gia formalizzato, esami regolari e materiali/video gia esistenti ma dispersi.
+- Perche' questo segmento ora: ha abbastanza struttura per capire subito il valore, ma abbastanza frizione manuale da sentire il problema; il setup e' piu leggero rispetto a scuole destrutturate e la vendita e' meno lenta rispetto alla federazione intera.
+- Criteri per riconoscerlo: programma scritto o stabile, passaggi di grado/esami, uso di PDF/quaderni/WhatsApp/Drive/YouTube unlisted, domande ricorrenti degli allievi, maestro disposto a coinvolgere un piccolo gruppo.
+- Dove trovarlo: scuola del founder, maestri FESK gia ben disposti, scuole con gruppi pre-esame, istruttori che gia condividono materiali tecnici via chat o link.
+- Chi decide: maestro responsabile o direttore scuola per un test; federazione/direttivo solo per estensione e quota.
+- Chi influenza: istruttori, praticanti senior, referente tecnico, proprietari/autori dei video.
+- Primo contatto utile: maestro sponsor con 5-15 allievi intermedi o pre-esame disponibili per interviste/test.
+
+Documento di attivita collegato: `validation-lab/2026-06-10-session-2-where-to-play.md`.
 
 ### 3.3 Early adopter profile
 
-Un buon early adopter dovrebbe avere almeno 4 di questi segnali:
+Un buon early adopter dovrebbe avere almeno 5 di questi segnali:
 
+- Ha un programma tecnico scritto o stabilizzato.
+- Ha esami/passaggi di grado regolari.
+- Ha materiali gia esistenti: quaderni, PDF, dispense, video, link YouTube/Drive.
+- Usa gia WhatsApp o chat per distribuire materiali tecnici.
 - Ha un esame vicino o un gruppo che prepara esami.
 - Ha gia' chiesto o condiviso video tecnici via WhatsApp/YouTube/Drive.
 - E' infastidito da domande ripetitive su "cosa devo ripassare?".
@@ -222,6 +231,14 @@ Un buon early adopter dovrebbe avere almeno 4 di questi segnali:
 - Ha accesso a video tecnici o e' disposto a registrarne pochi.
 - Puo' coinvolgere 5-15 allievi per un test.
 - Puo' dare feedback onesto e rapido.
+
+Non e' un buon early adopter iniziale se:
+
+- non ha curriculum o programma abbastanza stabile;
+- non ha un maestro/champion disposto a spingere il test;
+- vuole subito CRM, billing, presenze o funzioni gestionali;
+- richiede white label, revenue sharing o monetizzazione allievi prima di validare il bisogno;
+- non puo chiarire l'uso dei video/materiali tecnici.
 
 ### 3.4 Jobs To Be Done da validare
 
@@ -721,9 +738,31 @@ Segmenti di primo livello emersi: allievi intermedi adulti, allievi pre-esame, m
 
 Nota: la funzionalita' "Preparazione esame (checklist + piano ripasso)" e' stata esclusa dall'esercizio su decisione del founder.
 
+Altre attivita Miro consolidate nel documento di sessione:
+
+- Business Model Canvas: confermato modello B2B2C leggero, con allievi utenti, maestri champion, scuole/federazione buyer potenziali.
+- Valutare opportunita: "scuole/federazioni" risulta il macro-segmento piu promettente, ma troppo ampio per essere early adopter operativo.
+- Assi di segmentazione: individuati 13 assi; i piu decisivi per l'early adopter sono formalizzazione del sapere, maturita digitale, materiali gia disponibili, esami regolari e presenza di maestro sponsor.
+- Persona matrix: utile per descrivere personas, ma non sufficiente da sola per scegliere l'early adopter.
+- Selezione matrici: la matrice definitiva scelta e' formalizzazione del sapere x maturita digitale.
+
 Decisioni:
 
+- Separare stakeholder e segmenti: allievo = user, maestro = champion, scuola/federazione = buyer.
+- Non usare "scuole/federazioni" come segmento generico di validazione.
+- Scegliere come early adopter operativo la scuola strutturata analogica/frammentata: curriculum gia formalizzato, gestione materiali ancora manuale o dispersa.
+- Trattare federazione come buyer istituzionale futuro, non come primo blocco da validare senza dati.
+- Trattare white label, revenue sharing, premium allievi e scuola come operatore economico come ipotesi future, non come decisioni di questa fase.
+- Portare in Sessione 3 le ipotesi H1, H2, H3, H5, H6, H8 e H10, con priorita su pain allievo e maestro sponsor.
+
 Azioni:
+
+- Preparare lista di 5 maestri/scuole candidati con segnali early adopter.
+- Preparare lista di 8-10 allievi intermedi o pre-esame da intervistare.
+- Eseguire prima interviste problema, poi decidere se test WhatsApp 14 giorni o mini-pilota app.
+- Verificare con almeno un referente la disponibilita/uso consentito di video e materiali tecnici.
+- Aggiornare `business-model-canvas-draft.md` sostituendo il segmento iniziale generico con "scuola strutturata analogica/frammentata con maestro sponsor".
+- Usare `validation-lab/2026-06-10-session-2-where-to-play.md` come documento di dettaglio della Sessione 2.
 
 ### Sessione 3 - Indagine
 
@@ -754,6 +793,11 @@ Azioni:
 > Serve come bacino di idee da indagare/raffinare piu' avanti, non come piano. Da
 > incrociare con `plan/current-plan.md` e con la scorecard "Valutare le opportunita'"
 > prima di promuovere qualunque voce.
+>
+> Consolidamento: gli elementi della Sessione 2 che sono stati promossi a output operativo
+> vivono in `validation-lab/2026-06-10-session-2-where-to-play.md` e nelle sezioni
+> operative 2.4, 3.2, 3.3 e 12 di questo workbook. Questa appendice resta deliberatamente
+> piu ampia e speculativa.
 
 ### 13.1 Vision
 
