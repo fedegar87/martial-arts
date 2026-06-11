@@ -3,8 +3,8 @@
 **App:** Skill Practice
 **Data:** 2026-06-04
 **Status:** bozza v0 da validare con interviste, pilota e dati reali
-**Documento metodologico collegato:** `plan/reference/business-model-canvas.md`
-**Assunzioni e ricerca mercato:** `plan/reference/business-model-canvas-assumption-map.md`
+**Documento metodologico collegato:** `plan/reference/business/business-model-canvas.md`
+**Assunzioni e ricerca mercato:** `plan/reference/business/business-model-canvas-assumption-map.md`
 
 ---
 

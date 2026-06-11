@@ -271,7 +271,7 @@ Tutte sotto `@media (prefers-reduced-motion: no-preference)`.
 ## 10. Riferimenti
 
 - Piano principale: `plan/current-plan.md` (§7 navigazione, §15.6 landing escluse, §16 design system)
-- Visual identity: `plan/reference/visual-identity-plan.md`
+- Visual identity: `plan/reference/design/visual-identity-plan.md`
 - Asset sorgente PNG: `C:\Users\FGarzia\Dropbox\fede\Screenshot_20260217-163743~2.png` (NON committare)
 - Asset vettorializzato: `C:\Users\FGarzia\Downloads\FreeSample-Vectorizer-io-Screenshot_20260217-163743~2.svg` (NON committare il sorgente, solo l'output ripulito in `public/landing/`)
 - Citazione fonte: 論語 7.2 (Analetti di Confucio, capitolo 7 verso 2)

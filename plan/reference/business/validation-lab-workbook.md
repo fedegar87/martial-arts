@@ -7,6 +7,16 @@
 
 ---
 
+> **Questo documento vs `business-model-canvas.md`.** Questo workbook e' l'**esecuzione** del validation
+> lab: ipotesi vive (§2.4, H1-H10 = fonte unica), script intervista, evidence log, esperimenti e
+> scorecard di decisione. Il **business-model-canvas.md** descrive il **modello e il metodo** (i 9
+> blocchi del canvas, le quattro lenti, i template Strategyzer Test/Learning Card, Evidence Ladder).
+> Regola pratica: ipotesi e dati si aggiornano qui; quando un'evidenza cambia il modello di business,
+> si riporta la conseguenza nei blocchi del canvas. La §13 della appendice qui sotto e' bozza non
+> validata; non confonderla con le sezioni operative 1-12.
+
+---
+
 ## 0. Come Usare Questo Documento
 
 Questo workbook serve a non disperdere insight durante il corso. Ogni sezione corrisponde a una fase del lab:
@@ -34,11 +44,51 @@ Regola pratica: ogni affermazione importante deve finire in una di queste tre ca
 
 Chi impara un'abilita' pratica (caso scuole arti marziali) ha difficolta' a ritrovare, organizzare e applicare cio' che ha imparato, soprattutto quando deve esercitarsi da solo fuori dal contesto della lezione.
 
-### 1.2 One-liner soluzione
+### 1.2 Performance del modello di business - 7 domande
+
+Fonte lab: 7 domande per valutare il Business Model Design, con punteggio da 0 a 10. Questa e' una prima autovalutazione del modello ipotizzato per Skill Practice, non una validazione.
+
+| # | Area | Domanda | 0 significa | 10 significa |
+|---|---|---|---|---|
+| 1 | Costi di transizione | E' facile o difficile per i miei clienti passare a un concorrente? | Niente impedisce ai miei clienti di andarsene. | I miei clienti sono legati per molti anni. |
+| 2 | Ricavi ricorrenti | Sto generando ricavi ricorrenti? | Il 100% delle mie vendite e' transazionale. | Il 100% delle mie vendite porta automaticamente a ricavi ricorrenti. |
+| 3 | Guadagnare prima di spendere | Sto guadagnando prima di iniziare a spendere? | Sostengo il 100% dei miei costi di beni e servizi prima di ottenere ricavi. | Ottengo il 100% dei miei ricavi prima di sostenere i costi dei beni e servizi venduti. |
+| 4 | Struttura dei costi | La mia struttura mi consente di sostenere costi inferiori rispetto ai miei concorrenti? | La mia struttura di costi e' superiore di almeno il 30% rispetto ai concorrenti. | La mia struttura di costi e' inferiore di almeno il 30% rispetto ai concorrenti. |
+| 5 | Altri fanno il lavoro per te | Quanto i clienti o terze parti del mio modello di business forniscono gratuitamente cio' che serve per farlo funzionare? | Sostengo i costi per tutto il valore creato nel mio modello di business. | Tutto il valore creato nel mio modello di business e' creato gratuitamente da esterni. |
+| 6 | Scalabilita' | Quanto rapidamente e quanto velocemente il mio modello di business puo' crescere senza incorrere in blocchi, come infrastruttura, customer support, ecc.? | Far crescere il mio modello di business richiede risorse e impegno sostanziali. | Il mio modello di business non ha praticamente limiti alla crescita. |
+| 7 | Protezione dai competitor | Quanto il mio modello di business e' difficile da replicare? | Il mio modello non ha vantaggi e sono esposto alla concorrenza. | Il mio modello mi da' vantaggi sostanziali che e' difficile battere. |
+
+#### Assunzione concreta per questa valutazione
+
+Cliente = scuola/federazione, non singolo allievo. Il prodotto non e' una app generica di allenamento: e' un database tailor-made del curriculum tecnico della scuola/federazione, con video, programmi esame, livelli, piani di pratica, storico e routine d'uso degli allievi.
+
+#### Competitor e alternative rilevanti
+
+| Categoria | Esempi | Quanto sono sostituti reali? |
+|---|---|---|
+| Gestionali martial arts con contenuti | budoo.one, Zen Planner | Parziali. Sono admin-first: CRM, pagamenti, classi, comunicazioni. Possono avere campus/curriculum, ma non sono costruiti intorno al curriculum specifico FESK e alla pratica quotidiana tailor-made. |
+| App stile-specifiche B2C | dojoHUB per Kyokushin, Wuji per Wing Chun | Parziali. Offrono contenuti e training per uno stile, ma non sono il database della scuola/federazione dell'utente e non usano i video/curriculum proprietari della sua scuola. |
+| Stack artigianale | quaderno tecnico, WhatsApp, YouTube unlisted, Drive | Competitor piu' forte. E' gia' in uso, costa zero, ma non crea database, storico, proposta di pratica e vista ordinata per livello/esame. |
+
+#### Prima risposta per Skill Practice
+
+| # | Area | Punteggio bozza | Perche' questo numero | Cosa aumenterebbe il punteggio | Cosa validare |
+|---|---:|---:|---|---|---|
+| 1 | Costi di transizione | 7/10 | Per una scuola/federazione che adotta davvero l'app, passare a un concorrente non e' banale: bisognerebbe ricostruire curriculum, video associati, livelli, programmi esame, utenti, storico pratica, routine e materiali. Inoltre non esiste un concorrente equivalente gia' pronto sul caso FESK: budoo/Zen Planner sono gestionali, dojoHUB/Wuji sono app B2C di stile, WhatsApp/quaderno sono workaround. Non e' 10 perche' prima dell'adozione piena si puo' sempre tornare allo stack artigianale. | app come fonte ufficiale del curriculum, video autorizzati, storico progressi usato da allievi/maestri, integrazione nel processo esami, accordo federale | se il cliente percepisce la perdita del database/curriculum come costo reale o se vede tutto come semplice raccolta di link |
+| 2 | Ricavi ricorrenti | 4/10 | Oggi non sto generando ricavi e il modello non e' ancora chiaro. Potrebbe diventare ricorrente con un abbonamento annuale per scuola/federazione e, forse, fee per funzionalita' premium agli allievi. Pero' al momento sono ipotesi, non ricavi attivi ne' rinnovi validati. | abbonamento annuale scuola/federazione, rinnovo legato all'anno sportivo, eventuale premium allievi solo se richiesto davvero, contratto pluriennale | se scuola/federazione accetta una quota periodica e se gli allievi pagherebbero premium senza complicare troppo il modello |
+| 3 | Guadagnare prima di spendere | 8/10 | Sto costruendo con Supabase e Vercel su piani gratuiti, quindi le spese vive oggi sono quasi zero. Non sto ancora guadagnando prima di spendere in senso pieno, perche' sto investendo tempo personale nello sviluppo, nella curation e nella validazione prima di avere ricavi. | mantenere costi cash a zero, ottenere pagamento annuale anticipato dopo pilota, fee di setup, commitment scritto prima di nuove feature costose | se il buyer e' disposto a pagare prima di un rollout completo e quanto tempo founder resta necessario |
+| 4 | Struttura dei costi | 8/10 | Si', il ragionamento e' simile al punto precedente: usando Supabase/Vercel gratuiti, YouTube unlisted e una PWA, le spese vive sono quasi zero. Rispetto a gestionali come budoo/Zen Planner la struttura e' molto piu' leggera perche' non gestisco billing, CRM, scheduling, POS, app store o video hosting proprietario. Non e' 10 perche' restano costi nascosti: tempo founder, supporto, curation contenuti, privacy/legal e onboarding. | restare pedagogia-only, evitare upload video pesante, evitare pagamenti in-app, automatizzare onboarding, mantenere supporto sostenibile | costo reale di supporto, manutenzione contenuti, privacy/legal e onboarding utenti |
+| 5 | Altri fanno il lavoro per te | 7/10 | Si', una parte essenziale del valore deve arrivare dal cliente: scuola/federazione devono fornire i video della loro scuola e il curriculum/programmi esame. Non e' creazione contenuti in stile social, ma senza i video del proprio maestro/scuola l'app diventa molto meno appetibile per gli allievi. YouTube gestisce l'hosting e gli allievi generano storico pratica. Non e' 10 perche' il founder oggi cura ancora struttura, modello dati, UX e organizzazione. | video forniti e aggiornati dalla scuola, curriculum validato dalla federazione, champion locali che fanno onboarding, utenti che alimentano log e note | se scuole/federazione sono davvero disposte a fornire video e mantenerli aggiornati |
+| 6 | Scalabilita' | 4/10 | La scalabilita' e' ridotta perche' il valore nasce proprio da un certo grado di personalizzazione: curriculum, livelli, programmi esame, video della scuola/federazione e onboarding. Il software puo' servire molti allievi dentro la stessa scuola/federazione, ma scalare a molte scuole richiede definire bene il modello di servizio e quanto lavoro tailor-made resta a carico del founder. | pacchetti di servizio chiari, template per curriculum, processo onboarding ripetibile, ruoli admin scuola/federazione, limiti espliciti alla personalizzazione | quanto lavoro manuale serve per attivare una nuova scuola/federazione e quanto puo' essere standardizzato |
+| 7 | Protezione dai competitor | 6/10 | La protezione non viene dal codice, che e' copiabile, ma dal fatto che il modello e' poco generico: curriculum specifico, video della scuola/federazione, relazione di fiducia, conoscenza del dominio e possibile ruolo di riferimento ufficiale. La ridotta scalabilita' puo' diventare un vantaggio competitivo perche' scoraggia competitor generici: per replicare davvero il valore dovrebbero fare lavoro tailor-made, ottenere contenuti e costruire fiducia con ogni scuola/federazione. Non e' 8-10 perche' oggi non c'e' ancora un accordo ufficiale o esclusiva. | accordo ufficiale, contenuti/video autorizzati o esclusivi, adozione da piu' scuole affiliate, storico dati, posizionamento come quaderno tecnico digitale federale | se la barriera e' davvero relazione/curriculum ufficiale o se il cliente accetterebbe una alternativa generica |
+
+Sintesi provvisoria: il modello e' piu' forte di quanto sembrava se viene valutato come servizio tailor-made per scuola/federazione, non come app generica. La forza sta in database curriculum + contenuti ufficiali + relazione + routine d'uso. Il rischio principale non e' il competitor diretto gia' pronto, ma che il cliente percepisca il prodotto come "solo una raccolta ordinata di link" e quindi torni facilmente a quaderno/WhatsApp.
+
+### 1.3 One-liner soluzione
 
 Skill Practice e' una PWA per la pratica guidata di arti marziali tradizionali: organizza il curriculum tecnico della scuola/federazione, mostra video di riferimento e propone all'allievo cosa praticare oggi.
 
-### 1.3 Descrizione attuale
+### 1.4 Descrizione attuale
 
 | Campo | Stato attuale |
 |---|---|
@@ -52,7 +102,7 @@ Skill Practice e' una PWA per la pratica guidata di arti marziali tradizionali: 
 | Pricing ipotizzato | quota annuale federazione post-pilota |
 | Alternativa principale | quaderno stampato + WhatsApp + YouTube/Drive |
 
-### 1.4 Cosa fa
+### 1.5 Cosa fa
 
 - Mostra curriculum tecnico organizzato per livello, disciplina e programma esame.
 - Usa video YouTube unlisted come riferimento tecnico.
@@ -60,7 +110,7 @@ Skill Practice e' una PWA per la pratica guidata di arti marziali tradizionali: 
 - Tiene traccia di pratica completata, note personali e progressi.
 - Supporta calendario, profilo, promemoria push e preparazione esame.
 
-### 1.5 Cosa non fa
+### 1.6 Cosa non fa
 
 - Non e' un gestionale per palestre.
 - Non gestisce pagamenti, presenze, CRM, prenotazioni o tesseramenti.
@@ -68,7 +118,7 @@ Skill Practice e' una PWA per la pratica guidata di arti marziali tradizionali: 
 - Non sostituisce il maestro.
 - Non monetizza contenuti tecnici della federazione verso i singoli allievi.
 
-### 1.6 Tesi da validare
+### 1.7 Tesi da validare
 
 > Gli allievi di arti marziali tradizionali, soprattutto intermedi e in preparazione esame, hanno attrito nel praticare a casa perche' non sanno con precisione cosa fare, in che ordine e con quale riferimento visivo. Una app leggera con video della propria scuola/federazione e proposta "oggi fai questo" riduce l'attrito, aiuta la preparazione esami e puo' diventare un servizio digitale sostenuto dalla federazione o dalle scuole.
 
@@ -618,9 +668,58 @@ Azioni:
 
 ### Sessione 2 - Where to play
 
-Data:
+Data: 2026-06-10
 
 Appunti:
+
+- Esercizio di apertura con carte metaforiche (Dixit cards): raccontare "perche' e' importante il tuo progetto" senza dire cosa e', scegliendo una carta con immagine onirica come spunto. Formato ispirato al Golden Circle di Simon Sinek (start with why).
+- Attivita' 2: dedurre i segmenti di clientela in modo bottom-up. Catena: funzionalita' principali del prodotto -> casi d'uso per ogni funzionalita' -> soggetti interessati a ogni caso d'uso -> segmenti clientela di primo livello.
+
+Risultato attivita' 2 (funzionalita' -> casi d'uso -> soggetti):
+
+1. Curriculum tecnico organizzato (livelli, discipline, programmi esame)
+
+| Caso d'uso | Soggetti interessati |
+|---|---|
+| Consultare il programma del proprio livello | allievo (tutti i livelli) |
+| Verificare cosa richiede il prossimo esame | allievo pre-esame, genitore |
+| Avere un riferimento tecnico unico e ufficiale | maestro, direttore tecnico, federazione |
+| Ritrovare forme/tecniche di livelli passati | allievo intermedio/avanzato |
+
+2. Video di riferimento della scuola/federazione
+
+| Caso d'uso | Soggetti interessati |
+|---|---|
+| Rivedere l'esecuzione corretta di una forma a casa | allievo, genitore (per figli) |
+| Evitare versioni "sbagliate" trovate su YouTube | maestro, federazione |
+| Distribuire i video senza link sparsi su WhatsApp/Drive | maestro, scuola |
+
+3. Proposta di pratica giornaliera ("oggi fai questo")
+
+| Caso d'uso | Soggetti interessati |
+|---|---|
+| Praticare 15-20 min senza dover decidere cosa fare | allievo intermedio |
+| Non perdere le forme vecchie (mantenimento) | allievo avanzato, maestro |
+| Strutturare il ripasso di chi salta lezioni | allievo discontinuo, maestro |
+
+4. Log pratica, note e progressi
+
+| Caso d'uso | Soggetti interessati |
+|---|---|
+| Vedere quanto/cosa ho praticato | allievo |
+| Capire se gli allievi praticano davvero a casa | maestro |
+| Dati aggregati sulla preparazione | direttore tecnico, federazione |
+
+5. Calendario e promemoria push
+
+| Caso d'uso | Soggetti interessati |
+|---|---|
+| Ricordarsi di praticare con costanza | allievo |
+| Scandire le settimane pre-esame | allievo pre-esame, maestro |
+
+Segmenti di primo livello emersi: allievi intermedi adulti, allievi pre-esame, maestri/istruttori, scuola/direttore tecnico, federazione, genitori di allievi junior. Soggetti piu' ricorrenti: allievo (utente) e maestro (champion); federazione/scuola ricorre su standardizzazione e dati (coerente con ipotesi buyer).
+
+Nota: la funzionalita' "Preparazione esame (checklist + piano ripasso)" e' stata esclusa dall'esercizio su decisione del founder.
 
 Decisioni:
 
@@ -645,3 +744,210 @@ Appunti:
 Decisioni:
 
 Azioni:
+
+---
+
+## 13. Appendice - Spunti Da Raffinare (Bozza)
+
+> Stato: BOZZA grezza, raccolta il 2026-06-10 durante la Sessione 2. NON e' validata.
+> Mescola visione, feature desiderate e ipotesi di pricing oltre lo scope MVP attuale.
+> Serve come bacino di idee da indagare/raffinare piu' avanti, non come piano. Da
+> incrociare con `plan/current-plan.md` e con la scorecard "Valutare le opportunita'"
+> prima di promuovere qualunque voce.
+
+### 13.1 Vision
+
+Una piattaforma digitale che organizza il curriculum tecnico delle arti marziali, fornisce video di riferimento ufficiali e guida il praticante attraverso programmi di allenamento e ripasso personalizzati.
+
+### 13.2 Proposta di valore (tre pilastri)
+
+| Pilastro | Cosa | Benefici |
+|---|---|---|
+| Curriculum tecnico organizzato | Programma della scuola strutturato per livelli, gradi, argomenti, obiettivi | Visione chiara del percorso; standardizzazione insegnamento; accesso immediato ai contenuti |
+| Video di riferimento ufficiali scuola/federazione | Ogni tecnica/forma/kata associata a video validati da istruttori o federazione | Uniformita' tecnica; meno interpretazioni errate; ripasso autonomo affidabile |
+| Struttura pratica giornaliera | Programmi e ripasso in sessioni quotidiane o pianificate | Maggiore costanza; preparazione esami efficace; miglior mantenimento competenze |
+
+### 13.3 Funzionalita' principali
+
+- Gestione curriculum tecnico: creazione forme/kata, tecniche e sequenze; organizzazione per stile/livello/grado; tag e categorie; descrizioni testuali.
+- Gestione video: associazione ai contenuti tecnici; streaming; ricerca e filtri; cronologia visualizzazioni; preferiti.
+- Gestione programmi di allenamento: programmi personalizzati, per esame, giornalieri; assegnazione a utenti o gruppi.
+- Gestione gradi: definizione gradi; associazione tecniche/kata richiesti; checklist requisiti.
+- Area allievo: dashboard personale; programmi assegnati; contenuti consigliati; monitoraggio avanzamento.
+- Area istruttore: gestione libreria tecnica; gestione allievi; creazione programmi; monitoraggio utilizzo.
+
+### 13.4 Funzionalita' avanzate
+
+- Ripasso intelligente: suggerisce kata non ripassati di recente, tecniche poco praticate, contenuti critici per il prossimo esame.
+- Calendario esame: l'allievo inserisce grado e data; la piattaforma genera il piano di preparazione.
+- Modalita' allenamento: sessione guidata (riscaldamento -> tecniche -> kata/forme -> ripasso finale).
+- Tracking progressi: sessioni completate, tempo di allenamento, contenuti studiati, percentuale preparazione esame.
+- Versionamento contenuti: storico modifiche, aggiornamenti controllati, mantenimento versioni precedenti.
+
+### 13.5 Killer feature - Piano automatico di preparazione al grado
+
+Flusso: (1) l'istruttore definisce il programma tecnico; (2) l'allievo seleziona il grado da preparare; (3) l'app genera piano di studio, piano di ripasso, sequenza allenamenti, stato avanzamento, requisiti mancanti. La piattaforma diventa un assistente digitale per la progressione.
+
+### 13.6 Applicazioni e casi d'uso
+
+| Caso d'uso | Problema | Soluzione |
+|---|---|---|
+| Preparazione esami di grado | L'allievo non conosce con precisione il programma richiesto | Curriculum, video ufficiali, programmi assegnati |
+| Ripasso tra le lezioni | Dimenticanza delle tecniche apprese | Accesso continuo ai contenuti + pratica giornaliera |
+| Recupero dopo assenze | Perdita di lezioni | Recupero autonomo via curriculum digitale |
+| Standardizzazione insegnamento | Differenze tra istruttori | Video e contenuti ufficiali condivisi |
+| Onboarding nuovi allievi | Difficolta' a comprendere il percorso | Percorso strutturato e accessibile |
+| Supporto agli istruttori | Ripetizione delle stesse spiegazioni | Materiale sempre disponibile agli allievi |
+| Scuole multi-sede | Uniformita' della didattica | Curriculum centralizzato |
+| Federazioni | Distribuzione programmi ufficiali | Pubblicazione centralizzata + aggiornamenti immediati |
+| Preparazione agonistica | Preparazione sistematica alle competizioni | Programmi dedicati + contenuti ufficiali |
+| Conservazione patrimonio tecnico | Perdita del know-how della scuola | Archivio digitale permanente |
+
+### 13.7 Segmentazione clientela (esigenze / valore percepito)
+
+| Segmento | Esigenze | Valore percepito |
+|---|---|---|
+| Allievi | ripasso, preparazione esami, allenamento autonomo | video ufficiali, programmi guidati, avanzamento chiaro |
+| Istruttori | supporto didattico, meno spiegazioni ripetitive, uniformita' | distribuzione contenuti, gestione programmi, supporto insegnamento |
+| Scuole e dojo | standardizzazione, fidelizzazione allievi, qualita' didattica | archivio tecnico centralizzato, differenziazione, maggiore coinvolgimento |
+| Federazioni e organizzazioni | diffusione programmi ufficiali, uniformita', aggiornamenti centralizzati | controllo curriculum, distribuzione immediata, gestione qualita' |
+
+### 13.8 Segmenti di mercato (discipline target)
+
+Karate, Judo, Aikido, Taekwondo, Kung Fu, Kobudo, Ju Jitsu, Hapkido. In generale qualsiasi disciplina con curriculum tecnico, forme, kata, sequenze e progressione per gradi.
+
+### 13.9 Modello di business (ipotesi di pricing - NON validato)
+
+| Piano | Destinatari | Funzionalita' | Prezzo indicativo |
+|---|---|---|---|
+| Gratuito | singoli praticanti | accesso limitato, programmi base, video essenziali | 0 |
+| Professional | scuole e dojo | gestione allievi, curriculum personalizzato, programmi illimitati, statistiche | 39-79 EUR/mese |
+| Academy | organizzazioni strutturate | multi-istruttore, multi-sede, branding personalizzato | 99-199 EUR/mese |
+| White Label Federazioni | federazioni, org. nazionali | personalizzazione completa, curriculum ufficiale, distribuzione affiliati | 2.000-20.000 EUR/anno |
+
+> ATTENZIONE: questo pricing freemium/per-scuola diverge dall'ipotesi corrente del piano
+> (quota annuale federazione post-pilota, vedi 1.4 e 2.3) e dalla strategia in
+> `plan/2026-05-02-monetization-strategy.md`. Da non assumere come deciso: e' materiale da testare con i buyer.
+
+### 13.10 Posizionamento
+
+Non una semplice videoteca. Non un gestionale per palestre. Una piattaforma per la gestione, distribuzione e apprendimento del curriculum tecnico delle arti marziali.
+
+Tagline candidate:
+- "Studia. Ripassa. Progredisci."
+- "Il curriculum tecnico della tua scuola, sempre con te."
+- "Dal kata al grado: un percorso digitale per la crescita marziale."
+
+### 13.11 Brainstorming "Discovery Strategica v1" (Sessione 2 - bozza)
+
+> Stato: BOZZA grezza Sessione 2 (2026-06-10), da raffinare. Si sovrappone ai file
+> BMC (`business-model-canvas*.md`); va incrociata con quelli prima di promuovere voci.
+> Spunti nuovi rispetto al BMC consolidato evidenziati in 13.13.
+
+Definizione prodotto proposta: "Sistema di gestione, distribuzione e conservazione del curriculum tecnico delle arti marziali" -> framing finale come "CMS verticale delle arti marziali tradizionali". Non videoteca, non app fitness, non catalogo.
+
+Problema per stakeholder:
+- Allievi: dimenticano forme/tecniche, non sanno cosa ripassare, materiale sparso ("So che dovrei allenarmi ma non so cosa fare oggi").
+- Istruttori: ripetono le stesse spiegazioni, inviano materiale su WhatsApp, gestione artigianale, niente monitoraggio ("Spiego sempre le stesse cose a persone diverse").
+- Scuole: hanno contenuti ma non un sistema ("Abbiamo materiale, ma non abbiamo un sistema").
+- Federazioni: devono distribuire programmi ufficiali e mantenere standard ("Come trasmettiamo lo stesso curriculum a tutte le affiliate?").
+
+Funzionalita' principali citate: curriculum organizzato (forme/kata/tecniche/combinazioni/programmi di grado), video di riferimento, struttura pratica giornaliera, programmi personalizzati, progress tracking, reminder/notifiche.
+
+Segmenti A-J (lista estesa):
+
+| Segmento | Ruolo | Note |
+|---|---|---|
+| A. Allievi intermedi adulti | utenti finali | alto uso, basso potere decisionale, bassa willingness to pay, alta sostituibilita' |
+| B. Maestri/istruttori | moltiplicatori | attivano gruppi; poco tempo, forte inerzia |
+| C. Scuole/dojo | buyer naturali | revenue stabile |
+| D. Federazioni | buyer istituzionali | massima scalabilita' |
+| E. Istruttori indipendenti | early adopter ideali | - |
+| F. Esaminatori | influenzano gli standard | - |
+| G. Content creator marziali | partner/promotori | - |
+| H. Accademie multisede | forte standardizzazione | - |
+| I. Scuole tradizionali | conservazione patrimonio | - |
+| J. Organizzatori eventi/esami | utilizzatori operativi | - |
+
+Scala di grigi dei segmenti (assi di maturita' organizzativa, da allievo a federazione):
+- Potere decisionale: allievo -> istruttore -> scuola -> federazione (crescente)
+- Disponibilita' a pagare: bassa -> media -> alta -> molto alta
+- Necessita' personalizzazione: minima -> bassa -> alta -> massima
+- Lock-in: basso -> medio -> alto -> altissimo
+- Complessita' problema: individuale -> operativo -> organizzativo -> sistemico
+
+White label come conseguenza del dominio (non feature): nelle AM non esiste curriculum universale; ogni disciplina/scuola ha tecniche, livelli, nomenclatura (kata/forme/poomsae, gradi, dan/kup/chi/chieh) propri. Componenti: branding, curriculum, linguaggio, esperienza utente.
+
+Scoperta strategica - la scuola come operatore economico (non solo cliente):
+- Scenario 1: scuola usa l'app internamente (organizzazione/efficienza).
+- Scenario 2: scuola offre servizi premium agli allievi (nuova fonte di ricavi).
+- Scenario 3: scuola usa l'app come marketing (differenziazione, acquisizione, retention).
+- Scenario 4: federazione offre il sistema alle affiliate (revenue, standardizzazione, controllo network).
+
+Modelli di business possibili: SaaS tradizionale, SaaS white label, B2B2C (federazione->scuola->allievo), revenue sharing (scuola monetizza, piattaforma trattiene %), licenza federale.
+
+Evoluzione naturale: Fase 1 istruttori indipendenti -> Fase 2 scuole -> Fase 3 white label -> Fase 4 federazioni.
+
+Architettura tecnica (snapshot): Next.js 16, React 19, TypeScript, Supabase/Postgres, Tailwind, PWA. Logica nel DB/RPC/moduli puri, non nella UI. Dati statici (schools, skills, exam_programs), dinamici (user_profiles, user_plan_items, practice_logs, training_schedule).
+
+### 13.12 Brainstorming "Segmentazione Scuole e Federazioni" (Sessione 2 - bozza)
+
+> Stato: BOZZA grezza Sessione 2 (datata 2026-06-11), da raffinare. Focus sul lato
+> buyer (scuole/dojo/accademie/federazioni/network), non sugli allievi finali.
+
+Distinzione chiave: stakeholder != segmenti. Stakeholder ecosystem:
+- Utilizzatori: allievi intermedi, praticanti avanzati.
+- Influencer: istruttori, maestri, esaminatori.
+- Buyer: scuole, accademie, federazioni.
+- Amplificatori: content creator, network.
+
+Metodo: segmentazione tramite assi bipolari (dimensioni del mercato, non segmenti).
+
+Assi individuati (13):
+
+| # | Asse | Poli | Misura |
+|---|---|---|---|
+| 6.1 | Disponibilita' materiale didattico | ha materiale / non ne ha mai avuto | codifica del sapere |
+| 6.2 | Target didattico | bambini / adulti | ripetizione, monitoraggio |
+| 6.3 | Standardizzazione disciplina | standardizzata (TKD, karate federato) / non (kung fu tradizionale) | struttura |
+| 6.4 | Tipo entita' | scuola singola / network multisede | governance |
+| 6.5 | Densita' studenti/istruttore | pochi / molti | automazione |
+| 6.6 | Dipendenza dal maestro | indipendente / centrato sul maestro | replicabilita', rischio perdita sapere |
+| 6.7 | Modalita' pratica | forme individuali / in coppia | natura curriculum |
+| 6.8 | Modalita' insegnamento | solo presenza / integrabile da remoto | utilita' digitale |
+| 6.9 | Formalizzazione curriculum | ufficiale / interpretato dai maestri | struttura del sapere |
+| 6.10 | Livello certificazione | esami frequenti / rari-informali | tracking, storico |
+| 6.11 | Orientamento didattico | sportivo-performance / culturale-tradizionale | obiettivi |
+| 6.12 | Uso strumenti digitali | digital ready / analogico | probabilita' adozione |
+| 6.13 | Struttura curriculum | lineare / ramificato | complessita' |
+
+Macro-famiglie degli assi: A) Struttura del sapere; B) Organizzazione; C) Didattica; D) Standardizzazione e controllo; E) Maturita' digitale.
+
+Cluster derivati:
+
+| Cluster | Profilo | Opportunita' |
+|---|---|---|
+| 1. Tradizione orale analogica | nessun materiale, non standardizzata, curriculum interpretato, analogico, in presenza | valore teorico alto, adozione iniziale difficile |
+| 2. Scuole strutturate analogiche | materiale esistente, curriculum ufficiale, standardizzata, analogica, esami frequenti; tracking assente, organizzazione dispersiva | MIGLIOR MERCATO INIZIALE |
+| 3. Scuole ibride digitali | materiale esistente, curriculum ufficiale, strumenti parziali (PDF/WhatsApp/video sparsi) | problema = frammentazione strumenti |
+| 4. Network strutturati digitalizzati | curriculum formalizzato, digitale, multisede, governance centralizzata | valore alto, vendita lenta |
+
+Insight emersi:
+1. La variabile piu' importante non e' il contenuto, ma il grado di formalizzazione del sapere.
+2. Seconda variabile: maturita' digitale.
+3. Massimo valore quando c'e' tensione tra curriculum gia' strutturato e gestione ancora manuale.
+4. Scuole destrutturate: hanno bisogno del prodotto ma difficili da convertire.
+5. Scuole digitalizzate: meno urgenza ma ticket piu' alto.
+
+Segmento prioritario individuato: SCUOLE STRUTTURATE ANALOGICHE (curriculum esistente, esami regolari, gestione manuale, materiali disponibili, poca digitalizzazione). Perche': capiscono subito il valore, onboarding semplice, basso sforzo di adozione, problema quotidiano evidente.
+
+Direzioni future suggerite: (1) selezionare 3-5 assi prioritari; (2) validare con scuole reali; (3) costruire ICP dettagliato; (4) definire MVP per il cluster prioritario; (5) test di adozione sul campo; (6) estensione verso federazioni/network.
+
+### 13.13 Spunti nuovi rispetto al BMC consolidato (da promuovere se validati)
+
+Elementi presenti in 13.11/13.12 ma NON ancora nei file `business-model-canvas*.md`. Da testare e, se reggono, portare nei documenti BMC e/o nel piano:
+
+1. ICP piu' preciso: il segmento d'ingresso non e' "scuola" generica ma "scuola strutturata analogica" (curriculum gia' formalizzato + gestione ancora manuale). E' la tensione che crea valore (Insight 3).
+2. Assi di segmentazione: formalizzazione del sapere + maturita' digitale come due variabili-guida del mercato, piu' discriminanti della disciplina. Possibile base per qualificare i lead.
+3. Scuola come operatore economico: scenari revenue-sharing / premium agli allievi / white label - estendono la monetizzazione oltre la sola "quota federazione post-pilota" del piano. ATTENZIONE: divergono da 1.4/2.3 e da `2026-05-02-monetization-strategy.md`; trattare come ipotesi, non come decisione.
+4. Sequenza go-to-market "istruttori indipendenti -> scuole -> white label -> federazioni": ordine di attacco diverso dal "pilota federazione" oggi ipotizzato; da confrontare con la scorecard opportunita'.

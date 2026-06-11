@@ -603,7 +603,7 @@ PIANO LIBERO
 
 #### Sprint 1.x operativo
 
-- **1.5 — Curriculum FESK:** schema/tipi/UI/seed implementati; `0004_seed_fesk.sql` generato da `skill-practice/scripts/generate-fesk-seed.mjs` usando `plan/reference/curriculum-mapping-fesk.md`.
+- **1.5 — Curriculum FESK:** schema/tipi/UI/seed implementati; `0004_seed_fesk.sql` generato da `skill-practice/scripts/generate-fesk-seed.mjs` usando `plan/reference/domain/curriculum-mapping-fesk.md`.
 - **1.6 — VideoPlayer custom:** implementato in `src/components/skill/VideoPlayer.tsx`; sostituisce `YouTubeEmbed` e carica YouTube solo dopo tap.
 - **1.7 — UX Programma + Modalità di studio:** schema `0005_plan_mode.sql`, `/programma`, `/plan/exam`, `/plan/custom` e azioni RPC atomiche implementate; richiede migrations applicate per walkthrough reale.
 - **1.8 — Tab Progresso:** `/progress` e BottomNav a 4 tab implementati con SVG/Tailwind, senza dipendenze chart.
@@ -685,7 +685,7 @@ Nessuna metrica rigida. Valutazione soggettiva del founder dopo qualche settiman
 
 ## 12. SEED DATA INIZIALE (Wing Chun — storico)
 
-> **⚠️ Superato da Sprint 1.5 (FESK curriculum).** Il seed di partenza era Wing Chun (`0002_seed_school_skills.sql`); il seed attivo è ora `0004_seed_fesk.sql`, generato da `scripts/generate-fesk-seed.mjs` a partire da `plan/reference/curriculum-mapping-fesk.md`. Lo schema include `discipline` (shaolin/taichi), `practice_mode`, `name_italian` e `minimum_grade_value` (anche negativo per gradi tipo Chieh, Mezza Luna). Il blocco TS sotto resta come documentazione del modello mentale iniziale.
+> **⚠️ Superato da Sprint 1.5 (FESK curriculum).** Il seed di partenza era Wing Chun (`0002_seed_school_skills.sql`); il seed attivo è ora `0004_seed_fesk.sql`, generato da `scripts/generate-fesk-seed.mjs` a partire da `plan/reference/domain/curriculum-mapping-fesk.md`. Lo schema include `discipline` (shaolin/taichi), `practice_mode`, `name_italian` e `minimum_grade_value` (anche negativo per gradi tipo Chieh, Mezza Luna). Il blocco TS sotto resta come documentazione del modello mentale iniziale.
 
 11 skill in 4 categorie + 3 programmi d'esame. Sostituire `PLACEHOLDER_X` con URL YouTube unlisted reali. Il componente `YouTubeEmbed` deve convertire automaticamente `watch?v=` in formato `embed/`.
 

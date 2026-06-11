@@ -3,7 +3,17 @@
 **Status:** v1 state-of-the-art Strategyzer/Osterwalder
 **Data:** 2026-06-04
 **Scope:** trasformare Skill Practice da PWA personale/pilota a servizio sostenibile per scuole, federazione e praticanti usando Business Model Canvas, Value Proposition Canvas, Business Model Environment e testing sistematico delle ipotesi.
-**Fonte prodotto:** `plan/current-plan.md`, `plan/2026-05-02-monetization-strategy.md`, `plan/reference/positioning-analysis.md`, `archive/04-validation-framework.md`.
+**Fonte prodotto:** `plan/current-plan.md`, `plan/2026-05-02-monetization-strategy.md`, `plan/reference/business/positioning-analysis.md`, `archive/04-validation-framework.md`.
+
+---
+
+> **Questo documento vs `validation-lab-workbook.md`.** Questo file descrive il **modello di
+> business e il metodo** di validazione (i 9 blocchi del canvas, le quattro lenti, i template
+> Strategyzer: Assumptions Map, Test Card, Learning Card, Evidence Ladder). Il **workbook** contiene
+> l'**esecuzione concreta** del validation lab: le ipotesi vive (H1-H10, fonte unica), gli script
+> intervista compilabili, l'evidence log, gli esperimenti datati e la scorecard finale. Regola: le
+> ipotesi e i dati raccolti vivono nel workbook; qui resta il "come si valida" e il "che modello stiamo
+> testando". Quando un'evidenza del workbook cambia il modello, aggiorna i blocchi del canvas qui.
 
 ---
 
@@ -762,37 +772,17 @@ Questa e' la voce da monetizzare con onesta'. Se la quota copre solo hosting, il
 
 ## 13. Ipotesi Critiche e Registro Evidenze
 
-### 13.1 Ipotesi ad alto impatto
-
-| ID | Ipotesi | Impatto se falsa | Priorita' test |
-|---|---|---|---|
-| H1 | Gli allievi usano l'app oltre la curiosita' iniziale | Il prodotto non crea abitudine | P0 |
-| H2 | I maestri promuovono l'uso senza sentirlo come lavoro extra | L'adozione non parte | P0 |
-| H3 | Federazione/scuola accetta di pagare per servizio collettivo | Ricavi incerti | P0 |
-| H4 | I contenuti video possono essere usati con autorizzazione chiara | Rischio legale/politico | P0 |
-| H5 | Il supporto per 100-200 utenti resta gestibile | Margine tempo eroso | P1 |
-| H6 | Il valore percepito non richiede feature admin complesse | Scope creep | P1 |
-| H7 | Il modello puo' essere replicato in altre scuole | Espansione futura | P2 |
-
-### 13.2 Evidenze gia' disponibili
-
-| Evidenza | Forza | Limite |
-|---|---|---|
-| Codebase MVP funzionante | Alta | Non dimostra domanda |
-| Curriculum strutturato in DB | Alta | Specifico a contesto attuale |
-| Documenti strategici e monetizzazione | Media | Sono ipotesi interne |
-| Workaround noti: WhatsApp, YouTube, quaderno | Media | Da quantificare con interviste |
-| Architettura multi-tenant predisposta | Media | Non equivale a SaaS pronto |
-
-### 13.3 Evidenze mancanti
-
-- quanti allievi praticano davvero a casa;
-- quali allievi hanno pain piu' forte;
-- quali maestri vogliono promuovere il pilota;
-- chi puo' autorizzare contenuti;
-- chi paga e con quale processo;
-- quale prezzo e' accettabile;
-- quanta manutenzione mensile serve dopo pilota.
+> **Fonte unica delle ipotesi: il workbook (§2.4).** Per evitare due numerazioni divergenti, l'elenco
+> autoritativo delle ipotesi vive in `validation-lab-workbook.md` §2.4 (H1-H10), con il loro stato
+> aggiornato in §6.5 e l'evidence log in §6.1. Qui sotto resta solo il *metodo* per classificarle
+> (Assumptions Map, Evidence Ladder), che il workbook non duplica.
+>
+> Le ipotesi piu' rischiose lato modello di business, mappate sugli ID del workbook: uso ricorrente
+> dell'allievo (H4), accettazione/promozione del maestro (H6), willingness to pay di scuola/federazione
+> (H7+H9), pilota fattibile (H8), setup contenuti sostenibile (H10). L'autorizzazione legale di video e
+> marchio non ha un ID nel workbook ma e' P0 lato viability: vedi Domande Aperte (workbook §10) e §18 di
+> questo documento. Quando aggiungi un'ipotesi di business non coperta, creala prima nel workbook e poi
+> referenziala qui.
 
 ### 13.4 Assumptions Map
 
@@ -810,17 +800,17 @@ Priorita':
 | Basso impatto / bassa evidenza | Rumore | Non investire ora |
 | Basso impatto / alta evidenza | Fatto operativo | Documentare, non discutere |
 
-Mappa corrente:
+Mappa corrente (ID allineati al workbook §2.4; "VID" = autorizzazione contenuti, senza ID nel workbook):
 
 | Ipotesi | Impatto | Evidenza | Priorita' | Esperimento |
 |---|---|---|---|---|
-| H1: allievi usano l'app oltre novelty effect | Alto | Bassa | P0 | Pilota con retention settimana 6 |
-| H2: maestri promuovono senza carico extra | Alto | Bassa | P0 | Maestro sponsor + intervista post-pilota |
-| H3: federazione/scuola paga quota annuale | Alto | Bassa | P0 | Pricing conversation con report |
-| H4: contenuti video autorizzabili | Alto | Media-bassa | P0 | Check governance contenuti prima pilota esteso |
-| H5: supporto resta gestibile | Medio-alto | Bassa | P1 | Log richieste supporto durante pilota |
-| H6: modello non richiede admin complesso | Medio | Media | P1 | Tenere onboarding manuale e misurare attriti |
-| H7: replicabilita' multi-scuola | Medio | Bassa | P2 | Seconda scuola dopo primo pilota |
+| H4: allievi usano l'app oltre novelty effect (uso ricorrente) | Alto | Bassa | P0 | Pilota con retention settimana 6 |
+| H6: maestri accettano/promuovono senza carico extra | Alto | Bassa | P0 | Maestro sponsor + intervista post-pilota |
+| H7+H9: federazione/scuola paga quota annuale | Alto | Bassa | P0 | Pricing conversation con report |
+| VID: contenuti video autorizzabili | Alto | Media-bassa | P0 | Check governance contenuti prima pilota esteso |
+| H10: setup/supporto resta gestibile | Medio-alto | Bassa | P1 | Log richieste supporto durante pilota |
+| (scope) modello non richiede admin complesso | Medio | Media | P1 | Tenere onboarding manuale e misurare attriti |
+| (espansione) replicabilita' multi-scuola | Medio | Bassa | P2 | Seconda scuola dopo primo pilota |
 
 ### 13.5 Evidence Ladder
 
@@ -842,103 +832,13 @@ Regola: una decisione economica non puo' basarsi solo su evidenze deboli.
 
 ## 14. Protocollo di Validazione
 
-### 14.1 Fase 1 - Discovery qualitativa
-
-Obiettivo: capire se problema, segmento e pagatore sono reali.
-
-Campione minimo:
-
-- 10 allievi;
-- 5 maestri;
-- 1-2 decisori federazione/scuola;
-- 1 referente contenuti/video.
-
-Regole:
-
-- non vendere;
-- non spiegare troppo presto la soluzione;
-- chiedere comportamenti passati;
-- chiedere workaround usati;
-- chiedere esempi concreti;
-- annotare parole esatte solo per brevi citazioni interne.
-
-Domande allievi:
-
-- "Quando pratichi fuori lezione, come decidi cosa fare?"
-- "Raccontami l'ultima volta in cui non ricordavi una tecnica o una forma."
-- "Che strumenti usi oggi? Quaderno, WhatsApp, YouTube, memoria?"
-- "Prima dell'ultimo esame, cosa ti mancava?"
-- "Quante volte hai aperto un video tecnico nell'ultimo mese?"
-
-Domande maestri:
-
-- "Quali domande ripetitive ricevi dagli allievi fuori lezione?"
-- "Come condividi oggi video o programmi?"
-- "Che cosa succede quando un allievo manca due settimane?"
-- "Quale lavoro extra non accetteresti mai?"
-- "Che cosa renderebbe questo strumento utile a te, non solo agli allievi?"
-
-Domande decisori:
-
-- "Chi dovrebbe approvare uno strumento digitale federale?"
-- "Quale budget e' realistico per un servizio annuale?"
-- "Quali rischi vedete: contenuti, privacy, responsabilita', politica interna?"
-- "Quale evidenza vorreste vedere dopo un pilota?"
-
-### 14.2 Fase 2 - Pilota controllato
-
-Durata raccomandata: 60-90 giorni.
-
-Setup:
-
-- 2-3 scuole o gruppi;
-- 10-30 allievi totali;
-- curriculum gia' disponibile;
-- maestro referente per ogni gruppo;
-- consenso chiaro su uso dati e privacy;
-- report settimanale interno.
-
-Metriche prodotto:
-
-| Metrica | Soglia buona | Soglia di allarme |
-|---|---|---|
-| Onboarding completato | >70% invitati | <40% |
-| Utenti attivi settimana 2 | >40% invitati | <15% |
-| Utenti attivi settimana 6 | >25% invitati | <10% |
-| Sessioni completate per utente attivo | >=2/settimana nel target motivato | <1/settimana |
-| Ritorno pre-esame | Aumento uso nelle 2 settimane pre-esame | Nessun aumento |
-| Richieste di continuare | Da allievi o maestri | Nessuna |
-
-Metriche qualitative:
-
-- gli allievi dicono cosa e' diventato piu' chiaro;
-- i maestri osservano meno confusione;
-- il referente chiede estensione;
-- emergono richieste ripetute, non isolate.
-
-### 14.3 Fase 3 - Validazione economica
-
-Da fare solo dopo dati pilota.
-
-Materiale:
-
-- report uso;
-- feedback sintetico;
-- costi vivi aggiornati;
-- stima ore founder;
-- proposta quota annuale;
-- condizioni operative;
-- responsabilita' sui contenuti.
-
-Decisioni da ottenere:
-
-- continuare o no;
-- chi paga;
-- quanto;
-- per quale perimetro;
-- chi autorizza contenuti;
-- chi e' referente;
-- durata accordo.
+> **Esecuzione concreta nel workbook.** Le tre fasi operative (discovery qualitativa, pilota,
+> validazione economica) con script intervista, campione, metriche e soglie vivono nel workbook:
+> Fase 1 discovery -> §4 (piano ricerca) + §4.4-4.7 (script per allievo/maestro/federazione/genitore);
+> Fase 2 pilota -> §8.1-8.3 (esperimenti con metriche e soglie); Fase 3 validazione economica ->
+> §8.4 (buyer conversation) + §9 (scorecard e decisione). Qui sotto restano solo i **template
+> Strategyzer** (Test Card, Learning Card, Progress Board) da usare per ogni esperimento: sono il
+> formato, non i dati.
 
 ### 14.4 Test Card
 

@@ -3,7 +3,7 @@
 **App:** Skill Practice
 **Data:** 2026-06-04
 **Status:** desk research + mappa assunzioni v0
-**Canvas collegato:** `plan/reference/business-model-canvas-draft.md`
+**Canvas collegato:** `plan/reference/business/business-model-canvas-draft.md`
 
 ---
 

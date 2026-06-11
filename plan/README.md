@@ -20,16 +20,36 @@ Quando uno sprint si chiude, il suo design/plan si sposta in `completed/` e si a
 
 ## Reference perenni (`reference/`)
 
+Organizzati per tema in sottocartelle. Il `master-execution-plan.md` resta in radice perché trasversale.
+
+### `reference/business/` — Strategia, business model, validazione
+
 | File | Scopo |
 |------|-------|
-| [reference/curriculum-mapping-fesk.md](reference/curriculum-mapping-fesk.md) | Glossario/curriculum FESK validato — sorgente concettuale del seed `0004_seed_fesk.sql`. |
-| [reference/visual-identity-plan.md](reference/visual-identity-plan.md) | Visual identity dark/gold, palette, tipografia (implementata in `globals.css`). |
-| [reference/positioning-analysis.md](reference/positioning-analysis.md) | Analisi posizionamento competitivo (living). |
-| [reference/validation-lab-workbook.md](reference/validation-lab-workbook.md) | Workbook operativo per validation lab: ipotesi, segmenti, interviste, insight e follow-up. |
+| [reference/business/validation-lab-workbook.md](reference/business/validation-lab-workbook.md) | Workbook operativo del validation lab: ipotesi, segmenti, interviste, insight, follow-up. §13 = appendice bozza (brainstorming Sessione 2). |
+| [reference/business/business-model-canvas.md](reference/business/business-model-canvas.md) | Sistema di business design (metodo Strategyzer/Osterwalder): canvas come mappa di ipotesi falsificabili. |
+| [reference/business/business-model-canvas-draft.md](reference/business/business-model-canvas-draft.md) | Canvas one-page compilato (bozza v0 da validare). Collegato al doc metodologico. |
+| [reference/business/business-model-canvas-assumption-map.md](reference/business/business-model-canvas-assumption-map.md) | Assumption map + desk research sui 9 blocchi: cosa deve essere vero perché il modello funzioni. |
+| [reference/business/positioning-analysis.md](reference/business/positioning-analysis.md) | Analisi posizionamento competitivo (living). |
+
+### `reference/design/` — GUI, UX, identità visiva
+
+| File | Scopo |
+|------|-------|
+| [reference/design/gui-ios-definitive-plan.md](reference/design/gui-ios-definitive-plan.md) | Principi GUI iOS consolidati ed eseguibili. Assorbe e sostituisce audit + enhancement (ora in `archive/`). |
+| [reference/design/visual-identity-plan.md](reference/design/visual-identity-plan.md) | Visual identity dark/gold, palette, tipografia (implementata in `globals.css`). |
+
+### `reference/domain/` — Dominio e curriculum
+
+| File | Scopo |
+|------|-------|
+| [reference/domain/curriculum-mapping-fesk.md](reference/domain/curriculum-mapping-fesk.md) | Glossario/curriculum FESK validato — sorgente concettuale del seed `0004_seed_fesk.sql`. |
+
+### `reference/` (radice) — Trasversale
+
+| File | Scopo |
+|------|-------|
 | [reference/master-execution-plan.md](reference/master-execution-plan.md) | Roadmap operativa scenario A/B, cross-check. |
-| [reference/gui-ios-definitive-plan.md](reference/gui-ios-definitive-plan.md) | Principi GUI iOS consolidati (sostituisce audit + enhancement sotto). |
-| [reference/gui-ux-experience-audit.md](reference/gui-ux-experience-audit.md) | Audit UX con diagnosi P0/P1. |
-| [reference/ios-design-principles-enhancement.md](reference/ios-design-principles-enhancement.md) | Addendum principi iOS HIG (colori semantici, layer). |
 
 ## Completati (`completed/`) — per sprint
 
@@ -60,3 +80,5 @@ Tutti gli sprint operativi 1.5–1.16 sono chiusi e in produzione (vedi `current
 ## Superati
 
 - `archive/2026-05-07-calendar-overhaul-design-superseded.md` — design calendario/diario retroattivo (Sprint 1.13), sostituito dalla calendar unification 1.14.
+- `archive/2026-04-25-gui-ux-experience-audit-superseded.md` — audit UX di partenza, assorbito da `reference/design/gui-ios-definitive-plan.md`.
+- `archive/2026-04-25-ios-design-principles-enhancement-superseded.md` — addendum principi iOS, assorbito dal piano GUI definitivo.

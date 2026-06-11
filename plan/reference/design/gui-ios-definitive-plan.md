@@ -2,7 +2,7 @@
 
 **Status:** piano consolidato ed eseguibile  
 **Data:** 2026-04-25  
-**Sostituisce operativamente:** `gui-ux-experience-audit.md` + `ios-design-principles-enhancement.md`  
+**Sostituisce operativamente:** `archive/2026-04-25-gui-ux-experience-audit-superseded.md` + `archive/2026-04-25-ios-design-principles-enhancement-superseded.md`  
 **Scope:** Scenario A, MVP personale FESK. Scenario B e landing pubblica restano gated.
 
 ---
