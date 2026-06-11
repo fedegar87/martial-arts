@@ -1,5 +1,12 @@
 # Performance assessment & piano di intervento
 
+> Nota di stato 2026-06-11: questo documento resta un deep dive performance e
+> un backlog ragionato, ma alcune voci sono gia state implementate o cambiate
+> nel codice (es. `vercel.json` su `fra1`, loading routes aggiunte,
+> aggregati progress lato SQL, `Suspense` su `/progress`, fix service worker).
+> Per lo stato corrente usare [architecture.md](architecture.md) e verificare
+> sempre il codice prima di trattare una voce come TODO.
+
 Sintesi di tre analisi esterne (V1 piano completo, V2 audit codebase, V3 workflow misurazione-driven) confrontate con lo stato reale del codice in `skill-practice/`.
 
 Diagnosi condivisa: ogni navigazione su rotta protetta attende `proxy.getUser()` → `getCurrentProfile()` → query di pagina prima di mostrare contenuto. La somma di queste latenze è ciò che l'utente percepisce come lentezza.
@@ -963,4 +970,3 @@ Tra le PR ricarica i numeri di V.3 sulla rotta interessata: TTFB, durata functio
 2. Esecuzione manuale della rotta toccata su preview Vercel.
 3. Per migration: applicare prima su un branch DB di staging se disponibile; altrimenti rollback SQL pronto in commento del PR.
 4. Per modifiche a RLS o `school_id`: smoke test "login + main flow" come utente normale.
-

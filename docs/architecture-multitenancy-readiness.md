@@ -1,5 +1,11 @@
 # Studio architetturale: readiness multi-scuola
 
+> Nota di stato 2026-06-11: questo documento resta valido come analisi di
+> accoppiamento FESK e roadmap multi-scuola, ma alcune osservazioni su RLS
+> statica permissiva e filtri `school_id` sono state parzialmente superate da
+> `0028_multitenant_isolation.sql`, da hardening successivi e da scoping lato
+> codice. Per lo stato tecnico corrente usare [architecture.md](architecture.md).
+
 Data analisi: 2026-05-11. Repo analizzata: `skill-practice`. Documento solo analitico, non descrive lavoro pianificato.
 
 ## Sommario

@@ -1,366 +1,814 @@
-# Architettura dell'app — analisi dettagliata
+# Architettura e briefing operativo per LLM
 
-Data analisi: 2026-05-16. Repo: `skill-practice/` (single project, Next.js 16 App Router).
+Data aggiornamento: 2026-06-11. Repo: `martial-arts/`, app principale:
+`skill-practice/`.
 
-Questo documento descrive lo stato corrente dell'architettura. Si concentra su cosa esiste oggi nel codice, non su cosa potrebbe esistere. Per readiness multi-scuola vedi [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md). Per scope, decisioni e roadmap vedi [../plan/current-plan.md](../plan/current-plan.md).
+Questo documento e' la mappa tecnica canonica dell'app. Serve a dare contesto
+a un altro LLM o a un nuovo maintainer prima di modificare il progetto. Descrive
+lo stato corrente del codice nel workspace, non solo il piano storico.
 
-## 1. Panoramica
+## 0. Come usare questo documento
 
-`skill-practice` è una PWA Next.js 16 single-tenant (FESK / Scuola Chang) per la pratica guidata di arti marziali tradizionali. Single-user in produzione, ma con schema, auth e RLS predisposti per multi-utente (federazione → scuole → allievi → ruoli).
+Leggi prima questa sezione se sei un agent/LLM.
 
-Caratteristiche architetturali:
+1. Per il contesto tecnico parti da questo file.
+2. Per scope, prodotto, decisioni strategiche e priorita leggi
+   [../plan/current-plan.md](../plan/current-plan.md).
+3. Per regole concrete di implementazione leggi
+   [../skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md).
+4. Per UI e componenti leggi
+   [../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md).
+5. Per lavoro recente di hardening/correzioni leggi
+   [../skill-practice/docs/plans/2026-06-11-review-fixes.md](../skill-practice/docs/plans/2026-06-11-review-fixes.md).
 
-- **App Router puro per la UI**: Server Components per le letture di pagina, Server Actions per le mutazioni utente, route handler solo per auth/export, niente fetch client.
-- **Tre livelli netti**: pagine in `src/app/`, presentazione in `src/components/`, dominio/dati in `src/lib/`.
-- **Postgres come centro logico**: gran parte della logica transazionale vive in funzioni RPC Supabase, non in TypeScript.
-- **Logica pura testabile** isolata in moduli `*-logic.ts` con suite `node --test` dedicate.
-- **PWA "manuale"**: `next-pwa` è installato ma non wirato; il service worker è in [skill-practice/public/sw.js](../skill-practice/public/sw.js) e gestisce offline base + Web Push reminder.
+Regola pratica: se il piano e il codice non coincidono, verifica il codice e
+aggiorna il documento/piano invece di copiare assunzioni vecchie.
 
-## 2. Stack tecnico
+## 1. Sintesi del progetto
 
-Fonte: [skill-practice/package.json](../skill-practice/package.json).
+`skill-practice` e' una PWA Next.js per guidare la pratica personale di arti
+marziali tradizionali, oggi centrata sul curriculum FESK / Scuola Chang
+Shaolin + T'ai Chi. Il valore principale e': "oggi fai questi esercizi",
+con video YouTube unlisted, piano per esame o selezione personale, sessioni
+programmate, diario pratica, progresso e promemoria.
 
-| Strato | Scelta | Versione |
+Stato prodotto:
+
+- MVP personale single-user in produzione.
+- Predisposizione multi-utente e multi-scuola a livello schema/RLS, ma dominio
+  ancora FESK-first.
+- Non e' un SaaS self-service, non e' un LMS, non ospita video, non sostituisce
+  software gestionali di palestra/federazione.
+- Auth e DB sono Supabase; hosting Vercel; video esterni su YouTube unlisted.
+
+Principi architetturali:
+
+- Next.js App Router con Server Components per letture pagina.
+- Server Actions per mutazioni utente.
+- Route handlers solo per auth, export e cron.
+- Logica transazionale complessa in RPC Postgres.
+- Logica algoritmica pura in `src/lib/*-logic.ts`, testata con `node --test`.
+- Service worker statico manuale in `public/sw.js`; `next-pwa` e' stato rimosso.
+
+## 2. Mappa documenti e ridondanze
+
+Cartella [docs/](.) oggi contiene quattro documenti:
+
+| Documento | Ruolo | Stato |
 | --- | --- | --- |
-| Framework | Next.js App Router | 16.2.4 |
-| Runtime | React | 19.2.4 |
-| Linguaggio | TypeScript strict | ^5 |
-| Stile | Tailwind CSS v4 + shadcn/ui (preset Nova) | ^4 / ^4.5 |
-| Icone | lucide-react | ^1.11 |
-| Auth + DB | Supabase (Postgres + Auth) | `@supabase/ssr` ^0.10, `@supabase/supabase-js` ^2.104 |
-| PWA | service worker statico + manifest | `next-pwa` ^5.6 installato ma inutilizzato |
-| Push | Web Push + VAPID | `web-push` ^3.6 |
-| Scheduling | Vercel Cron | `/api/cron/training-reminders` |
-| Lint | ESLint 9 + `eslint-config-next` | — |
-| Test | `node --test` nativo | — |
+| [architecture.md](architecture.md) | Briefing tecnico canonico per LLM/maintainer | Fonte tecnica primaria |
+| [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md) | Analisi approfondita multi-scuola/white-label | Da tenere separato: dettagli troppo specifici per il briefing |
+| [performance-assessment.md](performance-assessment.md) | Diagnosi e piano performance | Da tenere separato, ma alcune sezioni sono superate da fix gia implementati |
+| [marketing-video-promo-guide.md](marketing-video-promo-guide.md) | Guida operativa per video promozionale | Non tecnica, nessuna fusione con architettura |
 
-**Script npm rilevanti** ([skill-practice/package.json](../skill-practice/package.json)):
+Decisione documentale:
 
-- `dev` → `next dev --webpack` (Turbopack disabilitato per bug locale, vedi [plan §3](../plan/current-plan.md))
-- `build` → `next build` (con Turbopack di build, verde)
-- `lint` → `eslint`
-- `test` → `node --test` sulle suite in `src/lib/*.test.ts`
+- Non cancellare documenti in `docs/` ora.
+- Non fondere `architecture-multitenancy-readiness.md`: resta utile come deep
+  dive quando si discute una seconda scuola.
+- Non fondere `performance-assessment.md`: e' un piano operativo storico; questo
+  file ne riporta solo lo stato tecnico corrente.
+- Non fondere `marketing-video-promo-guide.md`: riguarda comunicazione, non
+  architettura.
+- Per ridurre ambiguita, `performance-assessment.md` e
+  `architecture-multitenancy-readiness.md` hanno un banner di stato che rimanda
+  a questo documento per lo stato corrente.
 
-Non esiste uno script `typecheck` dedicato: i tipi sono verificati implicitamente da `next build`.
-
-## 3. Struttura del repository
-
-Convenzioni di workspace in [CLAUDE.md](../CLAUDE.md) e [skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md).
+## 3. Struttura repository
 
 ```
 martial-arts/
-├── CLAUDE.md                          # istruzioni Claude root
-├── plan/current-plan.md               # fonte di verità workspace
-├── docs/                              # questo documento + multitenancy readiness
-├── archive/                           # ricerca storica (read-only)
-└── skill-practice/
-    ├── CLAUDE.md                      # regole concrete implementazione
-    ├── public/
-    │   ├── sw.js                      # service worker manuale
-    │   ├── manifest.json
-    │   ├── offline.html
-    │   └── icons/
-    ├── src/
-    │   ├── proxy.ts                   # auth gate Next 16 (ex middleware.ts)
-    │   ├── app/
-    │   │   ├── (auth)/                # pubbliche: login, forgot-password
-    │   │   ├── (app)/                 # pagine app autenticate
-    │   │   ├── (legal)/                # pubbliche: privacy, terms, cookies, disclaimer
-    │   │   ├── auth/                   # callback, confirm, update-password
-    │   │   ├── api/cron/               # cron server-only
-    │   │   └── layout.tsx              # shell HTML, font, theme
-    │   ├── components/                # raggruppati per feature
-    │   ├── lib/
-    │   │   ├── supabase/              # client.ts, server.ts, middleware.ts, admin.ts
-    │   │   ├── queries/                # letture (server-only)
-    │   │   ├── actions/                # mutazioni ("use server")
-    │   │   ├── *-logic.ts              # logica pura
-    │   │   ├── types.ts                # mirror DB + tipi UI
-    │   │   └── *.test.ts               # suite node:test
-    ├── supabase/
-    │   └── migrations/                 # 26 file SQL numerati 0001-0026
-    └── scripts/generate-fesk-seed.mjs  # generatore seed FESK
+|-- README.md
+|-- CLAUDE.md
+|-- .github/workflows/
+|   |-- ci.yml
+|   `-- training-reminders.yml
+|-- docs/
+|   |-- architecture.md
+|   |-- architecture-multitenancy-readiness.md
+|   |-- performance-assessment.md
+|   `-- marketing-video-promo-guide.md
+|-- plan/
+|   |-- current-plan.md
+|   |-- README.md
+|   |-- completed/
+|   `-- reference/
+|-- archive/
+`-- skill-practice/
+    |-- package.json
+    |-- next.config.ts
+    |-- vercel.json
+    |-- public/
+    |-- src/
+    |-- supabase/migrations/
+    `-- docs/
 ```
 
-Regole strutturali vincolanti ([skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md)):
+Cartelle importanti:
 
-- Nuove route protette in `(app)/`, pubbliche in `(auth)/` o `(legal)/`.
-- Lettura DB delle pagine **solo** in `lib/queries/*` invocato da Server Components; eccezioni esplicite per route handler auth/export.
-- Mutazione applicativa **solo** in `lib/actions/*` con direttiva `"use server"`; auth callback/confirm restano route handler.
-- Niente `services/`, `helpers/`, `data/`, `api/` custom.
-- Niente hook client per leggere dati (sarebbero anti-pattern App Router).
-- Niente import di codice server da Client Components.
+- `plan/current-plan.md`: fonte prodotto/strategia, contiene anche storico
+  lungo; alcune parti storiche sono deliberatamente superate.
+- `archive/`: ricerca e brief superati, read-only salvo esplicita richiesta.
+- `skill-practice/`: unica app reale. Non e' monorepo.
+- `skill-practice/docs/`: documenti tecnici interni all'app, soprattutto UI e
+  piani di review/fix.
 
-## 4. Architettura applicativa
+## 4. Stack tecnico corrente
 
-### 4.1 Route groups e segmenti
+Fonte primaria: [../skill-practice/package.json](../skill-practice/package.json).
 
-`src/app/` usa tre route group:
+| Area | Scelta |
+| --- | --- |
+| Framework | Next.js 16.2.4, App Router |
+| React | React 19.2.4 |
+| Linguaggio | TypeScript strict |
+| Stile | Tailwind CSS v4, shadcn/ui, Radix UI, class-variance-authority |
+| Icone | lucide-react |
+| Auth/DB | Supabase Auth + Postgres, `@supabase/ssr`, `@supabase/supabase-js` |
+| PWA | Service worker statico + manifest, niente `next-pwa` |
+| Push | Web Push, VAPID, `web-push` |
+| Hosting | Vercel, region fissata a `fra1` in `vercel.json` |
+| Test | `node --test` nativo |
+| Lint/typecheck | ESLint 9, `tsc --noEmit` |
+| CI | GitHub Actions su push `main` e pull_request |
 
-- **`(app)/`** — 13 segmenti pagina protetti: `hub`, `today`, `programma`, `library`, `skill/[skillId]`, `plan/exam`, `plan/custom`, `progress`, `calendar`, `news`, `onboarding`, `profile`, `sessions/setup`. Include anche `profile/export/route.ts` come route handler autenticato per esportare i dati account.
-- **`(auth)/`** — pubbliche: `login`, `forgot-password`.
-- **`(legal)/`** — pubbliche: `privacy`, `terms`, `cookies`, `disclaimer`.
-- **`auth/`** (non group) — `auth/callback/route.ts` (exchange code Supabase), `auth/confirm/route.ts` (invite/recovery con `token_hash`), `auth/update-password` (autenticato ma fuori `(app)`).
-- **`api/cron/`** — route handler server-only per job schedulati, oggi solo `training-reminders`.
+Script npm:
 
-### 4.2 Auth gate ([skill-practice/src/proxy.ts](../skill-practice/src/proxy.ts))
-
-Next 16 ha rinominato il middleware in `proxy`. Il file `src/proxy.ts` espone una funzione `proxy(request)` che delega a `updateSession` in [skill-practice/src/lib/supabase/middleware.ts](../skill-practice/src/lib/supabase/middleware.ts).
-
-Flusso:
-
-1. `NextResponse.next` mutabile + `createServerClient` con cookies request-bound.
-2. `supabase.auth.getUser()` refresha il cookie di sessione.
-3. Path matchato contro `PROTECTED_PREFIXES` (`/hub`, `/today`, `/programma`, `/library`, `/skill`, `/plan`, `/profile`, `/onboarding`, `/news`, `/progress`, `/calendar`, `/sessions`) e `AUTHENTICATED_ONLY` (`/auth/update-password`).
-4. Se manca user e il path è protetto → redirect a `/login?next=<path>`. Nota: `login` oggi ignora `next` e manda alla destinazione calcolata da `resolveLandingDestination`; l'allowlist in [skill-practice/src/lib/auth-validation.ts](../skill-practice/src/lib/auth-validation.ts) protegge invece i redirect di `auth/callback` e `auth/confirm`.
-5. Matcher esclude `_next/static`, `_next/image`, `favicon.ico`, `manifest.json`, `sw.js`, asset immagine.
-
-### 4.3 Entrypoint Supabase
-
-Il progetto mantiene tre entrypoint separati per i diversi contesti App Router:
-
-- [skill-practice/src/lib/supabase/client.ts](../skill-practice/src/lib/supabase/client.ts) — `createBrowserClient` per eventuali Client Components; al momento non è usato per letture dati.
-- [skill-practice/src/lib/supabase/server.ts](../skill-practice/src/lib/supabase/server.ts) — `createServerClient` con cookies da `next/headers`, `try/catch` su `cookieStore.set` per i Server Components read-only.
-- [skill-practice/src/lib/supabase/middleware.ts](../skill-practice/src/lib/supabase/middleware.ts) — helper invocato da `src/proxy.ts` per refresh sessione.
-- [skill-practice/src/lib/supabase/admin.ts](../skill-practice/src/lib/supabase/admin.ts) — `createClient` service-role solo server-only, usato dal cron reminder per leggere utenti/subscription e scrivere delivery.
-
-### 4.4 Server Components per le letture
-
-Convenzione: ogni file in `lib/queries/*` inizia con `import "server-only";`, crea il client server e ritorna dati tipati.
-
-Esempio rappresentativo, [skill-practice/src/lib/queries/skills.ts](../skill-practice/src/lib/queries/skills.ts):
-
-```ts
-import "server-only";
-import { createClient } from "../supabase/server";
-
-export async function listAccessibleSkills(...) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("skills")
-    .select("*")
-    .eq("discipline", discipline)
-    .gte("minimum_grade_value", userGradeValue)
-    .order("category", { ascending: true })
-    .order("display_order", { ascending: true });
-  return (data ?? []) as Skill[];
+```json
+{
+  "dev": "next dev --webpack",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "typecheck": "tsc --noEmit",
+  "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none ...",
+  "ui:audit": "node scripts/ui-audit.mjs"
 }
 ```
 
-Le query filtrano per `discipline` e `minimum_grade_value`. Alcune **non** filtrano `school_id`: in single-tenant non è un bug, in multi-tenant lo sarebbe (vedi [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md)).
+Note:
 
-### 4.5 Server Actions per le mutazioni
+- `next dev` forza Webpack; Turbopack dev aveva dato problemi locali.
+- `next build` usa il comportamento standard di Next 16.
+- `next-pwa` non e' installato.
+- `vercel.json` contiene `{"regions":["fra1"]}`.
+- `next.config.ts` contiene solo security headers globali.
 
-Pattern in [skill-practice/src/lib/actions/](../skill-practice/src/lib/actions/):
+## 5. Convenzioni architetturali vincolanti
 
-1. `"use server";` in cima al file.
-2. `createClient()` server + `supabase.auth.getUser()` con early return `{ error: "Sessione scaduta" }` se manca.
-3. Validazione input server-side (`validateSelectedExams`, `optionalUuid`, `normalizeNote`).
-4. Mutazione:
-   - **Semplice**: `supabase.from(table).insert/update/upsert/delete(...)`.
-   - **Complessa o transazionale**: `supabase.rpc("activate_exam_mode", ...)`, `rpc("save_custom_selection", ...)`, `rpc("update_plan_item_status", ...)`, `rpc("hide_plan_item", ...)`. Tutta la logica di stato del piano vive in Postgres, non in TS.
-5. `revalidatePath()` sulle rotte affette (`/today`, `/programma`, `/library`, `/progress`, `/skill/[id]`, `/calendar`).
-6. Opzionale `redirect()` finale.
-7. Ritorno `{ success: true } | { error: string } | null` con tipo dedicato (`PracticeFormState`, `PlanFormState`).
+Le convenzioni sono intenzionali. Non introdurre nuove cartelle o pattern
+senza aggiornare piano e documentazione.
 
-Le form action multi-step usano la signature `(_prev, formData) => state` per essere consumate da `useActionState` lato Client.
+| Necessita | Dove va |
+| --- | --- |
+| Nuova pagina protetta | `src/app/(app)/<feature>/page.tsx` |
+| Nuova pagina auth pubblica | `src/app/(auth)/<name>/page.tsx` |
+| Nuova pagina legale pubblica | `src/app/(legal)/<name>/page.tsx` |
+| Route handler auth/export/cron | `src/app/**/route.ts` |
+| Lettura DB per Server Component | `src/lib/queries/<entity>.ts` |
+| Mutazione applicativa | `src/lib/actions/<entity>.ts` con `"use server"` |
+| Logica pura testabile | `src/lib/<domain>-logic.ts` o simile |
+| Tipi condivisi | `src/lib/types.ts` |
+| Componente dominio | `src/components/<domain>/<Name>.tsx` |
+| Primitiva custom UI | `src/components/primitives/<Name>.tsx` |
+| Shell/shared app | `src/components/shared/<Name>.tsx` |
+| Componenti shadcn | `src/components/ui/` |
+| Migrazione DB | `supabase/migrations/NNNN_<descr>.sql` |
 
-### 4.6 Componenti
+Vietato o da evitare:
 
-Sotto [skill-practice/src/components/](../skill-practice/src/components/) tutto è raggruppato per feature: `today/`, `library/`, `programma/`, `plan/`, `skill/`, `sessions/`, `calendar/`, `progress/`, `profile/`, `news/`, `hub/`, `landing/`, `legal/`. Trasversali in `shared/` (header, BottomNav, EmptyState, AppRouteSkeleton). `ui/` contiene gli output shadcn (non modificabili a mano).
+- Niente `src/services/`, `src/data/`, `src/api/` custom.
+- Niente hook client per leggere dati remoti (`useSkills`, `usePlan`, ecc.).
+- Niente import server-only dentro Client Components.
+- Niente modifiche manuali a `src/components/ui/` se il componente e' shadcn-managed.
+- Niente localStorage/IndexedDB come storage primario.
+- Niente upload video o storage video proprietario.
+- Niente cache service worker su navigazioni autenticate.
 
-PWA: registrazione SW in [skill-practice/src/components/pwa/ServiceWorkerRegister.tsx](../skill-practice/src/components/pwa/ServiceWorkerRegister.tsx), solo in `NODE_ENV === "production"`.
+## 6. Route map
 
-## 5. Modello dati
+Pagine:
 
-### 5.1 Migrazioni
+| Route | Tipo | Scopo |
+| --- | --- | --- |
+| `/` | pubblica | Landing/entrypoint |
+| `/login` | pubblica auth | Login email/password, consuma `next` sicuro |
+| `/forgot-password` | pubblica auth | Richiesta reset password |
+| `/auth/update-password` | auth-only | Cambio password dopo recovery |
+| `/privacy`, `/terms`, `/cookies`, `/disclaimer` | pubbliche legal | Documenti legali custom con placeholder da completare |
+| `/hub` | protetta | Home app con tile verso aree principali |
+| `/today` | protetta | Sessione di oggi |
+| `/programma` | protetta | Programma/piano attivo |
+| `/library` | protetta | Catalogo Scuola Chang con filtri |
+| `/skill/[skillId]` | protetta | Dettaglio tecnica + video + note |
+| `/plan/exam` | protetta | Selezione piano da esame |
+| `/plan/custom` | protetta | Selezione personale |
+| `/sessions/setup` | protetta | Giorni, durata, ciclo e reps |
+| `/calendar` | protetta | Calendario unificato sessioni + pratica libera |
+| `/progress` | protetta | Progresso, streak, calendario, top skill |
+| `/news` | protetta | Bacheca scuola |
+| `/profile` | protetta | Profilo, gradi, account, sicurezza, privacy, reminder |
+| `/onboarding` | protetta | Setup iniziale profilo/piano |
 
-21 file in [skill-practice/supabase/migrations/](../skill-practice/supabase/migrations/) (numerazione `NNNN_descr.sql`). Stratificazione storica:
+Route handlers:
+
+| Route handler | Scopo |
+| --- | --- |
+| `/auth/callback/route.ts` | Exchange code Supabase; reset recovery confinato |
+| `/auth/confirm/route.ts` | Invite/recovery con `token_hash` |
+| `/profile/export/route.ts` | Export JSON dati utente |
+| `/api/cron/training-reminders/route.ts` | Cron reminder push, protetto da `CRON_SECRET` |
+
+Loading states:
+
+- Esistono `loading.tsx` per le principali rotte in `(app)`: parent, today,
+  programma, library, progress, news, calendar, hub, profile, plan/exam,
+  plan/custom, sessions/setup, skill detail.
+- `/progress` usa anche `Suspense` per sezioni indipendenti.
+
+## 7. Auth, sessione e Supabase clients
+
+Auth:
+
+- Supabase Auth email/password.
+- Provisioning pensato come invite/admin, non self-signup pubblico.
+- Min password: 8 caratteri, max 72, senza regex complesse.
+- Reset password passa da `/auth/callback` o `/auth/confirm`, poi forza
+  `/auth/update-password`.
+- Durante una sessione recovery, il cookie `auth_password_update` confina
+  l'utente a `/auth/update-password`; le route protette redirectano li finche
+  la password non viene aggiornata.
+- Il login consuma `next` solo se `safeRedirectPath` lo valida come path interno
+  protetto. Previene open redirect.
+
+Auth gate:
+
+- Next 16 usa `src/proxy.ts`, non `middleware.ts`.
+- `proxy(request)` delega a `updateSession` in
+  [../skill-practice/src/lib/supabase/middleware.ts](../skill-practice/src/lib/supabase/middleware.ts).
+- `updateSession` crea un server client request-bound e chiama
+  `supabase.auth.getUser()` per refresh sessione/cookies.
+- `PROTECTED_PREFIXES` e' definito in
+  [../skill-practice/src/lib/auth-validation.ts](../skill-practice/src/lib/auth-validation.ts).
+- Matcher esclude asset statici, immagini, favicon, manifest e sw.
+
+Supabase entrypoint:
+
+| File | Uso |
+| --- | --- |
+| `src/lib/supabase/client.ts` | Browser client per Client Components quando serve |
+| `src/lib/supabase/server.ts` | Server client con cookies da `next/headers` |
+| `src/lib/supabase/middleware.ts` | Client request-bound per proxy/session refresh |
+| `src/lib/supabase/admin.ts` | Service role server-only, usato dal cron reminder |
+
+Profilo corrente:
+
+- `getCurrentUser`, `getCurrentProfile`, `getCurrentProfileAccount` in
+  `src/lib/queries/user-profile.ts` sono wrappati con `React.cache`.
+- Questo deduplica chiamate dentro lo stesso render React, non attraversa il
+  boundary proxy -> Server Components.
+
+## 8. Flussi utente principali
+
+Landing/login:
+
+1. Utente apre `/`.
+2. Se non loggato va a `/login`.
+3. Dopo login, se `next` e' valido torna al deep link; altrimenti
+   `resolveLandingDestination(profile)` manda a `/hub` o `/onboarding`.
+
+Onboarding:
+
+1. Profilo creato da trigger `handle_new_user`.
+2. Utente imposta livelli Shaolin/T'ai Chi e sceglie esame o nessun esame.
+3. `isProfileOnboarded` considera onboarded il profilo in custom mode o con
+   esame preparato.
+
+Piano:
+
+- `exam`: il piano deriva da `exam_programs` + `exam_skill_requirements`;
+  RPC Postgres attivano/cambiano esame in modo atomico.
+- `custom`: l'utente seleziona manualmente skill; `save_custom_selection`
+  mantiene il piano manuale per disciplina.
+- Dual persistence: manuale ed esame coesistono via `source`, e il profilo
+  sceglie `plan_mode`.
+
+Allenamento:
+
+1. `/sessions/setup` definisce weekdays, durata, lunghezza ciclo, reps e
+   discipline incluse.
+2. `/today` prende piano attivo + schedule e genera la sessione del giorno.
+3. L'utente segna completamento, reps e note.
+4. Le mutazioni aggiornano `practice_logs`, `user_plan_items.last_practiced_at`
+   e revalidano le rotte impattate.
+
+Calendario:
+
+- `/calendar` mostra sessioni programmate, pratica libera retroattiva, note e
+  toggles.
+- Non permette di segnare giorni futuri.
+- `practice_logs` e' la fonte comune per sessioni programmate e pratica libera.
+
+Progresso:
+
+- `/progress` mostra ciclo attivo, giorni praticati, streak, calendario 90
+  giorni e top skill praticate.
+- Aggregati globali/streak sono RPC SQL, non download storico completo.
+
+## 9. Modello dati
+
+Tipi condivisi:
+
+- [../skill-practice/src/lib/types.ts](../skill-practice/src/lib/types.ts) e'
+  un mirror manuale del DB in snake_case.
+- Non c'e' ancora un layer generato Supabase `Database` completo.
+- `SkillOption` e' un DTO snello per form client che non devono serializzare
+  note/video/thumbnail.
+
+Entita statiche:
+
+| Tabella | Scopo |
+| --- | --- |
+| `schools` | Tenant/scuola |
+| `skills` | Catalogo tecniche, con `school_id`, disciplina, categoria, video |
+| `exam_programs` | Programmi esame per grado/disciplina |
+| `exam_skill_requirements` | Junction esplicita exam -> skill, no JSONB |
+| `news_items` | Bacheca scuola |
+
+Entita utente:
+
+| Tabella | Scopo |
+| --- | --- |
+| `user_profiles` | Profilo, scuola, gradi, esami, ruolo, mode piano |
+| `user_plan_items` | Piano utente, source exam/manual, status focus/maintenance |
+| `practice_logs` | Diario giornaliero per skill, note, reps, completed |
+| `training_schedule` | Giorni e ciclo di allenamento |
+| `weekly_reflections` | Storico/reflection introdotto in sprint precedenti |
+| `account_deletion_requests` | Richieste cancellazione dati |
+| `notification_preferences` | Preferenze reminder |
+| `push_subscriptions` | Subscription Web Push browser/device |
+| `notification_deliveries` | Storico deduplicato delivery reminder |
+
+Campi/semantiche importanti:
+
+- `Discipline = "shaolin" | "taichi"`.
+- `PlanStatus = "focus" | "maintenance"`; `review` e' stato rimosso.
+- `PlanItemSource = "exam_program" | "manual"`.
+- `practice_logs` ha chiave logica unica `(user_id, skill_id, date)`.
+- Date giornaliere sono stringhe `YYYY-MM-DD`; timestamp restano ISO string.
+- `assigned_level_taichi = 0` significa "T'ai Chi non praticato".
+- Gradi FESK usano numeri con semantica specifica: Chi 8..1, Chieh -1..-5,
+  Mezza Luna -6..-7.
+- `EXTRA_GRADE_VALUE = 99` rappresenta contenuti extra/fondamentali fuori
+  programma esame.
+
+## 10. Migrazioni DB
+
+Le migration sono in
+[../skill-practice/supabase/migrations/](../skill-practice/supabase/migrations/).
+Il workflow operativo e' SQL Editor Supabase: la CLI non e' considerata
+disponibile nel PATH.
+
+Sequenza presente nel repo:
 
 | Range | Tema |
 | --- | --- |
-| 0001-0002 | Schema base, RLS, seed scuola/skill iniziale |
-| 0003-0004 | Evoluzione FESK (gradi Chi/Chieh, discipline Shaolin/T'ai Chi) + seed FESK generato |
-| 0005-0011 | Modalità piano (`exam`/`custom`), news, reflections, RPC piano dual-persistence |
-| 0012 | `training_schedule` + reps su `practice_logs` |
-| 0013-0014, 0020 | Aggiunte URL video skill |
-| 0015 | Discipline esame in schedule |
-| 0016 | Privacy account (trigger immutable + deletion requests) |
-| 0017-0018 | Hardening RPC esami |
-| 0019 | Semplificazione `plan_status` (collasso `review`→`maintenance`) |
-| 0021 | Unique log giornaliero + RPC `update_plan_item_last_practiced_at` |
-| 0022 | Aggregati progresso lato SQL (`count_practice_days`, `current_practice_streak`) |
+| 0001 | Schema base, RLS iniziale, tabelle core |
+| 0002 | Seed storico iniziale |
+| 0003 | Evoluzione FESK: discipline, practice_mode, categorie, gradi |
+| 0004 | Seed FESK generato |
+| 0005-0011 | Plan mode, news/reflections, piani esame/manuale, dual persistence |
+| 0012 | Training schedule e reps su practice_logs |
+| 0013-0014 | URL video skill |
+| 0015 | `exam_disciplines` su schedule |
+| 0016 | Privacy/account, deletion requests, trigger privilege hardening |
+| 0017-0018 | Hardening RPC e selezione esami |
+| 0019 | Semplificazione status: solo focus/maintenance |
+| 0020 | Altri URL video |
+| 0021 | Unique `(user_id, skill_id, date)` + RPC last_practiced_at |
+| 0022 | Aggregati progresso SQL |
 | 0023 | RLS performance hardening con `(SELECT auth.uid())` |
-| 0024 | Indice composito catalogo skill |
-| 0025 | RPC `top_practiced_skills` |
-| 0026 | Preferenze reminder, push subscription e storico delivery |
+| 0024 | Indice composito catalogo skills |
+| 0025 | RPC top practiced skills |
+| 0026 | Push reminders, subscriptions, deliveries |
+| 0027 | Altri URL video |
+| 0028 | Isolamento multi-tenant per scuola |
+| 0029 | Altri URL video |
+| 0030 | Secondo video per skill |
+| 0031 | Altri URL video |
+| 0032 | Fondamentali armi extra, grade sentinel 99 |
+| 0033 | Streak calcolato sulla data locale app |
+| 0034 | Drop indice duplicato practice_logs |
+| 0035 | Revoke EXECUTE pubblico su RPC SECURITY DEFINER |
+| 0036 | Hardening `handle_new_user` contro metadata tenant non fidati |
 
-Convenzione: niente modifiche manuali dal pannello Supabase; ogni cambio passa da migration ([skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md) §"Pattern dati"). Workflow operativo per applicare migration: SQL copia-incolla nel SQL Editor Supabase (CLI non in PATH, app su Vercel + DB cloud).
+Stato applicazione DB:
 
-### 5.2 Tabelle principali ([skill-practice/supabase/migrations/0001_schema.sql](../skill-practice/supabase/migrations/0001_schema.sql))
+- Il piano corrente dice che 0001-0028 sono applicate.
+- 0033-0036 sono presenti nel repo come migration di hardening/fix; prima di
+  assumere che siano applicate, verificare il DB Supabase reale.
+- Ogni nuova modifica schema deve avere una migration numerata; niente cambio
+  manuale da dashboard senza file corrispondente.
 
-**Statiche (per scuola):**
+## 11. RLS e multi-tenancy
 
-- `schools` — tenant root (con `id`, `name`, `description`).
-- `skills` — catalogo tecniche, FK a `school_id`, colonne `category`, `discipline`, `minimum_grade_value`, `video_url`, `display_order`.
-- `exam_programs` — esami per livello, FK a `school_id`, `discipline`.
-- `exam_skill_requirements` — junction `(exam_id, skill_id, default_status)`. **Mai JSONB**: vincolo esplicito da [plan §4.1](../plan/current-plan.md) per consentire query e indici puliti.
+Stato reale del dominio:
 
-**Dinamiche (per utente):**
+- L'app e' single-tenant/FESK nella pratica.
+- Il modello contiene `school_id` su contenuti statici e profili.
+- La migration 0028 introduce isolamento per scuola su letture statiche e
+  `WITH CHECK` tenant-aware su `user_plan_items`/`practice_logs`.
+- Il dominio UI/TS resta FESK-first: discipline fisse, categorie cinesi,
+  gradi Chi/Chieh/Mezza Luna, testi Scuola Chang.
 
-- `user_profiles` — PK = `auth.users.id`, FK a `school_id`, colonne `assigned_level_shaolin`, `assigned_level_taichi`, `preparing_exam_id`, `preparing_exam_taichi_id`, `plan_mode` (`exam`/`custom`), `role` (`student`/`instructor`/`admin`), `last_news_seen_at`.
-- `user_plan_items` — `(user_id, skill_id)` unique. Colonne `status` (`focus`/`maintenance`), `source` (`exam_program`/`manual`), `is_hidden`, `last_practiced_at`.
-- `practice_logs` — `(user_id, skill_id, date)` unique (0021), indice `(user_id, date DESC)`. Colonne `completed`, `personal_note`, `reps_target`, `reps_done`.
-- `training_schedule` — `(user_id)` PK. `weekdays int[]`, `cadence_weeks`, `reps_per_form`, `start_date`, `end_date`, `exam_disciplines text[]` con check.
-- `news_items` — bacheca per scuola, lette/non lette via `last_news_seen_at`.
-- `account_deletion_requests` — coda richieste cancellazione, unique parziale `WHERE status = 'pending'`.
-- `weekly_reflections` (Sprint 2 successivamente collassato).
-- `notification_preferences` — opt-in promemoria, orario, fuso orario e preferenza nomi esercizi.
-- `push_subscriptions` — endpoint Web Push per browser/device, revocabili con `revoked_at`.
-- `notification_deliveries` — tentativi di invio, deduplica `(subscription_id, kind, date)`.
+RLS:
 
-### 5.3 RLS
+- Tabelle dinamiche: owner-bound su `auth.uid()`.
+- Tabelle statiche: con 0028, lettura limitata alla scuola del profilo.
+- `account_deletion_requests`: utente vede/inserisce proprie richieste; admin
+  vede/aggiorna quelle della propria scuola.
+- `notification_deliveries`: scrittura cron/service role, lettura utente sulle
+  proprie delivery.
 
-RLS abilitata **su ogni tabella al momento della sua introduzione** (vincolo [skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md) §"Pattern dati"):
+RPC SECURITY DEFINER:
 
-- **Statiche**: `FOR SELECT TO authenticated USING (true)`. Lettura pubblica per ogni utente loggato. Adatto a single-tenant, falla in multi-tenant.
-- **Dinamiche**: `USING (user_id = (SELECT auth.uid())) WITH CHECK (user_id = (SELECT auth.uid()))`. L'utente vede e scrive solo i propri record.
-- **`account_deletion_requests`**: utente INSERT/SELECT proprie; admin (`user_profiles.role = 'admin'`) SELECT/UPDATE tutte.
-- **`notification_deliveries`**: utente SELECT proprie; INSERT/UPDATE riservati al cron via service role.
+- Necessarie per transazioni atomiche di piano/esame.
+- La migration 0035 rimuove `EXECUTE` da `PUBLIC`/`anon` per le RPC mutanti e
+  concede solo ad `authenticated`; verificare sul DB reale se e' gia applicata.
 
-**Trigger SECURITY DEFINER:**
+Limiti multi-scuola ancora veri:
 
-- `handle_new_user` — crea automaticamente `user_profiles` quando arriva un nuovo `auth.users`.
-- `prevent_user_profile_privilege_changes` ([migration 0016](../skill-practice/supabase/migrations/0016_profile_account_privacy.sql)) — blocca aggiornamento di `role` e `school_id` quando il chiamante è il proprietario autenticato. Limite noto: blocca anche l'admin che modifichi se stesso → cambi privilegi via service role / SQL Editor.
+- Non esiste tabella dinamica `disciplines`.
+- Non esiste tabella `grade_levels`/`grade_scales`.
+- Profilo ha colonne dedicate Shaolin/T'ai Chi.
+- Pannello admin multi-scuola non esiste.
+- Per una seconda scuola reale serve un flusso inviti/allowlist server-side; i
+  metadata utente non bastano come fonte di tenant.
 
-**Indici:**
+Per analisi completa vedi
+[architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md).
 
-- `idx_skills_school`, `idx_skills_minimum_level`, `idx_skills_category`.
-- `idx_user_plan_items_user WHERE is_hidden = false` (parziale, per query "oggi").
-- `idx_practice_logs_user_dt (user_id, date DESC)`.
-- `idx_news_items_school_dt`.
+## 12. Query, actions e RPC
 
-### 5.4 RPC Postgres
+Pattern query:
 
-La logica del piano vive in funzioni: `activate_exam_mode`, `switch_to_*`, `save_custom_selection`, `update_plan_item_status`, `hide_plan_item`, `update_plan_item_last_practiced_at`. Motivazione: atomicità (rimozione/insert/aggiornamento `last_practiced_at` non sono separabili in più round trip senza correre race).
+- Ogni file `src/lib/queries/*.ts` deve iniziare con `import "server-only";`.
+- Le pagine Server Component chiamano query direttamente.
+- Query user-scoped filtrano sempre per `user_id` o passano dal profilo.
+- Query catalogo dovrebbero ricevere/filtrare `school_id` quando possibile.
+- Nessuna query DB da Client Components.
 
-### 5.5 Tipi condivisi
+Query files:
 
-[skill-practice/src/lib/types.ts](../skill-practice/src/lib/types.ts) (193 righe) è scritto a mano e fa da mirror manuale dello schema in `snake_case`, senza layer generato Supabase. Il piano prescrive `supabase gen types typescript --local`, ma in pratica oggi è curato a mano. Domini coperti: enum (`Discipline`, `SkillCategory`, `PlanStatus`, `PlanItemSource`, `UserRole`, `NewsType`), entità statiche (`School`, `Skill`, `ExamProgram`, `ExamSkillRequirement`), entità utente (`UserProfile`, `UserPlanItem`, `PracticeLog`, `TrainingSchedule`, `NewsItem`), tipi UI derivati (`CalendarSkill`, `CalendarDayView`, `ScheduledPracticeItem`, `FreePracticeItem`).
-
-## 6. Logica di business
-
-Tutta isolata in moduli "puri" (no I/O, no dipendenze server) sotto [skill-practice/src/lib/](../skill-practice/src/lib/):
-
-| File | Cosa fa |
+| File | Scopo |
 | --- | --- |
-| [practice-logic.ts](../skill-practice/src/lib/practice-logic.ts) | `getTodayPractice`: fallback senza schedule. Tutte le focus + le 4 maintenance meno praticate. |
-| [session-scheduler.ts](../skill-practice/src/lib/session-scheduler.ts) | `getScheduledSession(date, schedule, items)`: distribuzione pesata 2:1 focus/maintenance su un ciclo di N settimane × M giorni. Algoritmo Bresenham-like per spaziare le occorrenze. Stati: `no_schedule`, `expired`, `rest_day`, `training`. |
-| [calendar-logic.ts](../skill-practice/src/lib/calendar-logic.ts) | `buildCalendarDayView*`: aggrega sessione programmata + log per giorno, distingue `scheduled` vs `freePractice`, flag `canToggle`/`isFuture`. |
-| [progress-logic.ts](../skill-practice/src/lib/progress-logic.ts) | `buildPracticeCalendar`: proietta 90 giorni di log in `{date, practiced}[]`. Calcola `readinessPercent` con `statusMaturityScore` (maintenance = 1.0 dopo 1.14). |
-| [session-progress.ts](../skill-practice/src/lib/session-progress.ts) | Conteggio reps per sessione, stima 3 min/forma. |
-| [grades.ts](../skill-practice/src/lib/grades.ts) | Scala FESK hardcoded (Chi 8→1, Chieh -1→-5, Mezza Luna -6→-7). `nextGradeValue` e `isSelectableExamGrade`. |
-| [plan-manager.ts](../skill-practice/src/lib/plan-manager.ts) | `buildManualPlanItem(userId, skillId, status)`. |
-| [onboarding-state.ts](../skill-practice/src/lib/onboarding-state.ts) | `isProfileOnboarded`: vero se custom mode o `preparing_exam_id` set. |
-| [landing.ts](../skill-practice/src/lib/landing.ts) | `resolveLandingDestination` (`/today` o `/onboarding`). |
-| [auth-validation.ts](../skill-practice/src/lib/auth-validation.ts) | Email regex, password 8-72, allowlist `next` per callback/confirm Supabase. |
-| [youtube.ts](../skill-practice/src/lib/youtube.ts) | Parse di `watch?v=`, `embed/`, `shorts/`, `youtu.be`. |
-| [push-notifications.ts](../skill-practice/src/lib/push-notifications.ts) | Tipi e helper puri per subscription, orario e payload del reminder. |
+| `account.ts` | Deletion/export account |
+| `calendar.ts` | DayView calendario e skill options |
+| `exam-programs.ts` | Programmi esame e requisiti |
+| `news.ts` | Bacheca/unread |
+| `plan.ts` | Piano utente |
+| `practice-log.ts` | Log oggi/settimana/note |
+| `progress.ts` | Aggregati progresso, streak, top skill |
+| `push-notifications.ts` | Preferenze/subscription reminder |
+| `skills.ts` | Catalogo e skill detail |
+| `training-schedule.ts` | Schedule |
+| `user-profile.ts` | User/profile corrente |
 
-Algoritmi chiave da capire prima di toccare il dominio: `session-scheduler.ts` (per la distribuzione delle forme) e `grades.ts` (per la semantica numerica della scala FESK — `-1` non è "primo livello avanzato" generico, è 1° Chieh).
+Pattern actions:
 
-## 7. PWA
+- File in `src/lib/actions/*.ts` con `"use server"`.
+- Ogni action crea server client, chiama `auth.getUser()`, valida input, muta
+  DB o RPC, poi `revalidatePath()` sulle route impattate.
+- Return tipico: `{ success: true } | { error: string } | null`.
+- Actions form multi-step usano signature `(_prev, formData) => state`.
 
-[skill-practice/public/sw.js](../skill-practice/public/sw.js) è scritto a mano:
+Action files:
 
-- Cache `kung-fu-practice-v2`.
-- Precache `/offline.html`, `/manifest.json`, `/icon.svg`.
-- `install` → `skipWaiting`.
-- `activate` → cleanup cache vecchie + `clients.claim()`.
-- `fetch` solo su GET same-origin; trattamento speciale per `/_next/static/`.
-- `push` mostra una notifica semplice: titolo, body, tag, data URL.
-- `notificationclick` chiude la notifica e apre/focalizza `/today`.
+| File | Scopo |
+| --- | --- |
+| `account.ts` | Richiesta cancellazione account |
+| `auth.ts` | Login, logout, reset/update/change password |
+| `calendar.ts` | Toggle completamento per data, pratica libera |
+| `news.ts` | Mark news seen |
+| `onboarding.ts` | Setup iniziale e scelta esame |
+| `plan.ts` | Piano exam/custom, add/hide/status |
+| `practice.ts` | Segna pratica, note, reps |
+| `profile.ts` | Profilo, gradi, mode |
+| `push-notifications.ts` | Subscription e preferenze reminder |
+| `training-schedule.ts` | Setup/reset schedule |
 
-[skill-practice/public/manifest.json](../skill-practice/public/manifest.json): `display: standalone`, theme `#0f0f0f`, lingua `it`, icone SVG + PNG 192/512 + maskable 512.
+RPC principali:
 
-[skill-practice/src/components/pwa/ServiceWorkerRegister.tsx](../skill-practice/src/components/pwa/ServiceWorkerRegister.tsx) registra `/sw.js` solo in produzione. L'attivazione dei promemoria può registrare lo stesso service worker on demand anche in localhost. `next-pwa` resta come dipendenza ma non è wirato in `next.config.ts`: rimozione bloccata da Windows che tiene aperti file in `node_modules`.
+- `activate_exam_mode`
+- `switch_to_exam_mode`
+- `switch_to_custom_mode`
+- `save_custom_selection`
+- `update_plan_item_status`
+- `hide_plan_item`
+- `update_plan_item_last_practiced_at`
+- `count_practice_days`
+- `current_practice_streak`
+- `top_practiced_skills`
 
-Comportamento offline: navigazioni autenticate non sono cachate (decisione di privacy: il logout non deve lasciare contenuto utente nel SW).
+## 13. Logica di dominio pura
 
-Promemoria allenamento: opt-in da `/today` o `/profile`, subscription salvata in Supabase, invio da [training-reminder-sender.ts](../skill-practice/src/lib/training-reminder-sender.ts) tramite Vercel Cron + `web-push`.
+Moduli testabili in `src/lib/`:
 
-## 8. Sicurezza
+| File | Responsabilita |
+| --- | --- |
+| `practice-logic.ts` | Fallback "oggi": focus tutti i giorni + maintenance meno praticate |
+| `session-scheduler.ts` | Scheduler deterministico su ciclo N settimane x giorni |
+| `calendar-logic.ts` | DayView calendario, scheduled/free, future/toggle |
+| `progress-logic.ts` | Calendar 90 giorni, readiness, conteggi sessioni |
+| `session-progress.ts` | Stato sessioni e reps su periodo |
+| `grades.ts` | Scala FESK, label, next grade, esami selezionabili |
+| `plan-manager.ts` | Costruzione item manuale |
+| `onboarding-state.ts` | Profilo onboarded |
+| `landing.ts` | Landing destination |
+| `auth-validation.ts` | Email/password/redirect validation |
+| `youtube.ts` | Parsing URL YouTube |
+| `push-notifications.ts` | Helper puri per subscription/time/payload |
+| `date.ts` | Date locali `YYYY-MM-DD`, default Europe/Rome |
+| `perf.ts` | Timing helper server-only |
 
-Modello di minaccia da [plan §14](../plan/current-plan.md): MVP single-user, asset = account utente + dati di pratica + contenuti video (unlisted, non sensibili).
+Scheduler:
 
-**Difese in posto:**
+- Input: data, schedule, plan items.
+- Stati sessione: `no_schedule`, `expired`, `rest_day`, `training`.
+- Focus pesa 2, maintenance pesa 1.
+- Distribuzione deterministica tipo Bresenham per spaziare occorrenze nel ciclo.
+- `cadence_weeks` e' lunghezza ciclo, non frequenza di ripasso generica.
+- Cambiare peso o algoritmo cambia cosa vede l'utente il giorno dopo: farlo
+  solo con test e decisione esplicita.
 
-- Supabase Auth (hashing, sessioni, reset password) — niente JWT manuali.
-- RLS abilitata su tutte le tabelle, owner-bounded sulle dinamiche.
-- Trigger `prevent_user_profile_privilege_changes` blocca self-escalation di `role`/`school_id`.
-- Auth gate in [skill-practice/src/proxy.ts](../skill-practice/src/proxy.ts).
-- Allowlist sui redirect Supabase (`auth/callback`, `auth/confirm`) via [skill-practice/src/lib/auth-validation.ts](../skill-practice/src/lib/auth-validation.ts), contro open redirect.
-- Security headers in [skill-practice/next.config.ts](../skill-practice/next.config.ts): HSTS, `X-Frame-Options SAMEORIGIN`, `X-Content-Type-Options nosniff`, `Referrer-Policy`, `Permissions-Policy` (camera/microphone/geolocation chiusi).
-- Logout client-side pulisce `localStorage`/`sessionStorage`/Cache best-effort.
-- Min password 8 caratteri (NIST 2024 baseline, nessuna regex composta).
-- Provisioning utenti solo admin (`Send invitation` via Supabase dashboard), no self-signup pubblico.
-- Cron reminder protetto da `CRON_SECRET`; VAPID private key e service role restano server-only.
+Practice logs:
 
-**Buchi noti:**
+- Una riga per `(user_id, skill_id, date)`.
+- `completed=true` indica pratica completata.
+- `reps_done > 0` conta come pratica significativa per progress/streak.
+- Note vuote non devono cancellare note esistenti per errore.
+- Toggle calendario preserva reps parziali e note quando neutralizza un log.
 
-- Tabelle statiche leggibili da `authenticated USING (true)`: in multi-tenant un utente vedrebbe tutto. In single-tenant FESK è accettabile.
-- Alcune query non filtrano `school_id` esplicitamente — la falla è speculativa finché c'è una sola scuola.
-- Trigger anti-privilege-change blocca anche l'admin loggato → operatività privilegi via service role.
+## 14. UI system
 
-## 9. Testing
+Riferimento operativo:
+[../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md).
 
-[skill-practice/package.json](../skill-practice/package.json) `test` → `node --test` nativo sui file `*.test.ts` in [skill-practice/src/lib/](../skill-practice/src/lib/): `youtube`, `practice-logic`, `progress-logic`, `session-scheduler`, `calendar-logic`, `landing`, `onboarding-state`, `auth-validation`, `grades`, `seed-fesk`, `push-notifications`.
+Cartelle:
 
-**Coverage:** solo logica pura. Niente test su componenti, queries, actions, RPC, RLS. Nessuna suite E2E (no Playwright, no Vitest, no Jest). Verifica di queries/actions/policies è manuale tramite walkthrough nell'app.
+- `src/components/ui/`: componenti shadcn-managed.
+- `src/components/primitives/`: primitive custom senza dominio (`Chip`,
+  `OptionCard`, `SegmentedNav`, `FormSelect`).
+- `src/components/shared/`: shell, header, skeleton, empty state, asset app.
+- `src/components/<domain>/`: componenti di feature.
 
-## 10. Build, deploy, operatività
+Regole:
 
-- **Dev:** `npm run dev` forza Webpack (`next dev --webpack`) — Turbopack dev panicava su `/login` in locale.
-- **Build:** `next build` con Turbopack di build (verde).
-- **Lint:** `eslint` + `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript`.
-- **Type-check:** implicito nel build (nessuno script dedicato).
-- **Hosting:** Vercel free tier, auto-deploy da `main`. Variabili di ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`) in Project Settings.
-- **DB:** Supabase Frankfurt EU. Migration applicate copia-incolla nel SQL Editor (CLI non in PATH).
-- **Video:** YouTube unlisted, no infrastruttura propria.
-- **Costo totale a regime FESK:** 0 € (tutto su free tier).
+- Button variant `default` solo per CTA primaria.
+- Chip e segmented controls non usano gold pieno come stato attivo.
+- Stato "completato" e' uno stato, non CTA primaria; usare classi condivise in
+  `src/lib/ui-classes.ts`.
+- `FormSelect` usa font mobile-safe per evitare zoom iOS.
+- Header e bottom sheets gestiscono safe-area PWA.
+- Non aggiungere primitive se il pattern non ha almeno 3 callsite reali, salvo
+  eccezione motivata.
 
-## 11. Punti di forza
+Design:
 
-1. **App Router rigoroso** — Server Components + Server Actions ovunque. Niente waterfall client, niente prop drilling di stato remoto.
-2. **Logica pura isolata e testata** — i moduli `*-logic.ts` sono unit-testabili senza DB e senza Next. Refactor della UI non rompe la matematica delle sessioni.
-3. **RPC Postgres per le transazioni** — attivazione modalità, cambi piano, hide/restore: tutto atomico lato DB. Niente race da TypeScript.
-4. **RLS dal primo migration** — ogni tabella protetta da subito, nessuna policy "permissive temporanea".
-5. **PWA leggera** — SW manuale, niente blackbox `next-pwa`. Comportamento prevedibile.
-6. **Predisposizione multi-utente già nel modello** — `school_id` sulle entità statiche e su `user_profiles`, ruoli (`student`/`instructor`/`admin`), trigger anti-self-escalation. Falsa multi-tenancy a livello policy ma fondazione corretta.
-7. **Documentazione viva** — il piano in [plan/current-plan.md](../plan/current-plan.md) è la fonte di verità, aggiornato a ogni Sprint, con archiviazione dei brief superati.
+- Tema scuro caldo/gold FESK in `src/app/globals.css`.
+- Tailwind v4 via CSS theme, non `tailwind.config.ts`.
+- Font e asset sono brand-specific, non ancora configurabili per tenant.
+- Landing/hub possono essere piu editoriali; strumenti operativi restano densi
+  e prevedibili.
 
-## 12. Punti deboli
+## 15. PWA, offline e push
 
-1. **Semantica nascosta nei numeri di grado** — `-1` significa "1° Chieh FESK", non è generico. Render della scala in TS rende ogni futura scuola karate/judo un refactor non banale.
-2. **Tabelle statiche con `USING (true)`** — leakage cross-tenant inevitabile se si attiva multi-tenant senza patch RLS. Vedi [architecture-multitenancy-readiness.md §1](architecture-multitenancy-readiness.md) righe 22 e 81.
-3. **Categorie skill come enum DB+TS** — judo/aikido/taekwondo richiedono migration per ogni nuova categoria, non basta inserire una riga.
-4. **Tipi `types.ts` curati a mano** — divergenza schema/tipi possibile, anche se oggi accettabile. Lo script `supabase gen types` prescritto dal CLAUDE.md non risulta usato.
-5. **Niente test su componenti, queries, actions** — la safety net è solo sui moduli puri. Una regressione su RLS o su una RPC passa silenziosa.
-6. **`next-pwa` dipendenza fantasma** — installato ma non wirato, sporca `package.json` e va rimosso quando Windows molla `node_modules`.
-7. **Stringhe e label sparse** — "Scuola Chang", "Kung Fu Practice", terminologia FESK in `labels.ts`, componenti e legali. Riduzione del lock-in single-tenant possibile ma rimandata.
-8. **No CI/CD oltre auto-deploy Vercel** — niente lint/build/test gate su PR. La verifica avviene localmente prima del push.
+Service worker:
 
-## 13. Cosa toccare con cautela
+- File: [../skill-practice/public/sw.js](../skill-practice/public/sw.js).
+- Cache name attuale: `kung-fu-practice-v3`.
+- Precache: `/offline.html`, `/manifest.json`, `/icon.svg`.
+- `install`: cache asset + `skipWaiting`.
+- `activate`: elimina cache con nome diverso + `clients.claim`.
+- `fetch`: solo GET same-origin.
+- `/_next/static/`: cache-first, ma cache solo `response.ok`.
+- Navigazioni: network-only con fallback `/offline.html`.
+- Non cachea contenuto autenticato per privacy/logout.
 
-- **`grades.ts` + RPC `activate_exam_mode`/`save_custom_selection`** — la progressione dei livelli è incardinata sul valore numerico decrescente. Cambiare semantica richiede coordinare TS + Postgres + UI.
-- **`session-scheduler.ts`** — l'algoritmo di distribuzione è coperto da test, ma cambia il peso `FOCUS_WEIGHT/MAINTENANCE_WEIGHT` e l'utente vede sessioni diverse il giorno dopo. Modifiche solo con design doc.
-- **RLS** — qualunque cambio policy va testato con utente reale, non solo `EXPLAIN`. Lo schema RLS deve restare `enable + policies esplicite`, mai bypass via service role da Server Action.
-- **`auth/callback/route.ts`, `auth/confirm/route.ts` + allowlist `next`** — qualunque allargamento del set di destinazioni post-auth va validato contro open redirect.
-- **`practice_logs` unique key** — la pratica libera retroattiva e le sessioni programmate condividono la stessa tabella. Cambiare la chiave logica `(user_id, skill_id, date)` rompe entrambi i flussi.
+Registrazione:
 
-## 14. Riferimenti
+- `ServiceWorkerRegister` registra `/sw.js` solo in produzione.
+- Le feature reminder possono registrare il SW on demand se serve.
+
+Push reminders:
+
+- UI reminder e' gated da `NEXT_PUBLIC_VAPID_PUBLIC_KEY`.
+- Preferenze in `notification_preferences`.
+- Subscription in `push_subscriptions`.
+- Delivery/dedup in `notification_deliveries`.
+- Cron: `/api/cron/training-reminders`, runtime nodejs, auth con
+  `Authorization: Bearer <CRON_SECRET>` o query `?secret=`.
+- Sender: `src/lib/training-reminder-sender.ts`, usa service role e `web-push`.
+- Payload costruito in `src/lib/push-notifications.ts`.
+
+GitHub workflow:
+
+- `.github/workflows/training-reminders.yml` puo chiamare manualmente il cron
+  usando `TRAINING_REMINDER_CRON_URL` e `CRON_SECRET`.
+
+## 16. Performance e operativita
+
+Performance corrente:
+
+- Vercel region fissata a `fra1`.
+- `src/lib/perf.ts` logga timing se `NODE_ENV !== "production"` oppure
+  `PERF_LOG=1`.
+- `/today` strumenta profilo, piano, logs, news, schedule, reminder.
+- `/progress` usa `Suspense` per sezioni e RPC SQL per aggregati.
+- `/sessions/setup` parallelizza schedule e items.
+- `/skill/[skillId]` parallelizza skill, plan items, note e log oggi.
+- `/plan/custom` usa `SkillOption` DTO snello.
+
+Documentazione performance:
+
+- [performance-assessment.md](performance-assessment.md) e' utile come deep
+  dive, ma alcune azioni elencate sono gia implementate. Verificare il codice
+  prima di usare quel file come backlog.
+
+Operativita:
+
+- Hosting: Vercel free/Hobby.
+- DB: Supabase cloud.
+- Migrazioni: SQL Editor Supabase; niente assunzione di CLI locale.
+- Env locali in [../skill-practice/.env.local.example](../skill-practice/.env.local.example).
+- Build/deploy automatico da Vercel su branch configurato.
+- CI GitHub esegue `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`.
+
+Comandi locali standard:
+
+```bash
+cd skill-practice
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+Per sviluppo:
+
+```bash
+cd skill-practice
+npm run dev
+```
+
+## 17. Sicurezza e privacy
+
+Difese in posto:
+
+- Supabase Auth, niente JWT custom.
+- Auth gate in `src/proxy.ts`.
+- RLS su tutte le tabelle introdotte.
+- 0028 aggiunge isolamento multi-tenant per scuola.
+- Trigger `prevent_user_profile_privilege_changes` blocca self-change di
+  `role` e `school_id`.
+- La migration 0036 hardenizza `handle_new_user` ignorando metadata tenant in
+  single-tenant; verificare sul DB reale se e' gia applicata.
+- Redirect post-auth validati contro path interni.
+- Recovery password confinato a update-password.
+- Security headers in `next.config.ts`: HSTS, X-Frame-Options, nosniff,
+  Referrer-Policy, Permissions-Policy.
+- Export dati fallisce con 500 se una sezione query fallisce.
+- Logout client-side pulisce local/session storage/cache best-effort.
+- Service worker non cachea pagine autenticate.
+- Cron protetto da `CRON_SECRET`.
+- Service role usato solo server-only.
+
+Privacy/compliance:
+
+- Pagine custom `/privacy`, `/terms`, `/cookies`, `/disclaimer`.
+- Molti dati legali non derivabili sono placeholder e richiedono revisione
+  prima di apertura a utenti terzi.
+- Cookie banner non necessario finche non entrano analytics/tracking/marketing.
+- Export dati utente via `/profile/export`.
+- Richiesta cancellazione via `account_deletion_requests`; esecuzione reale
+  operativa/admin non e' un pannello self-service completo.
+
+Verifiche esterne da non dimenticare:
+
+- Supabase "require current password" per cambio password attuale dipende da
+  configurazione server.
+- Stato applicazione reale delle migration 0033-0036 va verificato su Supabase.
+- VAPID/CRON env devono essere configurate su Vercel per abilitare reminder.
+
+## 18. Testing
+
+Suite attuale:
+
+- `auth-validation.test.ts`
+- `calendar-logic.test.ts`
+- `grades.test.ts`
+- `landing.test.ts`
+- `onboarding-state.test.ts`
+- `practice-logic.test.ts`
+- `progress-logic.test.ts`
+- `push-notifications.test.ts`
+- `seed-fesk.test.ts`
+- `session-scheduler.test.ts`
+- `youtube.test.ts`
+
+Coverage:
+
+- Copre logica pura.
+- Non copre componenti React.
+- Non copre route handlers.
+- Non copre RLS/RPC con DB reale.
+- Non c'e' Playwright E2E.
+
+Quando tocchi:
+
+- `grades.ts`: aggiungi test.
+- `session-scheduler.ts`: aggiungi test, perche cambia output utente.
+- `calendar-logic.ts` o practice logs: aggiungi test dove possibile.
+- RLS/RPC/migration: prepara smoke test manuale e rollback SQL.
+- UI mobile/PWA: serve verifica manuale su viewport mobile o device.
+
+## 19. Known risks e debito consapevole
+
+Debito architetturale:
+
+- Dominio FESK hardcoded in disciplina, gradi, categorie, testi e UI.
+- `types.ts` e' manuale, puo divergere dallo schema DB.
+- Nessun admin panel per contenuti/utenti.
+- PWA manifest statico; non pronto per white-label runtime.
+- No i18n/terminology layer.
+- No test E2E/RLS.
+
+Rischi funzionali:
+
+- Session progress storico puo essere ricalcolato su composizione corrente del
+  piano; il piano review 2026-06-11 segnala M7 come decisione aperta
+  (fix log-based vs snapshot composizione).
+- `getClaims` per ridurre round trip auth e' deferito perche dipende dalla
+  configurazione JWT Supabase.
+- Push/cron ha finding esclusi dal piano 2026-06-11 perche non prioritari.
+
+Rischi multi-tenant:
+
+- 0028 chiude una parte importante, ma una seconda scuola richiede flusso inviti
+  robusto e validazione tenant server-side.
+- Per scuole non simili a FESK serve refactor di discipline, gradi, categorie e
+  concetto di esercizio.
+
+## 20. Cosa fare quando si modifica il progetto
+
+Checklist agent/LLM:
+
+1. Leggi la richiesta utente piu recente.
+2. Leggi questo documento e le sezioni rilevanti di `plan/current-plan.md`.
+3. Controlla lo stato reale del codice con `rg`/letture mirate.
+4. Rispetta la struttura `queries/actions/components/lib`.
+5. Prima di editare, capisci se ci sono modifiche utente nel worktree.
+6. Non revertire modifiche non tue.
+7. Se aggiungi schema, crea migration numerata.
+8. Se cambi route/tabella/componente core, aggiorna questo documento o il piano.
+9. Esegui almeno i check rilevanti (`lint`, `typecheck`, `test`, `build`) se
+   il cambio non e' solo documentale.
+10. Nel resoconto finale indica cosa hai cambiato e cosa non hai potuto
+    verificare.
+
+Pattern per nuove feature:
+
+- Nuova lettura: Server Component -> `lib/queries/*` -> Supabase.
+- Nuova mutazione: Client/form -> Server Action -> Supabase/RPC ->
+  `revalidatePath`.
+- Nuova logica non-I/O: funzione pura in `src/lib`, test `node --test`.
+- Nuova UI ripetuta: prima locale; estrarre in `primitives/` solo con callsite
+  reali.
+- Nuova tabella: migration con RLS abilitata e policy esplicite nello stesso
+  ciclo.
+
+## 21. Riferimenti rapidi
+
+Tecnici:
+
+- App: [../skill-practice](../skill-practice)
+- Package: [../skill-practice/package.json](../skill-practice/package.json)
+- Regole progetto: [../skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md)
+- UI system: [../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md)
+- Review fixes 2026-06-11:
+  [../skill-practice/docs/plans/2026-06-11-review-fixes.md](../skill-practice/docs/plans/2026-06-11-review-fixes.md)
+- Migrations:
+  [../skill-practice/supabase/migrations](../skill-practice/supabase/migrations)
+
+Prodotto/strategia:
 
 - Piano attivo: [../plan/current-plan.md](../plan/current-plan.md)
-- Readiness multi-scuola: [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md)
-- Regole concrete d'implementazione: [../skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md)
-- Convenzioni workspace: [../CLAUDE.md](../CLAUDE.md)
+- Indice piani: [../plan/README.md](../plan/README.md)
+- Curriculum FESK:
+  [../plan/reference/domain/curriculum-mapping-fesk.md](../plan/reference/domain/curriculum-mapping-fesk.md)
+- Multi-tenancy:
+  [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md)
+- Performance:
+  [performance-assessment.md](performance-assessment.md)
+- Video promo:
+  [marketing-video-promo-guide.md](marketing-video-promo-guide.md)
