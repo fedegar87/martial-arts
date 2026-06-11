@@ -3,11 +3,40 @@ export const PASSWORD_UPDATE_COOKIE = "auth_password_update";
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 72;
 
+export const PROTECTED_PREFIXES = [
+  "/hub",
+  "/today",
+  "/programma",
+  "/library",
+  "/skill",
+  "/plan",
+  "/profile",
+  "/onboarding",
+  "/news",
+  "/progress",
+  "/calendar",
+  "/sessions",
+];
+
 const ALLOWED_NEXT_PATHS = new Set([
   "/hub",
   "/onboarding",
   "/auth/update-password",
 ]);
+
+/**
+ * Valida un parametro `next` per il redirect post-login: solo path interni
+ * assoluti che puntano a una route protetta nota. Previene open-redirect.
+ */
+export function safeRedirectPath(next: string | null | undefined): string | null {
+  if (!next) return null;
+  if (!next.startsWith("/") || next.startsWith("//")) return null;
+  const path = next.split("?")[0].split("#")[0];
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(prefix + "/"),
+  );
+  return isProtected ? next : null;
+}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

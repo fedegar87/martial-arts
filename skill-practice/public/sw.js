@@ -1,4 +1,7 @@
-const CACHE_NAME = "kung-fu-practice-v2";
+// Bump della versione a ogni release significativa: l'handler `activate` elimina
+// le cache con nome diverso, quindi cambiare versione purga gli asset dei deploy
+// precedenti (mitiga la crescita illimitata di /_next/static).
+const CACHE_NAME = "kung-fu-practice-v3";
 const OFFLINE_URL = "/offline.html";
 const STATIC_ASSETS = [OFFLINE_URL, "/manifest.json", "/icon.svg"];
 
@@ -77,8 +80,12 @@ async function cacheFirst(request) {
   if (cached) return cached;
 
   const response = await fetch(request);
-  const cache = await caches.open(CACHE_NAME);
-  cache.put(request, response.clone());
+  // Solo le risposte valide vanno in cache: un 404/500 transitorio su un chunk
+  // hashato resterebbe servito cache-first all'infinito (ChunkLoadError ricorrente).
+  if (response.ok) {
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+  }
   return response;
 }
 

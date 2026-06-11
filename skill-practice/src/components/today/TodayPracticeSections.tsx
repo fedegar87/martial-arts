@@ -38,6 +38,7 @@ export function TodayPracticeSections({
           alreadyDoneToday={doneTodaySkillIds.has(item.skill.id)}
           repsTarget={repsByLog.get(item.skill.id)?.reps_target ?? repsPerForm}
           repsDone={repsByLog.get(item.skill.id)?.reps_done ?? 0}
+          todayNote={repsByLog.get(item.skill.id)?.personal_note ?? undefined}
         />
       ))}
     </div>

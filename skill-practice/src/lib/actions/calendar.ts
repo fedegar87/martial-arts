@@ -93,14 +93,14 @@ export async function addFreePracticeForDate(
     return setPracticeCompletionForDate(skillId, dateKey, true);
   }
 
+  // Omette reps_done/reps_target: con onConflict PostgREST aggiorna solo le colonne
+  // presenti, cosi segnare "fatta" una pratica libera non azzera reps gia registrate.
   const { error } = await supabase.from("practice_logs").upsert(
     {
       user_id: userId,
       skill_id: skillId,
       date: dateKey,
       completed: true,
-      reps_target: null,
-      reps_done: 0,
     },
     { onConflict: "user_id,skill_id,date" },
   );
@@ -222,7 +222,14 @@ async function neutralizeOrDeleteLog(
   userId: string,
   log: PracticeLog,
 ): Promise<string | null> {
-  if ((log.personal_note?.trim().length ?? 0) === 0) {
+  const hasNote = (log.personal_note?.trim().length ?? 0) > 0;
+  // Una ripetizione "reale parziale" (0 < reps_done < target) va preservata; un valore
+  // pari al target e tipicamente quello gonfiato dal toggle-on e va revertito pulito.
+  const hasPartialReps =
+    (log.reps_done ?? 0) > 0 &&
+    (log.reps_target === null || (log.reps_done ?? 0) < log.reps_target);
+
+  if (!hasNote && !hasPartialReps) {
     const { error } = await supabase
       .from("practice_logs")
       .delete()
@@ -233,7 +240,7 @@ async function neutralizeOrDeleteLog(
 
   const { error } = await supabase
     .from("practice_logs")
-    .update({ completed: false, reps_done: 0 })
+    .update({ completed: false })
     .eq("id", log.id)
     .eq("user_id", userId);
   return error?.message ?? null;

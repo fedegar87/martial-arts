@@ -4,7 +4,7 @@ import { TempleHomeIcon } from "./TempleHomeIcon";
 
 export function AppHeader() {
   return (
-    <header className="material-bar hairline flex h-14 items-center justify-between border-b px-5 pt-[env(safe-area-inset-top)]">
+    <header className="material-bar hairline flex min-h-14 items-center justify-between border-b px-5 pt-[env(safe-area-inset-top)]">
       <Link
         href="/hub"
         aria-label="Torna alla home"

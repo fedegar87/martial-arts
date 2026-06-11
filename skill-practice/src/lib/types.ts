@@ -55,6 +55,13 @@ export type Skill = {
   created_at: string;
 };
 
+// DTO snello per le UI di sola selezione (nome + grado + categoria): evita di
+// serializzare le colonne pesanti (note, URL video, thumbnail) nel payload client.
+export type SkillOption = Pick<
+  Skill,
+  "id" | "name" | "name_italian" | "minimum_grade_value" | "category"
+>;
+
 export type ExamProgram = {
   id: string;
   school_id: string;

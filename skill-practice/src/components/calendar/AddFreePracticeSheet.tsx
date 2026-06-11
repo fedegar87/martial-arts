@@ -62,14 +62,19 @@ export function AddFreePracticeSheet({
     startTransition(async () => {
       setPendingSkillId(skillId);
       setMessage(null);
-      const result = await addFreePracticeForDate(skillId, dateKey);
-      setPendingSkillId(null);
-      if ("error" in result) {
-        setMessage(result.error);
-        return;
+      try {
+        const result = await addFreePracticeForDate(skillId, dateKey);
+        if ("error" in result) {
+          setMessage(result.error);
+          return;
+        }
+        setOpen(false);
+        setQuery("");
+      } catch {
+        setMessage("Connessione assente, riprova.");
+      } finally {
+        setPendingSkillId(null);
       }
-      setOpen(false);
-      setQuery("");
     });
   }
 
@@ -81,7 +86,10 @@ export function AddFreePracticeSheet({
           Aggiungi pratica libera
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[85vh] overflow-hidden">
+      <SheetContent
+        side="bottom"
+        className="max-h-[85vh] overflow-hidden pb-[env(safe-area-inset-bottom)]"
+      >
         <SheetHeader>
           <SheetTitle>Aggiungi pratica libera</SheetTitle>
           <SheetDescription className="capitalize">

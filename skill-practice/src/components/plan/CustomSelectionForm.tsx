@@ -22,11 +22,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import { EXTRA_GRADE_VALUE, gradeLabel } from "@/lib/grades";
-import type { Discipline, Skill, SkillCategory } from "@/lib/types";
+import type { Discipline, SkillCategory, SkillOption } from "@/lib/types";
 
 type Props = {
   discipline: Discipline;
-  groupedSkills: Array<[SkillCategory, Skill[]]>;
+  groupedSkills: Array<[SkillCategory, SkillOption[]]>;
   selectedSkillIds: string[];
 };
 
@@ -238,7 +238,7 @@ function SkillGroup({
   onSelectedChange,
 }: {
   category: SkillCategory;
-  skills: Skill[];
+  skills: SkillOption[];
   selected: Set<string>;
   onSelectedChange: (skillId: string, checked: boolean) => void;
 }) {

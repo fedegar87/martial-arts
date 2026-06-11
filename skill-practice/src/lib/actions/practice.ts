@@ -20,37 +20,18 @@ export async function markPracticeDone(
   const now = new Date().toISOString();
   const normalizedNote = normalizeNote(note);
 
-  const { data: latestLog, error: selectError } = await supabase
-    .from("practice_logs")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("skill_id", skillId)
-    .eq("date", today)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (selectError) return { error: selectError.message };
-
-  const logError = latestLog
-    ? (
-        await supabase
-          .from("practice_logs")
-          .update({
-            completed: true,
-            ...(normalizedNote !== null ? { personal_note: normalizedNote } : {}),
-          })
-          .eq("id", (latestLog as { id: string }).id)
-          .eq("user_id", user.id)
-      ).error
-    : (
-        await supabase.from("practice_logs").insert({
-          user_id: user.id,
-          skill_id: skillId,
-          date: today,
-          completed: true,
-          personal_note: normalizedNote,
-        })
-      ).error;
+  // Upsert sull'unicita (user_id, skill_id, date): evita la race select-then-insert
+  // e, omettendo personal_note quando non fornita, non sovrascrive una nota esistente.
+  const { error: logError } = await supabase.from("practice_logs").upsert(
+    {
+      user_id: user.id,
+      skill_id: skillId,
+      date: today,
+      completed: true,
+      ...(normalizedNote !== null ? { personal_note: normalizedNote } : {}),
+    },
+    { onConflict: "user_id,skill_id,date" },
+  );
   if (logError) return { error: logError.message };
 
   const { error: planError } = await supabase
@@ -82,7 +63,7 @@ export async function savePracticeNote(
 
   const { data: latestLog, error: selectError } = await supabase
     .from("practice_logs")
-    .select("id")
+    .select("id, personal_note")
     .eq("user_id", user.id)
     .eq("skill_id", skillId)
     .eq("date", today)
@@ -109,6 +90,16 @@ export async function savePracticeNote(
     });
     if (error) return { error: error.message };
   } else {
+    const existingNote = (latestLog as { personal_note: string | null })
+      .personal_note;
+    // Non cancellare una nota esistente salvando il campo vuoto (sheet riaperto vuoto).
+    if (normalizedNote === null && (existingNote?.trim().length ?? 0) > 0) {
+      revalidatePath("/today");
+      revalidatePath(`/skill/${skillId}`);
+      revalidatePath("/progress");
+      return { success: true };
+    }
+
     const { error } = await supabase
       .from("practice_logs")
       .update({ personal_note: normalizedNote })
@@ -141,7 +132,7 @@ export async function incrementRep(skillId: string): Promise<PracticeFormState> 
 
   const { data: existing, error: selectError } = await supabase
     .from("practice_logs")
-    .select("id, reps_done, reps_target")
+    .select("id, reps_done, reps_target, completed")
     .eq("user_id", user.id)
     .eq("skill_id", skillId)
     .eq("date", dateKey)
@@ -150,14 +141,20 @@ export async function incrementRep(skillId: string): Promise<PracticeFormState> 
   if (selectError) return { error: selectError.message };
 
   if (existing) {
-    const row = existing as { id: string; reps_done: number; reps_target: number | null };
+    const row = existing as {
+      id: string;
+      reps_done: number;
+      reps_target: number | null;
+      completed: boolean;
+    };
     const effectiveTarget = row.reps_target ?? target;
     const newDone = Math.min(row.reps_done + 1, effectiveTarget);
     const { error } = await supabase
       .from("practice_logs")
       .update({
         reps_done: newDone,
-        completed: newDone >= effectiveTarget,
+        // Un completamento esplicito (es. "Segna praticato") non va revocato da un incremento parziale.
+        completed: row.completed || newDone >= effectiveTarget,
       })
       .eq("id", row.id);
     if (error) return { error: error.message };

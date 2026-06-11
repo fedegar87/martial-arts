@@ -9,7 +9,7 @@ type FormSelectProps = React.ComponentProps<"select"> & {
 
 export function formSelectClassName(className?: string) {
   return cn(
-    "min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+    "min-h-11 w-full rounded-md border border-input bg-background px-3 text-base md:text-sm transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
     className,
   );
 }

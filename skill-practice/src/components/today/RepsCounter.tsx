@@ -11,9 +11,10 @@ type Props = {
   skillId: string;
   repsDone: number;
   repsTarget: number;
+  todayNote?: string;
 };
 
-export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
+export function RepsCounter({ skillId, repsDone, repsTarget, todayNote }: Props) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [optimisticReps, applyDelta] = useOptimistic(
@@ -35,8 +36,12 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
             startTransition(async () => {
               applyDelta(-1);
               setError(null);
-              const result = await decrementRep(skillId);
-              if (result && "error" in result) setError(result.error);
+              try {
+                const result = await decrementRep(skillId);
+                if (result && "error" in result) setError(result.error);
+              } catch {
+                setError("Connessione assente, riprova.");
+              }
             })
           }
           aria-label="Annulla ripetizione"
@@ -60,15 +65,19 @@ export function RepsCounter({ skillId, repsDone, repsTarget }: Props) {
             startTransition(async () => {
               applyDelta(1);
               setError(null);
-              const result = await incrementRep(skillId);
-              if (result && "error" in result) setError(result.error);
+              try {
+                const result = await incrementRep(skillId);
+                if (result && "error" in result) setError(result.error);
+              } catch {
+                setError("Connessione assente, riprova.");
+              }
             })
           }
         >
           <Plus className="mr-1 h-4 w-4" />
           {completed ? "Completata" : "Ripetizione"}
         </Button>
-        <PracticeNoteButton skillId={skillId} compact />
+        <PracticeNoteButton skillId={skillId} compact initialNote={todayNote} />
       </div>
       {error && (
         <p role="status" className="text-destructive text-xs">

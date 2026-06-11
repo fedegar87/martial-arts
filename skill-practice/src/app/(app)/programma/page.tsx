@@ -56,9 +56,9 @@ export default async function ProgrammaPage({ searchParams }: Props) {
         : Promise.resolve(null),
       tab === "exam"
         ? selectedExamId
-          ? listSkillsForExam(selectedExamId)
+          ? listSkillsForExam(selectedExamId, profile.school_id)
           : nextGrade !== null
-            ? listSkillsAtGrade(discipline, nextGrade)
+            ? listSkillsAtGrade(discipline, nextGrade, profile.school_id)
             : Promise.resolve([])
         : Promise.resolve([]),
       getUserPlanItems(profile.id, discipline, tabSource),

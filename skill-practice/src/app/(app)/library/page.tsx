@@ -61,7 +61,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       : "Fuori dal programma selezionato";
 
   const [allSkills, activePlanItems, examRequirements] = await Promise.all([
-    listSkillsForDiscipline(discipline),
+    listSkillsForDiscipline(discipline, profile.school_id),
     getUserPlanItems(profile.id, discipline, activeSource),
     profile.plan_mode === "exam" && selectedExamId
       ? getExamProgramRequirements(selectedExamId)

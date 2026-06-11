@@ -7,6 +7,7 @@ import { resolveLandingDestination } from "@/lib/landing";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import {
   PASSWORD_UPDATE_COOKIE,
+  safeRedirectPath,
   validateEmail,
   validatePasswordMatch,
   validatePasswordStrength,
@@ -20,6 +21,7 @@ export async function login(
 ): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const next = safeRedirectPath(String(formData.get("next") ?? ""));
 
   if (!email || !password) {
     return { error: "Email e password sono obbligatorie" };
@@ -32,7 +34,9 @@ export async function login(
     return { error: loginErrorMessage(error.message) };
   }
 
-  // Sblocco esplicito: salta la landing e vai direttamente alla destination corretta.
+  // Se l'utente era stato rediretto da un deep link protetto, torna li;
+  // altrimenti vai alla destination corretta per il profilo.
+  if (next) redirect(next);
   const profile = await getCurrentProfile();
   redirect(resolveLandingDestination(profile));
 }
@@ -101,7 +105,7 @@ export async function updatePassword(
 
   cookieStore.set(PASSWORD_UPDATE_COOKIE, "", {
     maxAge: 0,
-    path: "/auth/update-password",
+    path: "/",
   });
 
   const profile = await getCurrentProfile();
@@ -142,7 +146,8 @@ export async function changePassword(
 
   if (error) {
     const message = error.message.toLowerCase();
-    if (message.includes("current") || message.includes("invalid")) {
+    // Solo l'errore esplicito di password attuale errata; non mascherare errori generici.
+    if (message.includes("current")) {
       return { error: "Password attuale errata." };
     }
     return { error: error.message };

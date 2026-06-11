@@ -45,7 +45,7 @@ export default async function SkillDetailPage({ params }: Props) {
 
   const { skillId } = await params;
   const [skill, planItems, personalNotes, todayLog] = await Promise.all([
-    getSkillById(skillId),
+    getSkillById(skillId, profile.school_id),
     getUserPlanItemsBySkill(profile.id, skillId),
     getPersonalNotesForSkill(profile.id, skillId),
     getTodayLogForSkill(profile.id, skillId),

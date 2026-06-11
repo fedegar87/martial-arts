@@ -55,7 +55,9 @@ export async function setupTrainingSchedule(
   if ("error" in examDisciplines) return examDisciplines;
 
   const startDate = localDateKey();
-  const endDate = addDaysToDateKey(startDate, durationWeeks * 7);
+  // end_date inclusivo: N settimane = N*7 giorni a partire dal giorno 0 (start incluso),
+  // quindi l'ultimo giorno e start + (N*7 - 1). Senza il -1 si aggiunge una sessione extra.
+  const endDate = addDaysToDateKey(startDate, durationWeeks * 7 - 1);
 
   const { error } = await supabase.from("training_schedule").upsert({
     user_id: auth.user.id,

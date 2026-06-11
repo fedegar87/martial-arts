@@ -1,6 +1,11 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { Discipline, Skill, SkillCategory } from "@/lib/types";
+import type {
+  Discipline,
+  Skill,
+  SkillCategory,
+  SkillOption,
+} from "@/lib/types";
 
 /**
  * Skill accessibili per disciplina e grado utente.
@@ -47,26 +52,31 @@ export async function listSkillsByCategory(
   return (data as Skill[] | null) ?? [];
 }
 
-export async function getSkillById(skillId: string): Promise<Skill | null> {
+export async function getSkillById(
+  skillId: string,
+  schoolId?: string | null,
+): Promise<Skill | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("skills")
-    .select("*")
-    .eq("id", skillId)
-    .maybeSingle();
+  let query = supabase.from("skills").select("*").eq("id", skillId);
+  // Difesa in profondita: scope esplicito per scuola oltre alla RLS di 0028.
+  if (schoolId) query = query.eq("school_id", schoolId);
+  const { data } = await query.maybeSingle();
   return (data as Skill | null) ?? null;
 }
 
 export async function listSkillsAtGrade(
   discipline: Discipline,
   gradeValue: number,
+  schoolId?: string | null,
 ): Promise<Skill[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("skills")
     .select("*")
     .eq("discipline", discipline)
-    .eq("minimum_grade_value", gradeValue)
+    .eq("minimum_grade_value", gradeValue);
+  if (schoolId) query = query.eq("school_id", schoolId);
+  const { data } = await query
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
   return (data as Skill[] | null) ?? [];
@@ -74,12 +84,12 @@ export async function listSkillsAtGrade(
 
 export async function listSkillsForDiscipline(
   discipline: Discipline,
+  schoolId?: string | null,
 ): Promise<Skill[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("skills")
-    .select("*")
-    .eq("discipline", discipline)
+  let query = supabase.from("skills").select("*").eq("discipline", discipline);
+  if (schoolId) query = query.eq("school_id", schoolId);
+  const { data } = await query
     .order("minimum_grade_value", { ascending: false })
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
@@ -87,7 +97,29 @@ export async function listSkillsForDiscipline(
   return (data as Skill[] | null) ?? [];
 }
 
-export async function listSkillsForExam(examId: string): Promise<Skill[]> {
+// Variante snella di listSkillsForDiscipline per le schermate di selezione piano.
+export async function listSkillOptionsForDiscipline(
+  discipline: Discipline,
+  schoolId?: string | null,
+): Promise<SkillOption[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("skills")
+    .select("id, name, name_italian, minimum_grade_value, category")
+    .eq("discipline", discipline);
+  if (schoolId) query = query.eq("school_id", schoolId);
+  const { data } = await query
+    .order("minimum_grade_value", { ascending: false })
+    .order("category", { ascending: true })
+    .order("display_order", { ascending: true });
+
+  return (data as SkillOption[] | null) ?? [];
+}
+
+export async function listSkillsForExam(
+  examId: string,
+  schoolId?: string | null,
+): Promise<Skill[]> {
   const supabase = await createClient();
 
   const { data: reqs } = await supabase
@@ -99,10 +131,9 @@ export async function listSkillsForExam(examId: string): Promise<Skill[]> {
 
   const skillIds = (reqs as Array<{ skill_id: string }>).map((r) => r.skill_id);
 
-  const { data: skills } = await supabase
-    .from("skills")
-    .select("*")
-    .in("id", skillIds)
+  let query = supabase.from("skills").select("*").in("id", skillIds);
+  if (schoolId) query = query.eq("school_id", schoolId);
+  const { data: skills } = await query
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
 

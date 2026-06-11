@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listSkillsForDiscipline } from "@/lib/queries/skills";
+import { listSkillOptionsForDiscipline } from "@/lib/queries/skills";
 import { getSelectedSkillIds } from "@/lib/queries/plan";
 import { CustomSelectionForm } from "@/components/plan/CustomSelectionForm";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
 import { DISCIPLINE_LABELS } from "@/lib/labels";
-import type { Discipline, Skill, SkillCategory } from "@/lib/types";
+import type { Discipline, SkillCategory, SkillOption } from "@/lib/types";
 
 type Props = { searchParams: Promise<{ d?: string }> };
 
@@ -17,16 +17,16 @@ export default async function PlanCustomPage({ searchParams }: Props) {
   const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
 
   const [skills, selectedSkillIds] = await Promise.all([
-    listSkillsForDiscipline(discipline),
+    listSkillOptionsForDiscipline(discipline, profile.school_id),
     getSelectedSkillIds(profile.id, "manual"),
   ]);
 
-  const grouped = skills.reduce<Record<SkillCategory, Skill[]>>(
+  const grouped = skills.reduce<Record<SkillCategory, SkillOption[]>>(
     (acc, skill) => {
       (acc[skill.category] ??= []).push(skill);
       return acc;
     },
-    {} as Record<SkillCategory, Skill[]>,
+    {} as Record<SkillCategory, SkillOption[]>,
   );
 
   return (
@@ -45,7 +45,9 @@ export default async function PlanCustomPage({ searchParams }: Props) {
 
       <CustomSelectionForm
         discipline={discipline}
-        groupedSkills={Object.entries(grouped) as Array<[SkillCategory, Skill[]]>}
+        groupedSkills={
+          Object.entries(grouped) as Array<[SkillCategory, SkillOption[]]>
+        }
         selectedSkillIds={[...selectedSkillIds]}
       />
     </div>

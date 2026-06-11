@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { Check, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { completedButtonClassName } from "@/lib/ui-classes";
@@ -25,27 +25,35 @@ export function PracticeCompletionToggle({
   disabled = false,
   kind,
 }: Props) {
-  const [optimisticDone, setOptimisticDone] = useState(done);
+  // useOptimistic: la base segue la prop `done` del server dopo la revalidation,
+  // cosi una mutazione avvenuta altrove (es. "Segna" da AddFreePracticeSheet) si
+  // riflette qui; in caso di errore l'override ottimistico si annulla da solo.
+  const [optimisticDone, applyDone] = useOptimistic(
+    done,
+    (_current: boolean, next: boolean) => next,
+  );
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const checked = optimisticDone;
 
   function handleClick() {
     const next = !checked;
-    const previous = checked;
-    setOptimisticDone(next);
     startTransition(async () => {
+      applyDone(next);
       setError(null);
-      const result =
-        kind === "free"
-          ? next
-            ? await addFreePracticeForDate(skillId, dateKey)
-            : await removeFreePracticeForDate(skillId, dateKey)
-          : await setPracticeCompletionForDate(skillId, dateKey, next);
+      try {
+        const result =
+          kind === "free"
+            ? next
+              ? await addFreePracticeForDate(skillId, dateKey)
+              : await removeFreePracticeForDate(skillId, dateKey)
+            : await setPracticeCompletionForDate(skillId, dateKey, next);
 
-      if ("error" in result) {
-        setOptimisticDone(previous);
-        setError(result.error);
+        if ("error" in result) {
+          setError(result.error);
+        }
+      } catch {
+        setError("Connessione assente, riprova.");
       }
     });
   }

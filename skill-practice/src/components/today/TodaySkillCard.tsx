@@ -14,6 +14,7 @@ type Props = {
   alreadyDoneToday: boolean;
   repsTarget?: number;
   repsDone?: number;
+  todayNote?: string;
 };
 
 export function TodaySkillCard({
@@ -22,6 +23,7 @@ export function TodaySkillCard({
   alreadyDoneToday,
   repsTarget,
   repsDone,
+  todayNote,
 }: Props) {
   const completedToday =
     alreadyDoneToday ||
@@ -71,11 +73,13 @@ export function TodaySkillCard({
             skillId={skill.id}
             repsDone={repsDone}
             repsTarget={repsTarget}
+            todayNote={todayNote}
           />
         ) : (
           <PracticeCheckButton
             skillId={skill.id}
             alreadyDone={alreadyDoneToday}
+            initialNote={todayNote}
           />
         )}
       </CardContent>

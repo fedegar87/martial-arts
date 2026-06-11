@@ -2,9 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { nextGradeValue } from "@/lib/grades";
+import { nextGradeValue, SHAOLIN_GRADES, TAICHI_GRADES } from "@/lib/grades";
 
 export type OnboardingFormState = { error: string } | null;
+
+function isValidGrade(value: number, grades: { value: number }[]): boolean {
+  return grades.some((grade) => grade.value === value);
+}
 
 export async function selectExam(
   _prev: OnboardingFormState,
@@ -25,8 +29,8 @@ export async function selectExam(
     : 0;
 
   if (
-    !Number.isFinite(assignedLevelShaolin) ||
-    !Number.isFinite(assignedLevelTaichi)
+    !isValidGrade(assignedLevelShaolin, SHAOLIN_GRADES) ||
+    !isValidGrade(assignedLevelTaichi, TAICHI_GRADES)
   ) {
     return { error: "Grado non valido" };
   }
@@ -91,10 +95,12 @@ export async function finishWithoutExam(formData: FormData): Promise<void> {
 
   const rawShaolin = Number(formData.get("assignedLevelShaolin"));
   const rawTaichi = Number(formData.get("assignedLevelTaichi"));
+  // Accetta il valore solo se e un grado reale, altrimenti fallback al default
+  // (un valore bogus tipo 999 romperebbe esami/libreria/profilo).
   const assignedLevelShaolin =
-    practicesShaolin && Number.isFinite(rawShaolin) ? rawShaolin : 8;
+    practicesShaolin && isValidGrade(rawShaolin, SHAOLIN_GRADES) ? rawShaolin : 8;
   const assignedLevelTaichi =
-    practicesTaichi && Number.isFinite(rawTaichi) ? rawTaichi : 0;
+    practicesTaichi && isValidGrade(rawTaichi, TAICHI_GRADES) ? rawTaichi : 0;
 
   const supabase = await createClient();
   const {

@@ -50,7 +50,10 @@ export async function getGeneralProgress(userId: string): Promise<GeneralProgres
   const supabase = await createClient();
   const [daysResult, streakResult] = await Promise.all([
     supabase.rpc("count_practice_days", { p_user_id: userId }),
-    supabase.rpc("current_practice_streak", { p_user_id: userId }),
+    supabase.rpc("current_practice_streak", {
+      p_user_id: userId,
+      p_today: localDateKey(),
+    }),
   ]);
 
   if (daysResult.error) {

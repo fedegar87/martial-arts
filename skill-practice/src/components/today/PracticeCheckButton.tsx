@@ -10,9 +10,14 @@ import { PracticeNoteButton } from "./PracticeNoteButton";
 type Props = {
   skillId: string;
   alreadyDone: boolean;
+  initialNote?: string;
 };
 
-export function PracticeCheckButton({ skillId, alreadyDone }: Props) {
+export function PracticeCheckButton({
+  skillId,
+  alreadyDone,
+  initialNote,
+}: Props) {
   const [pending, start] = useTransition();
   const [done, setDone] = useState(alreadyDone);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -21,13 +26,18 @@ export function PracticeCheckButton({ skillId, alreadyDone }: Props) {
   function handleClick() {
     setDone(true);
     start(async () => {
-      const result = await markPracticeDone(skillId);
-      if (result && "error" in result) {
+      try {
+        const result = await markPracticeDone(skillId);
+        if (result && "error" in result) {
+          setDone(false);
+          setMessage(result.error);
+          return;
+        }
+        setNoteOpen(true);
+      } catch {
         setDone(false);
-        setMessage(result.error);
-        return;
+        setMessage("Connessione assente, riprova.");
       }
-      setNoteOpen(true);
     });
   }
 
@@ -52,6 +62,7 @@ export function PracticeCheckButton({ skillId, alreadyDone }: Props) {
           open={noteOpen}
           onOpenChange={setNoteOpen}
           showStatus={false}
+          initialNote={initialNote}
         />
       </div>
       {message && (

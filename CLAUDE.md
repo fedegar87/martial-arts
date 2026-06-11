@@ -46,7 +46,11 @@ martial-arts/
 │   ├── 2026-05-02-monetization-strategy.md      # strategia attiva (non implementata)
 │   ├── 2026-05-16-push-notifications-setup-pending.md  # setup esterno pendente
 │   ├── completed/               # design + plan di sprint chiusi (storico implementato)
-│   └── reference/               # documenti perenni (curriculum, identity, positioning, gui/ios)
+│   └── reference/               # documenti perenni, in sottocartelle tematiche:
+│       ├── business/            #   strategia, business model canvas, validation lab, positioning
+│       ├── design/              #   gui/ios, ux, visual identity
+│       ├── domain/              #   curriculum FESK
+│       └── master-execution-plan.md  # roadmap trasversale (radice reference/)
 ├── docs/                        # architettura, assessment e guide del workspace
 ├── archive/                     # ricerca storica e brief superati (read-only)
 └── skill-practice/              # progetto Next.js (creato in Sprint 1)
@@ -58,7 +62,7 @@ martial-arts/
 
 - `plan/` (root): solo il piano master + piani **attivi/pendenti** (decisione presa ma lavoro non concluso).
 - `plan/completed/`: design e implementation plan di sprint **chiusi e shippati**. Storici, di sola consultazione.
-- `plan/reference/`: documenti **perenni** non legati a un singolo sprint (curriculum FESK, visual identity, positioning, gui/ios principles, master execution plan).
+- `plan/reference/`: documenti **perenni** non legati a un singolo sprint, raggruppati per tema in sottocartelle: `business/` (business model, validation lab, positioning), `design/` (gui/ios, visual identity), `domain/` (curriculum FESK). Il `master-execution-plan.md` resta in radice perché trasversale.
 - Un piano si sposta in `completed/` quando la feature è in produzione; un design **superato** va in `archive/` con suffisso `-superseded.md`.
 
 ## Quando aggiornare il piano

@@ -70,6 +70,26 @@ export async function GET() {
       .order("requested_at", { ascending: true }),
   ]);
 
+  const queryError = [
+    profileResult,
+    planItemsResult,
+    practiceLogsResult,
+    trainingScheduleResult,
+    notificationPreferencesResult,
+    pushSubscriptionsResult,
+    notificationDeliveriesResult,
+    weeklyReflectionsResult,
+    deletionRequestsResult,
+  ].find((result) => result.error);
+
+  // Un export GDPR non deve apparire completo se una sezione e fallita.
+  if (queryError?.error) {
+    return NextResponse.json(
+      { error: "Export incompleto, riprova." },
+      { status: 500 },
+    );
+  }
+
   const exportedAt = new Date().toISOString();
   const payload = {
     exported_at: exportedAt,

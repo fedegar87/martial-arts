@@ -20,6 +20,7 @@ type Props = {
   showStatus?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  initialNote?: string;
 };
 
 export function PracticeNoteButton({
@@ -29,10 +30,11 @@ export function PracticeNoteButton({
   showStatus = true,
   open,
   onOpenChange,
+  initialNote = "",
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [internalOpen, setInternalOpen] = useState(false);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(initialNote);
   const [message, setMessage] = useState<string | null>(null);
   const isControlled = open !== undefined;
   const sheetOpen = isControlled ? open : internalOpen;
@@ -40,13 +42,17 @@ export function PracticeNoteButton({
 
   function handleSaveNote() {
     startTransition(async () => {
-      const result = await savePracticeNote(skillId, note);
-      if (result && "error" in result) {
-        setMessage(result.error);
-        return;
+      try {
+        const result = await savePracticeNote(skillId, note);
+        if (result && "error" in result) {
+          setMessage(result.error);
+          return;
+        }
+        setMessage("Nota salvata.");
+        setSheetOpen(false);
+      } catch {
+        setMessage("Connessione assente, riprova.");
       }
-      setMessage("Nota salvata.");
-      setSheetOpen(false);
     });
   }
 
@@ -89,7 +95,7 @@ export function PracticeNoteButton({
               value={note}
               onChange={(event) => setNote(event.target.value)}
               rows={5}
-              className="border-input bg-background min-h-32 w-full resize-y rounded-md border px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+              className="border-input bg-background min-h-32 w-full resize-y rounded-md border px-3 py-2 text-base md:text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
             />
           </div>
           <SheetFooter>

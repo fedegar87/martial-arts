@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/card";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 
-export function LoginForm({ initialError }: { initialError?: string | null }) {
+export function LoginForm({
+  initialError,
+  next,
+}: {
+  initialError?: string | null;
+  next?: string;
+}) {
   const [state, action, pending] = useActionState(login, null);
   const error =
     (state && "error" in state ? state.error : null) ?? initialError ?? null;
@@ -32,6 +38,7 @@ export function LoginForm({ initialError }: { initialError?: string | null }) {
       </CardHeader>
       <CardContent>
         <form action={action} className="space-y-4">
+          {next && <input type="hidden" name="next" value={next} />}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input

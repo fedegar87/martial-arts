@@ -31,11 +31,21 @@ export function SkillStatusMenu({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function run(action: () => Promise<unknown>) {
-    setOpen(false);
+    setError(null);
     startTransition(async () => {
-      await action();
+      try {
+        const result = await action();
+        if (result && typeof result === "object" && "error" in result) {
+          setError(String((result as { error: unknown }).error));
+          return;
+        }
+        setOpen(false);
+      } catch {
+        setError("Connessione assente, riprova.");
+      }
     });
   }
 
@@ -46,7 +56,7 @@ export function SkillStatusMenu({
           <MoreVertical className="h-4 w-4" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom">
+      <SheetContent side="bottom" className="pb-[env(safe-area-inset-bottom)]">
         <SheetHeader>
           <SheetTitle>Stato nel piano attivo</SheetTitle>
         </SheetHeader>
@@ -70,6 +80,11 @@ export function SkillStatusMenu({
             >
               {hideLabel}
             </Button>
+          )}
+          {error && (
+            <p className="text-destructive text-xs" role="status">
+              {error}
+            </p>
           )}
         </div>
       </SheetContent>
