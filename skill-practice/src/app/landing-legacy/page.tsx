@@ -1,8 +1,10 @@
-import { FeskLandingHero } from "@/components/landing/FeskLandingHero";
+import { LegacyLandingHero } from "@/components/landing/LegacyLandingHero";
 import { resolveLandingDestination } from "@/lib/landing";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 
-export default async function RootPage() {
+// Variante personale legacy (cavallo di fuoco + Confucio), conservata accanto alla
+// landing pubblica FESK su /.
+export default async function LandingLegacyPage() {
   let profile = null;
   try {
     profile = await getCurrentProfile();
@@ -11,5 +13,5 @@ export default async function RootPage() {
   }
 
   const destination = resolveLandingDestination(profile);
-  return <FeskLandingHero ctaHref={destination} />;
+  return <LegacyLandingHero ctaHref={destination} />;
 }

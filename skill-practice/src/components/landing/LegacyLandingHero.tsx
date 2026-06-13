@@ -1,7 +1,9 @@
-import { HorseEmblem } from "./HorseEmblem";
+import { LegacyHorseEmblem } from "./LegacyHorseEmblem";
 import { EnterButton } from "./EnterButton";
 
-export function LandingHero({ ctaHref }: { ctaHref: string }) {
+// Variante personale legacy (cavallo di fuoco + citazione di Confucio), conservata
+// e raggiungibile da /landing-legacy. La landing pubblica FESK e FeskLandingHero.
+export function LegacyLandingHero({ ctaHref }: { ctaHref: string }) {
   return (
     <main
       className="
@@ -12,7 +14,7 @@ export function LandingHero({ ctaHref }: { ctaHref: string }) {
       "
     >
       <div className="landing-hero__content w-full max-w-md flex flex-col items-center text-center">
-        <HorseEmblem className="landing-hero__emblem landing-anim-horse w-full max-w-xs h-auto" />
+        <LegacyHorseEmblem className="landing-hero__emblem landing-anim-horse w-full max-w-xs h-auto" />
 
         <h1
           className="landing-hero__ideogram landing-anim-ideogram mt-8 text-[80px] sm:text-[96px] leading-none text-accent font-serif-tc font-bold"
