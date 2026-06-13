@@ -26,6 +26,11 @@ export type PlanMode = "exam" | "custom";
 
 export type UserRole = "student" | "instructor" | "admin";
 
+export type ContentAccessMode =
+  | "exam_scope"
+  | "up_to_assigned_level"
+  | "all_school_content";
+
 export type NewsType = "event" | "announcement";
 
 export type School = {
@@ -51,6 +56,7 @@ export type Skill = {
   teacher_notes: string | null;
   estimated_duration_seconds: number | null;
   minimum_grade_value: number;
+  is_extra: boolean;
   display_order: number;
   created_at: string;
 };
@@ -89,8 +95,43 @@ export type UserProfile = {
   preparing_exam_taichi_id: string | null;
   plan_mode: PlanMode;
   role: UserRole;
+  profile_locked: boolean;
+  access_group_id: string | null;
+  content_access_mode: ContentAccessMode;
+  can_view_extra_content: boolean;
   last_news_seen_at: string | null;
   created_at: string;
+};
+
+// Operational template copied into the profile on invite acceptance, plus the
+// per-discipline post-exam promotion targets. Managed by admins (SQL/service role).
+export type AccessGroup = {
+  id: string;
+  school_id: string;
+  code: string;
+  role: UserRole;
+  default_level_shaolin: number;
+  default_level_taichi: number;
+  default_preparing_exam_id: string | null;
+  default_preparing_exam_taichi_id: string | null;
+  content_access_mode: ContentAccessMode;
+  can_view_extra_content: boolean;
+  can_edit_own_profile: boolean;
+  next_shaolin_access_group_id: string | null;
+  next_taichi_access_group_id: string | null;
+  created_at: string;
+};
+
+export type UserInvite = {
+  id: string;
+  school_id: string;
+  email: string;
+  access_group_id: string;
+  display_name: string | null;
+  status: "pending" | "accepted" | "revoked";
+  accepted_user_id: string | null;
+  created_at: string;
+  accepted_at: string | null;
 };
 
 export type UserPlanItem = {

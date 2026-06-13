@@ -56,6 +56,7 @@ function item(
       teacher_notes: null,
       estimated_duration_seconds: 180,
       minimum_grade_value: 1,
+      is_extra: false,
       display_order: 0,
       created_at: "2026-04-01T00:00:00.000Z",
     },
