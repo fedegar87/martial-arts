@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS access_groups (
   next_shaolin_access_group_id      uuid REFERENCES access_groups(id) ON DELETE SET NULL,
   next_taichi_access_group_id       uuid REFERENCES access_groups(id) ON DELETE SET NULL,
   created_at                        timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (school_id, code)
+  UNIQUE (school_id, code),
+  UNIQUE (id, school_id)
 );
 
 -- ============================================================
@@ -49,17 +50,76 @@ CREATE TABLE IF NOT EXISTS user_invites (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   school_id         uuid NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
   email             text NOT NULL,
-  access_group_id   uuid NOT NULL REFERENCES access_groups(id) ON DELETE RESTRICT,
+  access_group_id   uuid NOT NULL,
   display_name      text,
   status            text NOT NULL DEFAULT 'pending'
                     CHECK (status IN ('pending', 'accepted', 'revoked')),
   accepted_user_id  uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at        timestamptz NOT NULL DEFAULT now(),
   accepted_at       timestamptz,
-  UNIQUE (school_id, email)
+  UNIQUE (school_id, email),
+  -- The invite's school must match the access group's school (composite FK), so
+  -- handle_new_user never mixes school from the invite with levels/exams from a group
+  -- of a different school.
+  FOREIGN KEY (access_group_id, school_id)
+    REFERENCES access_groups (id, school_id) ON DELETE RESTRICT
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_invites_email ON user_invites (email);
+
+-- Normalize invite emails on write so the unique constraint and the handle_new_user
+-- lookup (lower(trim(email))) always agree (no User@x / user@x duplicates).
+CREATE OR REPLACE FUNCTION public.normalize_user_invite_email()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.email := lower(btrim(NEW.email));
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS user_invites_normalize_email ON user_invites;
+CREATE TRIGGER user_invites_normalize_email
+  BEFORE INSERT OR UPDATE ON user_invites
+  FOR EACH ROW
+  EXECUTE FUNCTION public.normalize_user_invite_email();
+
+-- Keep an access group's default exams within the group's own school and discipline,
+-- so invite provisioning never copies cross-school or cross-discipline exam targets.
+CREATE OR REPLACE FUNCTION public.validate_access_group_exams()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.default_preparing_exam_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.exam_programs e
+    WHERE e.id = NEW.default_preparing_exam_id
+      AND e.school_id = NEW.school_id
+      AND e.discipline = 'shaolin'
+  ) THEN
+    RAISE EXCEPTION 'access_group %: default_preparing_exam_id non e uno Shaolin della scuola', NEW.code;
+  END IF;
+
+  IF NEW.default_preparing_exam_taichi_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.exam_programs e
+    WHERE e.id = NEW.default_preparing_exam_taichi_id
+      AND e.school_id = NEW.school_id
+      AND e.discipline = 'taichi'
+  ) THEN
+    RAISE EXCEPTION 'access_group %: default_preparing_exam_taichi_id non e un T''ai Chi della scuola', NEW.code;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS access_groups_validate_exams ON access_groups;
+CREATE TRIGGER access_groups_validate_exams
+  BEFORE INSERT OR UPDATE ON access_groups
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_access_group_exams();
 
 -- ============================================================
 -- 4. user_profiles: lock + scope columns. profile_locked defaults true, so all
