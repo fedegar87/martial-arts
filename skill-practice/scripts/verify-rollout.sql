@@ -78,3 +78,34 @@ ORDER BY p.proname;
 
 -- 12. Pending invites overview (operational). Expect: rows you inserted before inviting.
 SELECT status, count(*) FROM user_invites GROUP BY status ORDER BY status;
+
+-- 13. Converted/legacy accounts: plan items OUT of the owner's current scope. These stay
+-- readable via the in-plan branch of skills_read, so review (and clean) them before
+-- inviting if an existing account is repurposed as a locked student. Inlines the
+-- is_skill_in_scope rule. Expect: 0 rows for a clean invited cohort.
+SELECT up.id AS user_id, up.display_name, s.id AS skill_id, s.name,
+       s.discipline, s.minimum_grade_value, s.is_extra
+FROM user_plan_items i
+JOIN user_profiles up ON up.id = i.user_id
+JOIN skills s ON s.id = i.skill_id
+WHERE up.content_access_mode <> 'all_school_content'
+  AND NOT (
+    (NOT s.is_extra OR up.can_view_extra_content)
+    AND (
+      (s.discipline = 'shaolin' AND up.assigned_level_shaolin <> 0
+        AND s.minimum_grade_value >= up.assigned_level_shaolin)
+      OR (s.discipline = 'taichi' AND up.assigned_level_taichi <> 0
+        AND s.minimum_grade_value >= up.assigned_level_taichi)
+      OR EXISTS (
+        SELECT 1 FROM exam_skill_requirements r
+        WHERE r.skill_id = s.id
+          AND r.exam_id IN (up.preparing_exam_id, up.preparing_exam_taichi_id)
+      )
+    )
+  )
+ORDER BY up.id;
+
+-- Cleanup template (review query 13 first, then run intentionally for a specific user):
+-- DELETE FROM user_plan_items i USING skills s
+-- WHERE i.skill_id = s.id AND i.user_id = 'USER_ID' AND i.source = 'manual'
+--   AND NOT public.is_skill_in_scope(i.skill_id);  -- run as that user / adapt for service role

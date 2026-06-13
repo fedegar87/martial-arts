@@ -13,7 +13,7 @@ Setup helpers:
 | # | Scenario | Setup | Must SEE / DO | Must NOT see / do |
 |---|---|---|---|---|
 | 1 | Shaolin-only student | invite -> group with shaolin level set, `default_level_taichi = 0`, `can_view_extra_content = false`, `can_edit_own_profile = false` | Shaolin catalog at/below their level; their exam plan in Programma/Today | any T'ai Chi content; Shaolin forms more advanced than their exam; Altro; the T'ai Chi toggle |
-| 2 | T'ai Chi-only student | invite -> taichi level set, shaolin at a "maintenance" scope, locked | T'ai Chi catalog in scope; their T'ai Chi exam plan | out-of-scope Shaolin; Altro |
+| 2 | T'ai Chi-only student | invite -> group with `default_level_shaolin = 0` (Shaolin non praticato) and a T'ai Chi level set, locked | T'ai Chi catalog in scope; their T'ai Chi exam plan; only the T'ai Chi tab in the library | ANY Shaolin content (library, direct URL, plan); the Shaolin toggle; Altro |
 | 3 | Dual-discipline student | invite -> both levels set, locked | both disciplines in scope; both exam plans | content beyond either exam; Altro |
 | 4 | Instructor / all-access | invite -> `all_access_instructor` (`content_access_mode = all_school_content`, `can_view_extra_content = true`) | full catalog of both disciplines AND Altro; can add any skill | (no restriction expected) |
 | 5 | Direct-URL to advanced skill | as #1, copy a known advanced/Altro `skillId`, open `/skill/<id>` | 404 (notFound) | the video, secondary video, or teacher notes of the out-of-scope skill |
@@ -33,6 +33,14 @@ calls and confirm they fail at the DB layer (not only hidden in the UI):
   advanced grade -> rejected by `prevent_user_profile_privilege_changes`.
 - `GET /rest/v1/skills?id=eq.<advanced skill not in plan>` -> returns 0 rows
   (`skills_read` RLS).
+
+## Converted/legacy accounts
+
+`skills_read` keeps skills already in a user's plan readable (so existing plan/exam joins
+never break). If an existing account is repurposed as a locked student, run query 13 in
+`verify-rollout.sql` to list plan items outside the new scope and clean them before
+inviting. Brand-new invited users start with no out-of-scope items, so this only matters
+for reused accounts.
 
 ## Pre-invite gate
 
