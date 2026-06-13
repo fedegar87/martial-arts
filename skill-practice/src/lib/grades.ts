@@ -7,9 +7,30 @@
 //
 // Regola: skill visibile ⇔ skill.minimum_grade_value >= user.assigned_level_<disciplina>
 
-import type { Discipline } from "./types";
+import type { ContentAccessMode, Discipline } from "./types";
 
 export type Grade = { value: number; label: string };
+
+// Mirror del predicato DB is_skill_in_scope per la sola parte "scope di libreria"
+// (grado corrente o piu basso, Altro solo per all-access). I contenuti dell'esame in
+// preparazione vivono nel piano: vanno consentiti a parte (es. skill gia nel piano).
+export function isSkillWithinLevelScope(
+  scope: {
+    content_access_mode: ContentAccessMode;
+    can_view_extra_content: boolean;
+    assigned_level_shaolin: number;
+    assigned_level_taichi: number;
+  },
+  skill: { discipline: Discipline; minimum_grade_value: number; is_extra: boolean },
+): boolean {
+  if (scope.content_access_mode === "all_school_content") return true;
+  if (skill.is_extra && !scope.can_view_extra_content) return false;
+  if (skill.discipline === "taichi") {
+    if (scope.assigned_level_taichi === 0) return false;
+    return skill.minimum_grade_value >= scope.assigned_level_taichi;
+  }
+  return skill.minimum_grade_value >= scope.assigned_level_shaolin;
+}
 
 // Grado-sentinella per skill fuori dal programma cinture (sezione "Altro").
 // Fuori dalla scala -7..8, quindi non entra nella selezione esami.

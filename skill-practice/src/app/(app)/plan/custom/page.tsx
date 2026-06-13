@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listSkillOptionsForDiscipline } from "@/lib/queries/skills";
+import { listVisibleSkillOptionsForDiscipline } from "@/lib/queries/skills";
 import { getSelectedSkillIds } from "@/lib/queries/plan";
 import { CustomSelectionForm } from "@/components/plan/CustomSelectionForm";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
@@ -17,7 +17,7 @@ export default async function PlanCustomPage({ searchParams }: Props) {
   const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
 
   const [skills, selectedSkillIds] = await Promise.all([
-    listSkillOptionsForDiscipline(discipline, profile.school_id),
+    listVisibleSkillOptionsForDiscipline(discipline, profile),
     getSelectedSkillIds(profile.id, "manual"),
   ]);
 

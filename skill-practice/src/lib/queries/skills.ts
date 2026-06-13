@@ -5,7 +5,28 @@ import type {
   Skill,
   SkillCategory,
   SkillOption,
+  UserProfile,
 } from "@/lib/types";
+
+// FESK access scope mirrored client-side for clean listings (defense-in-depth with
+// the is_skill_in_scope RLS predicate). Library scope = current grade and easier;
+// exam content (next grade) is delivered through the plan, not the catalog.
+type SkillScope = Pick<
+  UserProfile,
+  | "school_id"
+  | "content_access_mode"
+  | "can_view_extra_content"
+  | "assigned_level_shaolin"
+  | "assigned_level_taichi"
+>;
+
+function taichiNotPracticed(discipline: Discipline, scope: SkillScope): boolean {
+  return (
+    discipline === "taichi" &&
+    scope.assigned_level_taichi === 0 &&
+    scope.content_access_mode !== "all_school_content"
+  );
+}
 
 /**
  * Skill accessibili per disciplina e grado utente.
@@ -138,4 +159,68 @@ export async function listSkillsForExam(
     .order("display_order", { ascending: true });
 
   return (skills as Skill[] | null) ?? [];
+}
+
+// Catalogo libreria, ristretto allo scope di accesso dell'utente (grado/disciplina,
+// Altro solo per all-access). Sostituisce listSkillsForDiscipline nelle viste utente.
+export async function listVisibleSkillsForDiscipline(
+  discipline: Discipline,
+  scope: SkillScope,
+): Promise<Skill[]> {
+  if (taichiNotPracticed(discipline, scope)) return [];
+
+  const supabase = await createClient();
+  let query = supabase
+    .from("skills")
+    .select("*")
+    .eq("discipline", discipline)
+    .eq("school_id", scope.school_id);
+
+  if (scope.content_access_mode !== "all_school_content") {
+    const level =
+      discipline === "shaolin"
+        ? scope.assigned_level_shaolin
+        : scope.assigned_level_taichi;
+    query = query.gte("minimum_grade_value", level);
+    if (!scope.can_view_extra_content) {
+      query = query.eq("is_extra", false);
+    }
+  }
+
+  const { data } = await query
+    .order("minimum_grade_value", { ascending: false })
+    .order("category", { ascending: true })
+    .order("display_order", { ascending: true });
+  return (data as Skill[] | null) ?? [];
+}
+
+export async function listVisibleSkillOptionsForDiscipline(
+  discipline: Discipline,
+  scope: SkillScope,
+): Promise<SkillOption[]> {
+  if (taichiNotPracticed(discipline, scope)) return [];
+
+  const supabase = await createClient();
+  let query = supabase
+    .from("skills")
+    .select("id, name, name_italian, minimum_grade_value, category")
+    .eq("discipline", discipline)
+    .eq("school_id", scope.school_id);
+
+  if (scope.content_access_mode !== "all_school_content") {
+    const level =
+      discipline === "shaolin"
+        ? scope.assigned_level_shaolin
+        : scope.assigned_level_taichi;
+    query = query.gte("minimum_grade_value", level);
+    if (!scope.can_view_extra_content) {
+      query = query.eq("is_extra", false);
+    }
+  }
+
+  const { data } = await query
+    .order("minimum_grade_value", { ascending: false })
+    .order("category", { ascending: true })
+    .order("display_order", { ascending: true });
+  return (data as SkillOption[] | null) ?? [];
 }
