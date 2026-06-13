@@ -1,12 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
-
+// La filigrana "cavallo di fuoco" e un asset personale legacy che confligge con il
+// brand FESK: nel rollout l'hub resta neutro. L'SVG resta su disco per la landing
+// legacy (/landing-legacy).
 export function HubBackground() {
-  return (
-    <img
-      src="/landing/cavallo-fuoco.svg"
-      alt=""
-      aria-hidden="true"
-      className="pointer-events-none fixed bottom-0 right-0 z-0 w-[70vw] max-w-2xl opacity-[0.05]"
-    />
-  );
+  return null;
 }

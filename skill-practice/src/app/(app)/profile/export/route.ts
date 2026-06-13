@@ -112,7 +112,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(payload, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="kung-fu-practice-export-${fileDate}.json"`,
+      "Content-Disposition": `attachment; filename="fesk-practice-export-${fileDate}.json"`,
       "Cache-Control": "no-store",
     },
   });
