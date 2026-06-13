@@ -34,7 +34,16 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   if (!profile) redirect("/login");
 
   const { d, category, withVideo, q } = await searchParams;
-  const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const allAccess = profile.content_access_mode === "all_school_content";
+  const shaolinOn = allAccess || profile.assigned_level_shaolin !== 0;
+  const taichiOn = allAccess || profile.assigned_level_taichi !== 0;
+  const requested: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const discipline: Discipline =
+    requested === "shaolin" && !shaolinOn
+      ? "taichi"
+      : requested === "taichi" && !taichiOn
+        ? "shaolin"
+        : requested;
   const selectedCategories = parseSkillCategories(category);
   const selectedCategorySet = new Set(selectedCategories);
   const onlyWithVideo = withVideo === "1";
@@ -116,7 +125,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       <DisciplineToggle
         current={discipline}
         basePath="/library"
-        hiddenTaichi={profile.assigned_level_taichi === 0}
+        hiddenShaolin={!shaolinOn}
+        hiddenTaichi={!taichiOn}
         extraParams={{
           withVideo: onlyWithVideo ? "1" : undefined,
           q: query || undefined,

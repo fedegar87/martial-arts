@@ -29,6 +29,7 @@ export function isSkillWithinLevelScope(
     if (scope.assigned_level_taichi === 0) return false;
     return skill.minimum_grade_value >= scope.assigned_level_taichi;
   }
+  if (scope.assigned_level_shaolin === 0) return false;
   return skill.minimum_grade_value >= scope.assigned_level_shaolin;
 }
 
@@ -74,6 +75,7 @@ export function gradeLabelForDiscipline(
   value: number,
 ): string {
   if (value === EXTRA_GRADE_VALUE) return EXTRA_GRADE_LABEL;
+  if (value === 0) return "Non praticato";
   return (
     gradesForDiscipline(discipline).find((g) => g.value === value)?.label ??
     `${value}`

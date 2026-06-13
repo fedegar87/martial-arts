@@ -14,7 +14,16 @@ export default async function PlanCustomPage({ searchParams }: Props) {
   if (!profile) redirect("/login");
 
   const { d } = await searchParams;
-  const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const allAccess = profile.content_access_mode === "all_school_content";
+  const shaolinOn = allAccess || profile.assigned_level_shaolin !== 0;
+  const taichiOn = allAccess || profile.assigned_level_taichi !== 0;
+  const requested: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const discipline: Discipline =
+    requested === "shaolin" && !shaolinOn
+      ? "taichi"
+      : requested === "taichi" && !taichiOn
+        ? "shaolin"
+        : requested;
 
   const [skills, selectedSkillIds] = await Promise.all([
     listVisibleSkillOptionsForDiscipline(discipline, profile),
@@ -41,6 +50,8 @@ export default async function PlanCustomPage({ searchParams }: Props) {
       <DisciplineToggle
         current={discipline}
         basePath="/plan/custom"
+        hiddenShaolin={!shaolinOn}
+        hiddenTaichi={!taichiOn}
       />
 
       <CustomSelectionForm

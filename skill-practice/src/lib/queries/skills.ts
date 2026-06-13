@@ -20,12 +20,15 @@ type SkillScope = Pick<
   | "assigned_level_taichi"
 >;
 
-function taichiNotPracticed(discipline: Discipline, scope: SkillScope): boolean {
-  return (
-    discipline === "taichi" &&
-    scope.assigned_level_taichi === 0 &&
-    scope.content_access_mode !== "all_school_content"
-  );
+// Livello 0 = disciplina non praticata (per Shaolin e T'ai Chi). Gli all-access vedono
+// comunque tutto.
+function disciplineNotPracticed(discipline: Discipline, scope: SkillScope): boolean {
+  if (scope.content_access_mode === "all_school_content") return false;
+  const level =
+    discipline === "shaolin"
+      ? scope.assigned_level_shaolin
+      : scope.assigned_level_taichi;
+  return level === 0;
 }
 
 /**
@@ -167,7 +170,7 @@ export async function listVisibleSkillsForDiscipline(
   discipline: Discipline,
   scope: SkillScope,
 ): Promise<Skill[]> {
-  if (taichiNotPracticed(discipline, scope)) return [];
+  if (disciplineNotPracticed(discipline, scope)) return [];
 
   const supabase = await createClient();
   let query = supabase
@@ -198,7 +201,7 @@ export async function listVisibleSkillOptionsForDiscipline(
   discipline: Discipline,
   scope: SkillScope,
 ): Promise<SkillOption[]> {
-  if (taichiNotPracticed(discipline, scope)) return [];
+  if (disciplineNotPracticed(discipline, scope)) return [];
 
   const supabase = await createClient();
   let query = supabase

@@ -13,7 +13,11 @@
 
 BEGIN;
 
-CREATE OR REPLACE FUNCTION public.is_skill_in_scope(p_uid uuid, p_skill_id uuid)
+-- Always evaluated for the calling user (auth.uid()), never an arbitrary uid, so the
+-- function cannot be used to probe another user's scope. Level 0 means "discipline not
+-- practiced" for BOTH disciplines, so a single-discipline student sees nothing of the
+-- other discipline.
+CREATE OR REPLACE FUNCTION public.is_skill_in_scope(p_skill_id uuid)
 RETURNS boolean
 LANGUAGE sql
 STABLE
@@ -23,7 +27,7 @@ AS $$
   SELECT EXISTS (
     SELECT 1
     FROM public.skills s
-    JOIN public.user_profiles p ON p.id = p_uid
+    JOIN public.user_profiles p ON p.id = (SELECT auth.uid())
     WHERE s.id = p_skill_id
       AND s.school_id = p.school_id
       AND (
@@ -32,6 +36,7 @@ AS $$
           (NOT s.is_extra OR p.can_view_extra_content)
           AND (
             (s.discipline = 'shaolin'
+              AND p.assigned_level_shaolin <> 0
               AND s.minimum_grade_value >= p.assigned_level_shaolin)
             OR (s.discipline = 'taichi'
               AND p.assigned_level_taichi <> 0
@@ -47,7 +52,8 @@ AS $$
   );
 $$;
 
-GRANT EXECUTE ON FUNCTION public.is_skill_in_scope(uuid, uuid) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.is_skill_in_scope(uuid) FROM PUBLIC, anon;
+GRANT  EXECUTE ON FUNCTION public.is_skill_in_scope(uuid) TO authenticated;
 
 -- skills_read: in scope, OR already in the caller's plan so existing plan/exam joins
 -- never break. The in-plan branch is read-only; the write-path WITH CHECKs below use
@@ -56,7 +62,7 @@ DROP POLICY IF EXISTS "skills_read" ON skills;
 CREATE POLICY "skills_read" ON skills
   FOR SELECT TO authenticated
   USING (
-    public.is_skill_in_scope((SELECT auth.uid()), skills.id)
+    public.is_skill_in_scope(skills.id)
     OR EXISTS (
       SELECT 1 FROM public.user_plan_items i
       WHERE i.user_id = (SELECT auth.uid())
@@ -71,7 +77,7 @@ CREATE POLICY "user_plan_items_owner" ON user_plan_items
   USING (user_id = (SELECT auth.uid()))
   WITH CHECK (
     user_id = (SELECT auth.uid())
-    AND public.is_skill_in_scope((SELECT auth.uid()), user_plan_items.skill_id)
+    AND public.is_skill_in_scope(user_plan_items.skill_id)
   );
 
 DROP POLICY IF EXISTS "practice_logs_owner" ON practice_logs;
@@ -80,7 +86,7 @@ CREATE POLICY "practice_logs_owner" ON practice_logs
   USING (user_id = (SELECT auth.uid()))
   WITH CHECK (
     user_id = (SELECT auth.uid())
-    AND public.is_skill_in_scope((SELECT auth.uid()), practice_logs.skill_id)
+    AND public.is_skill_in_scope(practice_logs.skill_id)
   );
 
 -- save_custom_selection bypasses RLS (SECURITY DEFINER), so it must filter in-scope
@@ -129,7 +135,7 @@ BEGIN
   WHERE skill.id = ANY(COALESCE(p_skill_ids, ARRAY[]::UUID[]))
     AND skill.discipline = p_discipline
     AND skill.school_id = current_school_id
-    AND public.is_skill_in_scope(current_user_id, skill.id)
+    AND public.is_skill_in_scope(skill.id)
   ON CONFLICT (user_id, skill_id, source) DO NOTHING;
 END;
 $$;
