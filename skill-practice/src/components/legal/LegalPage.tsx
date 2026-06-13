@@ -24,12 +24,12 @@ export function LegalPage({ title, description, sections }: Props) {
             <h1 className="text-3xl font-semibold">{title}</h1>
             <p className="text-muted-foreground text-sm">{description}</p>
             <p className="text-muted-foreground text-xs">
-              Bozza prodotto aggiornata al 3 maggio 2026. Da revisionare con un
+              Bozza FESK aggiornata al 13 giugno 2026, da confermare con un
               consulente legale prima della pubblicazione definitiva.
             </p>
             <p className="text-muted-foreground text-xs">
-              I campi marcati [PLACEHOLDER] devono essere completati dal
-              titolare, dalla scuola o dal referente privacy prima del rilascio.
+              Le voci marcate &quot;Da confermare in revisione legale&quot; restano
+              da validare con il referente privacy FESK.
             </p>
           </div>
           <LegalLinks />
