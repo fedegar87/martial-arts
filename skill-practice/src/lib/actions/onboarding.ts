@@ -41,6 +41,10 @@ export async function selectExam(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sessione scaduta" };
 
+  if (await isProfileLocked(supabase, user.id)) {
+    return { error: "Il tuo profilo e gestito dagli amministratori." };
+  }
+
   const { data: examRow } = await supabase
     .from("exam_programs")
     .select("id, discipline, grade_value")
@@ -108,6 +112,10 @@ export async function finishWithoutExam(formData: FormData): Promise<void> {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  if (await isProfileLocked(supabase, user.id)) {
+    redirect("/hub");
+  }
+
   await supabase
     .from("user_profiles")
     .update({
@@ -120,4 +128,16 @@ export async function finishWithoutExam(formData: FormData): Promise<void> {
     .eq("id", user.id);
 
   redirect("/today");
+}
+
+async function isProfileLocked(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("user_profiles")
+    .select("profile_locked")
+    .eq("id", userId)
+    .maybeSingle();
+  return (data as { profile_locked: boolean } | null)?.profile_locked ?? false;
 }

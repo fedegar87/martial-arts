@@ -11,7 +11,7 @@ import { BackButton } from "@/components/skill/BackButton";
 import { PersonalNotesPanel } from "@/components/skill/PersonalNotesPanel";
 import { SkillPracticeActions } from "@/components/skill/SkillPracticeActions";
 import { TeacherNote } from "@/components/skill/TeacherNote";
-import { gradeLabelForDiscipline } from "@/lib/grades";
+import { gradeLabelForDiscipline, isSkillWithinLevelScope } from "@/lib/grades";
 
 type Props = { params: Promise<{ skillId: string }> };
 
@@ -51,6 +51,12 @@ export default async function SkillDetailPage({ params }: Props) {
     getTodayLogForSkill(profile.id, skillId),
   ]);
   if (!skill) notFound();
+  // Access scope: in-plan content (exam or personal selection) is always allowed;
+  // otherwise the skill must be within the user's library level scope. Mirrors the
+  // is_skill_in_scope RLS predicate (0040) as defense-in-depth at the page layer.
+  const accessible =
+    planItems.length > 0 || isSkillWithinLevelScope(profile, skill);
+  if (!accessible) notFound();
   const manualPlanItem =
     planItems.find((item) => item.source === "manual" && !item.is_hidden) ??
     null;

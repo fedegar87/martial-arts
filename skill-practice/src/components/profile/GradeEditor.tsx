@@ -16,11 +16,13 @@ import type { Discipline } from "@/lib/types";
 type Props = {
   assignedLevelShaolin: number;
   assignedLevelTaichi: number;
+  locked?: boolean;
 };
 
 export function GradeEditor({
   assignedLevelShaolin,
   assignedLevelTaichi,
+  locked = false,
 }: Props) {
   return (
     <div className="space-y-4">
@@ -29,17 +31,19 @@ export function GradeEditor({
         label="Shaolin"
         currentLevel={assignedLevelShaolin}
         grades={SHAOLIN_GRADES}
+        locked={locked}
       />
       <GradeField
         discipline="taichi"
         label="T'ai Chi"
         currentLevel={assignedLevelTaichi}
         grades={TAICHI_GRADES}
+        locked={locked}
       />
       <p className="text-muted-foreground text-xs">
-        Quando aggiorni il grado, il programma d&apos;esame della disciplina
-        viene riportato al livello che stai preparando ora. Lo storico delle
-        pratiche resta.
+        {locked
+          ? "I gradi e l'esame in preparazione sono assegnati dagli amministratori."
+          : "Quando aggiorni il grado, il programma d'esame della disciplina viene riportato al livello che stai preparando ora. Lo storico delle pratiche resta."}
       </p>
     </div>
   );
@@ -50,9 +54,10 @@ type FieldProps = {
   label: string;
   currentLevel: number;
   grades: Grade[];
+  locked: boolean;
 };
 
-function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
+function GradeField({ discipline, label, currentLevel, grades, locked }: FieldProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentLevel);
   const [confirming, setConfirming] = useState(false);
@@ -61,6 +66,19 @@ function GradeField({ discipline, label, currentLevel, grades }: FieldProps) {
   const [pending, startTransition] = useTransition();
 
   const gradeChanged = value !== currentLevel;
+
+  if (locked) {
+    return (
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-muted-foreground text-sm">{label}</div>
+          <div className="text-sm font-medium">
+            {gradeLabelForDiscipline(discipline, currentLevel)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   function runUpdate() {
     startTransition(async () => {

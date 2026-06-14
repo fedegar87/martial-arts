@@ -6,6 +6,7 @@ type Props = {
   current: Discipline;
   basePath: string;
   hiddenTaichi?: boolean;
+  hiddenShaolin?: boolean;
   extraParams?: Record<string, string | undefined>;
 };
 
@@ -15,11 +16,12 @@ export function DisciplineToggle({
   current,
   basePath,
   hiddenTaichi = false,
+  hiddenShaolin = false,
   extraParams,
 }: Props) {
-  const visible = hiddenTaichi
-    ? DISCIPLINES.filter((d) => d !== "taichi")
-    : DISCIPLINES;
+  const visible = DISCIPLINES.filter(
+    (d) => !(d === "taichi" && hiddenTaichi) && !(d === "shaolin" && hiddenShaolin),
+  );
 
   if (visible.length < 2) return null;
 

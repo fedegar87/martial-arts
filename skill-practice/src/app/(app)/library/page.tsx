@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SearchX } from "lucide-react";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listSkillsForDiscipline } from "@/lib/queries/skills";
+import { listVisibleSkillsForDiscipline } from "@/lib/queries/skills";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { getExamProgramRequirements } from "@/lib/queries/exam-programs";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
@@ -20,8 +20,6 @@ import {
 import { hasPlayableVideo } from "@/lib/youtube";
 import type { Discipline, PlanStatus, Skill, SkillCategory } from "@/lib/types";
 
-const ENABLE_LEVEL_LOCK = false;
-
 type Props = {
   searchParams: Promise<{
     d?: string;
@@ -36,15 +34,20 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   if (!profile) redirect("/login");
 
   const { d, category, withVideo, q } = await searchParams;
-  const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const allAccess = profile.content_access_mode === "all_school_content";
+  const shaolinOn = allAccess || profile.assigned_level_shaolin !== 0;
+  const taichiOn = allAccess || profile.assigned_level_taichi !== 0;
+  const requested: Discipline = d === "taichi" ? "taichi" : "shaolin";
+  const discipline: Discipline =
+    requested === "shaolin" && !shaolinOn
+      ? "taichi"
+      : requested === "taichi" && !taichiOn
+        ? "shaolin"
+        : requested;
   const selectedCategories = parseSkillCategories(category);
   const selectedCategorySet = new Set(selectedCategories);
   const onlyWithVideo = withVideo === "1";
   const query = normalizeQuery(q);
-  const userLevel =
-    discipline === "shaolin"
-      ? profile.assigned_level_shaolin
-      : profile.assigned_level_taichi;
   const activeSource =
     profile.plan_mode === "custom" ? "manual" : "exam_program";
   const selectedExamId =
@@ -61,7 +64,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       : "Fuori dal programma selezionato";
 
   const [allSkills, activePlanItems, examRequirements] = await Promise.all([
-    listSkillsForDiscipline(discipline, profile.school_id),
+    listVisibleSkillsForDiscipline(discipline, profile),
     getUserPlanItems(profile.id, discipline, activeSource),
     profile.plan_mode === "exam" && selectedExamId
       ? getExamProgramRequirements(selectedExamId)
@@ -122,7 +125,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       <DisciplineToggle
         current={discipline}
         basePath="/library"
-        hiddenTaichi={profile.assigned_level_taichi === 0}
+        hiddenShaolin={!shaolinOn}
+        hiddenTaichi={!taichiOn}
         extraParams={{
           withVideo: onlyWithVideo ? "1" : undefined,
           q: query || undefined,
@@ -167,11 +171,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
                 key={grade.value}
                 title={grade.label}
                 skills={byGrade[grade.value] ?? []}
-                locked={
-                  ENABLE_LEVEL_LOCK &&
-                  userLevel !== 0 &&
-                  grade.value < userLevel
-                }
+                locked={false}
                 planStatusBySkillId={planStatusBySkillId}
                 planStatusLabelPrefix={planStatusLabelPrefix}
               />

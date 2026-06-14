@@ -41,8 +41,8 @@ const serifTcFont = Noto_Serif_TC({
   preload: false,
 });
 
-const appName = "Kung Fu Practice";
-const appDescription = "Pratica guidata di Kung Fu tradizionale";
+const appName = "FESK Practice";
+const appDescription = "Pratica guidata del Kung Fu tradizionale FESK";
 
 function normalizeSiteUrl(url: string | undefined) {
   if (!url) return undefined;

@@ -14,7 +14,7 @@ export default function DisclaimerPage() {
         {
           title: "Supporto didattico",
           body: [
-            "Kung Fu Practice aiuta a organizzare studio, ripassi e diario tecnico. Non sostituisce le lezioni, la correzione diretta o le indicazioni della scuola.",
+            "FESK Practice aiuta a organizzare studio, ripassi e diario tecnico. Non sostituisce le lezioni, la correzione diretta o le indicazioni della scuola.",
             "La progressione mostrata dall'app e un supporto organizzativo e non costituisce valutazione ufficiale di idoneita tecnica o ammissione a esame.",
           ],
         },
@@ -30,7 +30,7 @@ export default function DisclaimerPage() {
           title: "Salute",
           body: [
             "L'app non fornisce consigli medici, diagnosi o programmi riabilitativi. Per dubbi su condizioni fisiche, infortuni o idoneita all'allenamento, consulta un professionista sanitario.",
-            "[PLACEHOLDER: se la scuola richiede certificati medici o idoneita sportiva, indicare qui la regola organizzativa e rimandare ai canali ufficiali della scuola.]",
+            "Segui le regole della scuola FESK su certificati medici e idoneita sportiva. Da confermare in revisione legale: l'eventuale obbligo di certificato e i canali ufficiali della scuola.",
           ],
         },
         {
@@ -43,15 +43,15 @@ export default function DisclaimerPage() {
         {
           title: "Minori",
           body: [
-            "Per utenti minorenni, la pratica deve avvenire secondo le indicazioni della scuola e con il controllo degli adulti responsabili quando necessario.",
-            "[PLACEHOLDER: inserire policy della scuola su minori, autorizzazioni, supervisione e comunicazioni ai genitori/tutori.]",
+            "Il primo rollout non include utenti minorenni.",
+            "Se in futuro la pratica coinvolgera minori, sara seguita la policy della scuola su autorizzazioni, supervisione e comunicazioni ai genitori o tutori. Da confermare in revisione legale.",
           ],
         },
         {
           title: "Emergenze",
           body: [
             "In caso di incidente o malessere, interrompi subito la pratica e segui le procedure di emergenza del luogo in cui ti trovi.",
-            "[PLACEHOLDER: inserire eventuali procedure della palestra/scuola per primo soccorso, contatti interni e segnalazione incidenti.]",
+            "Fai riferimento alle procedure di primo soccorso e segnalazione incidenti della palestra o scuola in cui ti alleni. Da confermare in revisione legale eventuali procedure ufficiali FESK.",
           ],
         },
       ]}

@@ -1,12 +1,12 @@
 {
-  "name": "Kung Fu Practice",
-  "short_name": "Kung Fu",
-  "description": "Pratica guidata di Kung Fu tradizionale",
+  "name": "FESK Practice",
+  "short_name": "FESK",
+  "description": "Pratica guidata del Kung Fu tradizionale FESK",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0f0f0f",
-  "theme_color": "#0f0f0f",
+  "background_color": "#080808",
+  "theme_color": "#080808",
   "lang": "it",
   "icons": [
     {

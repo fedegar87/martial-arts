@@ -237,7 +237,8 @@ export async function saveCustomSelectionFromForm(
   _prev: PlanFormState,
   formData: FormData,
 ): Promise<PlanFormState> {
-  const discipline = String(formData.get("discipline") ?? "shaolin") as Discipline;
+  const disciplineRaw = String(formData.get("discipline") ?? "shaolin");
+  const discipline: Discipline = disciplineRaw === "taichi" ? "taichi" : "shaolin";
   const skillIds = formData
     .getAll("skillIds")
     .map((value) => String(value))

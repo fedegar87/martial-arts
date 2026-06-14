@@ -35,7 +35,7 @@ export async function updateProfileGrade(
 
   const { data: profileData, error: profileError } = await supabase
     .from("user_profiles")
-    .select("assigned_level_shaolin, assigned_level_taichi, school_id")
+    .select("assigned_level_shaolin, assigned_level_taichi, school_id, profile_locked")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -46,7 +46,12 @@ export async function updateProfileGrade(
     assigned_level_shaolin: number;
     assigned_level_taichi: number;
     school_id: string;
+    profile_locked: boolean;
   };
+
+  if (profileRow.profile_locked) {
+    return { error: "Il tuo profilo e gestito dagli amministratori." };
+  }
   const currentLevel =
     discipline === "shaolin"
       ? profileRow.assigned_level_shaolin

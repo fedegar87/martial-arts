@@ -69,6 +69,7 @@ export default async function ProfilePage() {
           <GradeEditor
             assignedLevelShaolin={profile.assigned_level_shaolin}
             assignedLevelTaichi={profile.assigned_level_taichi}
+            locked={profile.profile_locked}
           />
         </CardContent>
       </Card>
