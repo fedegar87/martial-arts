@@ -1,7 +1,8 @@
 import { EnterButton } from "./EnterButton";
+import { brand } from "@/lib/brand";
 
-// Landing pubblica FESK: logo della federazione e direzione "Fong Ttai / Abbondanza
-// di pace". Copy breve, da approvare con FESK se usata come motto ufficiale.
+// Landing pubblica FESK: logo della federazione, nome app, ideogrammi e motto "Fong
+// Ttai". Testi e ideogrammi vengono dal brand centralizzato (src/lib/brand.ts).
 export function FeskLandingHero({ ctaHref }: { ctaHref: string }) {
   return (
     <main
@@ -16,22 +17,25 @@ export function FeskLandingHero({ ctaHref }: { ctaHref: string }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/icons/icon-512.png"
-          alt="FESK"
+          alt={brand.shortName}
           width={176}
           height={176}
           className="landing-anim-horse h-44 w-44 rounded-3xl shadow-xl"
         />
 
         <h1 className="landing-anim-ideogram mt-8 text-4xl font-display font-semibold text-foreground">
-          FESK Practice
+          {brand.appName}
         </h1>
 
-        <p className="landing-anim-citation mt-5 text-3xl text-accent font-display font-medium">
-          Fong Ttai
+        <p
+          className="landing-anim-citation mt-5 text-5xl text-accent font-serif-tc font-medium tracking-[0.15em]"
+          lang="zh-Hant"
+        >
+          {brand.landing.ideogram}
         </p>
 
-        <p className="landing-anim-translation mt-3 text-base italic text-muted-foreground">
-          Abbondanza di pace
+        <p className="landing-anim-translation mt-3 text-xl italic text-muted-foreground">
+          {brand.landing.motto}
         </p>
 
         <div className="landing-anim-cta mt-12">
