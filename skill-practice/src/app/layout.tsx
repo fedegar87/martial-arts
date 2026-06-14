@@ -47,9 +47,17 @@ const appDescription = brand.description;
 
 function normalizeSiteUrl(url: string | undefined) {
   if (!url) return undefined;
-  return url.startsWith("http://") || url.startsWith("https://")
-    ? url
-    : `https://${url}`;
+  const candidate =
+    url.startsWith("http://") || url.startsWith("https://")
+      ? url
+      : `https://${url}`;
+  // Una env URL malformata (es. NEXT_PUBLIC_SITE_URL con valore errato) faceva
+  // crashare il build su new URL(): scartala e passa alla successiva.
+  try {
+    return new URL(candidate).toString();
+  } catch {
+    return undefined;
+  }
 }
 
 const siteUrl =
