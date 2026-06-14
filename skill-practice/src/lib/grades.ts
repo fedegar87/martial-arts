@@ -5,15 +5,23 @@
 //   Shaolin parte da 8 (più alto = più principiante)
 //   T'ai Chi parte da 5; valore 0 = "non praticato"
 //
-// Regola: skill visibile ⇔ skill.minimum_grade_value >= user.assigned_level_<disciplina>
+// Regola: skill visibile ⇔ minimum_grade_value >= floor, dove floor = livello
+// successivo a quello posseduto (quello in preparazione), non il grado corrente.
 
 import type { ContentAccessMode, Discipline } from "./types";
 
 export type Grade = { value: number; label: string };
 
-// Mirror del predicato DB is_skill_in_scope per la sola parte "scope di libreria"
-// (grado corrente o piu basso, Altro solo per all-access). I contenuti dell'esame in
-// preparazione vivono nel piano: vanno consentiti a parte (es. skill gia nel piano).
+// Floor di accesso: si vede fino al livello SUCCESSIVO a quello posseduto (quello in
+// preparazione), come la modalita esame. Floor = grado successivo, oppure il grado
+// stesso se si e' in cima alla scala (nessun grado successivo).
+export function scopeFloorValue(level: number): number {
+  return nextGradeValue(level) ?? level;
+}
+
+// Mirror del predicato DB is_skill_in_scope (parte "scope di catalogo"): visibile se
+// minimum_grade_value >= floor (livello successivo) per la disciplina; Altro solo per
+// all-access; disciplina non praticata (0) = niente.
 export function isSkillWithinLevelScope(
   scope: {
     content_access_mode: ContentAccessMode;
@@ -27,10 +35,10 @@ export function isSkillWithinLevelScope(
   if (skill.is_extra && !scope.can_view_extra_content) return false;
   if (skill.discipline === "taichi") {
     if (scope.assigned_level_taichi === 0) return false;
-    return skill.minimum_grade_value >= scope.assigned_level_taichi;
+    return skill.minimum_grade_value >= scopeFloorValue(scope.assigned_level_taichi);
   }
   if (scope.assigned_level_shaolin === 0) return false;
-  return skill.minimum_grade_value >= scope.assigned_level_shaolin;
+  return skill.minimum_grade_value >= scopeFloorValue(scope.assigned_level_shaolin);
 }
 
 // Grado-sentinella per skill fuori dal programma cinture (sezione "Altro").

@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { scopeFloorValue } from "@/lib/grades";
 import type {
   Discipline,
   Skill,
@@ -184,7 +185,7 @@ export async function listVisibleSkillsForDiscipline(
       discipline === "shaolin"
         ? scope.assigned_level_shaolin
         : scope.assigned_level_taichi;
-    query = query.gte("minimum_grade_value", level);
+    query = query.gte("minimum_grade_value", scopeFloorValue(level));
     if (!scope.can_view_extra_content) {
       query = query.eq("is_extra", false);
     }
@@ -215,7 +216,7 @@ export async function listVisibleSkillOptionsForDiscipline(
       discipline === "shaolin"
         ? scope.assigned_level_shaolin
         : scope.assigned_level_taichi;
-    query = query.gte("minimum_grade_value", level);
+    query = query.gte("minimum_grade_value", scopeFloorValue(level));
     if (!scope.can_view_extra_content) {
       query = query.eq("is_extra", false);
     }
