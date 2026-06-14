@@ -205,11 +205,16 @@ Scala: 1 = da testare subito nella Sessione 3; 5 = da testare solo dopo evidenze
 
 Scelta consolidata dopo Sessione 2 / lavoro Miro:
 
-- Segmento: scuola strutturata ma ancora analogica/frammentata, con curriculum gia formalizzato, esami regolari e materiali/video gia esistenti ma dispersi.
-- Perche' questo segmento ora: ha abbastanza struttura per capire subito il valore, ma abbastanza frizione manuale da sentire il problema; il setup e' piu leggero rispetto a scuole destrutturate e la vendita e' meno lenta rispetto alla federazione intera.
-- Criteri per riconoscerlo: programma scritto o stabile, passaggi di grado/esami, uso di PDF/quaderni/WhatsApp/Drive/YouTube unlisted, domande ricorrenti degli allievi, maestro disposto a coinvolgere un piccolo gruppo.
+- Early adopter V1 grezzo: scuola strutturata analogica/frammentata, con curriculum gia formalizzato, esami regolari e materiali/video distribuiti tramite quaderni, PDF, WhatsApp, Drive, YouTube o memoria.
+- Early adopter V2 operativo: scuola o gruppo didattico con patrimonio tecnico pronto, uso iniziale come supporto didattico interno, materiali dispersi, maestro sponsor con prontezza all'azione e decision path osservabile.
+- Target strategico futuro: scuola, accademia o federazione con patrimonio tecnico pronto che vuole usare la piattaforma come leva commerciale/strategica: accesso premium agli allievi, differenziazione, retention, servizio alle affiliate o valorizzazione del patrimonio.
+- Perche' V1 resta utile: spiega il cluster emerso da Miro e orienta la ricerca.
+- Perche' V2 serve per selezionare lead: evita candidati troppo conservatori, senza tempo, senza contenuti pronti, senza autorizzazioni o senza decision path.
+- Criteri V2 per riconoscerlo: patrimonio tecnico pronto, logica di valore didattica interna, frizione osservabile, maestro con prontezza all'azione, decision path, setup contenuti sotto 2-3 ore, autorizzazioni minime su materiali/video.
+- Matrice narrativa finale: prontezza/formalizzazione del patrimonio tecnico x logica di valore della piattaforma.
+- Filtro operativo lead: frizione ricorrente x capacita di azione del champion.
 - Dove trovarlo: scuola del founder, maestri FESK gia ben disposti, scuole con gruppi pre-esame, istruttori che gia condividono materiali tecnici via chat o link.
-- Chi decide: maestro responsabile o direttore scuola per un test; federazione/direttivo solo per estensione e quota.
+- Chi decide: idealmente maestro-direttore o maestro con accesso diretto al direttore/scuola; federazione/direttivo solo per estensione e quota.
 - Chi influenza: istruttori, praticanti senior, referente tecnico, proprietari/autori dei video.
 - Primo contatto utile: maestro sponsor con 5-15 allievi intermedi o pre-esame disponibili per interviste/test.
 
@@ -217,18 +222,24 @@ Documento di attivita collegato: `validation-lab/2026-06-10-session-2-where-to-p
 
 ### 3.3 Early adopter profile
 
-Un buon early adopter dovrebbe avere almeno 5 di questi segnali:
+Un buon early adopter deve superare tutti questi gate:
 
-- Ha un programma tecnico scritto o stabilizzato.
+- Patrimonio tecnico pronto: programma stabile per almeno un livello/esame e 5-10 contenuti gia usabili o facilmente ordinabili.
+- Logica di valore chiara: primo uso come supporto didattico interno, non come vendita premium o white label.
+- Frizione osservabile: episodi recenti di link persi, domande ripetitive, confusione pre-esame, recupero assenze o materiali difficili da ritrovare.
+- Prontezza all'azione: il maestro ha gia provato workaround o chiede attivamente un modo migliore.
+- Champion operativo: il maestro accetta di invitare, ricordare l'uso e dare feedback durante il test.
+- Decision path: il champion e' decisore o puo portare il risultato a chi decide.
+- Setup sostenibile: primo valore ottenibile con <= 2-3 ore lato maestro.
+- Autorizzazioni minime: materiali/video usabili almeno per un test ristretto.
+
+Segnali positivi secondari:
+
 - Ha esami/passaggi di grado regolari.
-- Ha materiali gia esistenti: quaderni, PDF, dispense, video, link YouTube/Drive.
-- Usa gia WhatsApp o chat per distribuire materiali tecnici.
 - Ha un esame vicino o un gruppo che prepara esami.
-- Ha gia' chiesto o condiviso video tecnici via WhatsApp/YouTube/Drive.
-- E' infastidito da domande ripetitive su "cosa devo ripassare?".
 - Ha allievi intermedi che confondono forme/tecniche vecchie.
-- E' aperto a strumenti digitali ma non vuole un gestionale complesso.
-- Ha accesso a video tecnici o e' disposto a registrarne pochi.
+- Usa gia WhatsApp, Drive o YouTube in modo frequente ma dispersivo.
+- E' aperto al digitale, ma non vuole che Skill Practice diventi un gestionale.
 - Puo' coinvolgere 5-15 allievi per un test.
 - Puo' dare feedback onesto e rapido.
 
@@ -236,9 +247,12 @@ Non e' un buon early adopter iniziale se:
 
 - non ha curriculum o programma abbastanza stabile;
 - non ha un maestro/champion disposto a spingere il test;
+- il maestro e' interessato ma non ha tempo operativo;
+- non esiste un decision path osservabile verso chi approva test, estensione o spesa;
 - vuole subito CRM, billing, presenze o funzioni gestionali;
 - richiede white label, revenue sharing o monetizzazione allievi prima di validare il bisogno;
-- non puo chiarire l'uso dei video/materiali tecnici.
+- non puo chiarire l'uso dei video/materiali tecnici;
+- il primo setup richiede produzione contenuti nuova o revisione pesante.
 
 ### 3.4 Jobs To Be Done da validare
 
@@ -607,6 +621,11 @@ Domande chiave:
 | Maestro | champion disponibile | curioso ma passivo | contrario | |
 | Buyer | buyer identificato | buyer possibile | nessun buyer | |
 | Setup | sostenibile < 2h per valore iniziale | sostenibile con supporto | troppo oneroso | |
+| Champion action | maestro ha gia provato workaround e accetta azioni concrete | maestro interessato ma passivo | nessuna prontezza operativa | |
+| Decision path | champion decide o influenza il decisore | champion puo introdurre il decisore | champion isolato dalla decisione | |
+| Autorizzazioni | materiali/video usabili in test ristretto | dubbi risolvibili | privacy/diritti bloccanti | |
+| Trigger | esame + trigger non-esame identificati | solo trigger esame | nessun trigger forte | |
+| Logica valore piattaforma | supporto interno chiaro e uso commerciale separato | uso commerciale interessante ma prematuro | confusione tra pilota, pricing e premium | |
 | Proposta valore | frase chiara e ripetuta dagli utenti | ancora generica | non aggancia | |
 | Monetizzazione | percorso quota/pilota chiaro | da negoziare | nessuna disponibilita' | |
 
@@ -652,6 +671,11 @@ Compilare solo dopo evidenze.
 | Quanto conta il video della propria scuola rispetto a video ufficiali generici? | impatta setup contenuti | aperta |
 | La federazione puo' usare nome, video e curriculum in una app gestita dal founder? | vincolo legale/politico | aperta |
 | Quale metrica rende credibile una quota annuale? | prepara follow-up economico | aperta |
+| Il maestro ha prontezza all'azione o solo interesse dichiarato? | distingue early adopter da curioso | aperta |
+| Il champion ha accesso a chi decide o paga? | evita test senza sbocco economico | aperta |
+| Il trigger non-esame esiste davvero? | decide se il prodotto e' pratica continua o solo exam prep | aperta |
+| Il setup iniziale resta sotto 2-3 ore lato maestro? | vincolo di fattibilita per pilota | aperta |
+| La scuola vuole usare la piattaforma come supporto didattico interno o leva strategica/commerciale? | separa primo pilota da business model futuro | aperta |
 
 ---
 
@@ -742,26 +766,31 @@ Altre attivita Miro consolidate nel documento di sessione:
 
 - Business Model Canvas: confermato modello B2B2C leggero, con allievi utenti, maestri champion, scuole/federazione buyer potenziali.
 - Valutare opportunita: "scuole/federazioni" risulta il macro-segmento piu promettente, ma troppo ampio per essere early adopter operativo.
-- Assi di segmentazione: individuati 13 assi; i piu decisivi per l'early adopter sono formalizzazione del sapere, maturita digitale, materiali gia disponibili, esami regolari e presenza di maestro sponsor.
+- Assi di segmentazione: individuati 13 assi; dopo review critica e feedback coach, la matrice narrativa finale usa prontezza/formalizzazione del patrimonio tecnico x logica di valore della piattaforma. La frizione nella distribuzione/pratica non sparisce: diventa filtro operativo insieme alla capacita di azione del champion.
 - Persona matrix: utile per descrivere personas, ma non sufficiente da sola per scegliere l'early adopter.
-- Selezione matrici: la matrice definitiva scelta e' formalizzazione del sapere x maturita digitale.
+- Selezione matrici: generate e valutate matrici candidate dalle coppie di assi piu utili; la matrice definitiva raffinata e' prontezza/formalizzazione del patrimonio tecnico x logica di valore della piattaforma. Il filtro lead principale e' frizione ricorrente x capacita di azione del champion.
 
 Decisioni:
 
 - Separare stakeholder e segmenti: allievo = user, maestro = champion, scuola/federazione = buyer.
 - Non usare "scuole/federazioni" come segmento generico di validazione.
-- Scegliere come early adopter operativo la scuola strutturata analogica/frammentata: curriculum gia formalizzato, gestione materiali ancora manuale o dispersa.
+- Tenere early adopter V1 come profilo grezzo: scuola strutturata analogica/frammentata.
+- Scegliere come early adopter operativo V2 una scuola/gruppo con patrimonio tecnico pronto, uso come supporto didattico interno, materiali dispersi, maestro con prontezza all'azione e decision path osservabile.
+- Tenere come target strategico futuro il quadrante patrimonio tecnico pronto + leva strategica/commerciale: accesso premium, differenziazione, retention, servizio federale o valorizzazione del patrimonio.
 - Trattare federazione come buyer istituzionale futuro, non come primo blocco da validare senza dati.
 - Trattare white label, revenue sharing, premium allievi e scuola come operatore economico come ipotesi future, non come decisioni di questa fase.
 - Portare in Sessione 3 le ipotesi H1, H2, H3, H5, H6, H8 e H10, con priorita su pain allievo e maestro sponsor.
+- Trattare trigger quotidiano/non-esame, costo setup, autorizzazioni/privacy, decision path e logica di valore della piattaforma come rischi da validare subito.
 
 Azioni:
 
 - Preparare lista di 5 maestri/scuole candidati con segnali early adopter.
 - Preparare lista di 8-10 allievi intermedi o pre-esame da intervistare.
+- Per ogni candidato compilare i gate: patrimonio pronto, logica di valore, frizione osservabile, prontezza all'azione, decision path, setup <= 2-3 ore, autorizzazioni, trigger.
 - Eseguire prima interviste problema, poi decidere se test WhatsApp 14 giorni o mini-pilota app.
+- Separare nelle evidenze uso pre-esame e uso non-esame, per evitare falso positivo stagionale.
 - Verificare con almeno un referente la disponibilita/uso consentito di video e materiali tecnici.
-- Aggiornare `business-model-canvas-draft.md` sostituendo il segmento iniziale generico con "scuola strutturata analogica/frammentata con maestro sponsor".
+- Aggiornare `business-model-canvas-draft.md` sostituendo il segmento iniziale generico con "patrimonio tecnico pronto, supporto didattico interno, materiali dispersi, maestro sponsor e decision path".
 - Usare `validation-lab/2026-06-10-session-2-where-to-play.md` come documento di dettaglio della Sessione 2.
 
 ### Sessione 3 - Indagine
@@ -978,8 +1007,8 @@ Cluster derivati:
 
 Insight emersi:
 1. La variabile piu' importante non e' il contenuto, ma il grado di formalizzazione del sapere.
-2. Seconda variabile: maturita' digitale.
-3. Massimo valore quando c'e' tensione tra curriculum gia' strutturato e gestione ancora manuale.
+2. Lettura iniziale: maturita' digitale. Lettura raffinata dopo feedback coach: logica di valore della piattaforma, cioe supporto didattico interno vs leva strategica/commerciale.
+3. Massimo valore operativo quando c'e' tensione tra curriculum gia' strutturato e gestione ancora manuale/frammentata.
 4. Scuole destrutturate: hanno bisogno del prodotto ma difficili da convertire.
 5. Scuole digitalizzate: meno urgenza ma ticket piu' alto.
 
@@ -991,7 +1020,7 @@ Direzioni future suggerite: (1) selezionare 3-5 assi prioritari; (2) validare co
 
 Elementi presenti in 13.11/13.12 ma NON ancora nei file `business-model-canvas*.md`. Da testare e, se reggono, portare nei documenti BMC e/o nel piano:
 
-1. ICP piu' preciso: il segmento d'ingresso non e' "scuola" generica ma "scuola strutturata analogica" (curriculum gia' formalizzato + gestione ancora manuale). E' la tensione che crea valore (Insight 3).
-2. Assi di segmentazione: formalizzazione del sapere + maturita' digitale come due variabili-guida del mercato, piu' discriminanti della disciplina. Possibile base per qualificare i lead.
-3. Scuola come operatore economico: scenari revenue-sharing / premium agli allievi / white label - estendono la monetizzazione oltre la sola "quota federazione post-pilota" del piano. ATTENZIONE: divergono da 1.4/2.3 e da `2026-05-02-monetization-strategy.md`; trattare come ipotesi, non come decisione.
+1. ICP piu' preciso: il segmento d'ingresso non e' "scuola" generica. Formulazione Sessione 2 iniziale: "scuola strutturata analogica" (curriculum gia' formalizzato + gestione ancora manuale). Formulazione operativa raffinata: "patrimonio tecnico pronto, supporto didattico interno, materiali dispersi, maestro sponsor e decision path". E' la tensione che crea valore, ma solo se il maestro puo agire.
+2. Assi di segmentazione: formalizzazione/prontezza del patrimonio tecnico + logica di valore della piattaforma come due variabili-guida. La frizione nella distribuzione/pratica resta filtro operativo, non asse narrativo principale.
+3. Scuola come operatore economico: scenari revenue-sharing / premium agli allievi / white label - estendono la monetizzazione oltre la sola "quota federazione post-pilota" del piano. ATTENZIONE: divergono da 1.4/2.3 e da `2026-05-02-monetization-strategy.md`; trattare come target strategico futuro, non come decisione del primo pilota.
 4. Sequenza go-to-market "istruttori indipendenti -> scuole -> white label -> federazioni": ordine di attacco diverso dal "pilota federazione" oggi ipotizzato; da confrontare con la scorecard opportunita'.

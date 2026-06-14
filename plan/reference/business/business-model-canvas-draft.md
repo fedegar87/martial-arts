@@ -9,10 +9,14 @@
 
 ---
 
-> Nota 2026-06-11: dopo la Sessione 2 del validation lab, il segmento iniziale
-> e' stato raffinato da "scuole/federazioni" a "scuole strutturate
-> analogiche/frammentate con maestro sponsor". Federazione e scuola restano
-> buyer potenziali, ma la prossima validazione parte dal champion operativo.
+> Nota 2026-06-11: dopo la Sessione 2 del validation lab e la review critica, il segmento
+> iniziale ha due livelli. **V1 grezzo:** scuole strutturate analogiche/frammentate.
+> **V2 operativo:** scuole/gruppi con patrimonio tecnico pronto, uso come supporto
+> didattico interno, materiali dispersi, maestro sponsor e decision path osservabile.
+> **Target strategico futuro:** scuole/federazioni con patrimonio pronto che vogliono
+> usare la piattaforma come leva premium, differenziazione, retention o servizio alle
+> affiliate. Federazione e scuola restano buyer potenziali, ma la prossima validazione
+> parte dal champion operativo.
 
 ## 0. Sintesi
 
@@ -76,7 +80,7 @@ Questa sezione e' la versione "post-it" del canvas, modellata sul formato dell'e
 |---|---|---|
 | Tutte le 9 caselle presenti | OK | La bozza copre tutte le aree canoniche. |
 | Post-it sintetici | OK | Le voci sono brevi, autonome e non richiedono spiegazioni lunghe. |
-| Segmenti chiari | Migliorato | Segmento pilota scelto dopo Sessione 2: scuola strutturata analogica/frammentata con maestro sponsor; utenti test = allievi intermedi o pre-esame. |
+| Segmenti chiari | Migliorato | Segmento pilota scelto dopo Sessione 2: scuola/gruppo con patrimonio tecnico pronto, supporto didattico interno, materiali dispersi, maestro sponsor e decision path; utenti test = allievi intermedi o pre-esame. |
 | Ricavi collegati ai segmenti | Parziale | Il pagatore e' scuola/federazione; va validato con pricing conversation. |
 | Value proposition non confusa con feature | OK | Restano centrali "cosa praticare oggi" e "quaderno tecnico digitale". |
 | Ipotesi rischiose esplicite | OK | Sezione 10 le rende visibili. |
@@ -87,7 +91,7 @@ Questa sezione e' la versione "post-it" del canvas, modellata sul formato dell'e
 | Criterio | Esito | Correzione applicata |
 |---|---|---|
 | Leggibile da chiunque | Buono | Le voci one-page sono state riscritte come frasi brevi: "Maestro introduce l'app", "Report dati guida rinnovo". |
-| Granularita' ottimale | Buono | Il canvas e' sintetico ma non vago. La scelta iniziale e' scuola strutturata analogica/frammentata; il gruppo utenti puo essere intermedio o pre-esame in base al maestro sponsor. |
+| Granularita' ottimale | Buono | Il canvas e' sintetico ma non vago. La scelta iniziale e' patrimonio tecnico pronto + supporto didattico interno; il gruppo utenti puo essere intermedio o pre-esame in base al maestro sponsor. |
 | Logiche, non sostantivi | Migliorato | Sostantivi generici come "Supabase/Vercel" e "Sviluppo prodotto" sono diventati meccanismi: "erogano infrastruttura", "aggiornare app e bug". |
 | Coerente | Buono, ma da validare | I blocchi seguono una logica B2B2C: maestro abilita, allievo usa, scuola/federazione paga. La coerenza economica resta da provare con il pilota. |
 
@@ -205,10 +209,11 @@ Versione che hai scelto:
 
 Nota: e' corretta come lista di stakeholder. Dopo la Sessione 2, pero', il segmento operativo di ingresso va reso piu specifico:
 
-- **Scuole strutturate analogiche/frammentate con maestro sponsor** sono l'early adopter da validare.
+- **Scuole/gruppi con patrimonio tecnico pronto, supporto didattico interno, materiali dispersi, maestro sponsor e decision path** sono l'early adopter da validare.
 - **Allievi intermedi/pre-esame** sono gli utenti test.
 - **Maestri** sono champion e canale.
 - **Scuole/federazioni** sono buyer potenziali dopo evidenze di uso.
+- **Scuole/federazioni con patrimonio pronto e logica strategica/commerciale** sono un target futuro per monetizzazione, differenziazione o servizio alle affiliate.
 
 Per precisione di modello:
 
@@ -281,30 +286,34 @@ Versione ancora piu' prudente:
 |---|---|---:|---|
 | Maestri sponsor | Champion e canale | Molto alta | Rendere gli allievi piu' autonomi senza creare nuovo lavoro |
 | Allievi intermedi | Utenti finali | Molto alta | Sapere cosa praticare tra una lezione e l'altra |
-| Scuole strutturate analogiche/frammentate | Early adopter operativo | Molto alta | Ordinare curriculum e materiali gia esistenti senza adottare un gestionale pesante |
+| Scuole/gruppi con patrimonio tecnico pronto, supporto didattico interno e materiali dispersi | Early adopter operativo | Molto alta | Rendere usabili curriculum e materiali gia esistenti senza adottare un gestionale pesante |
+| Scuole/federazioni con patrimonio pronto e logica strategica/commerciale | Target strategico futuro | Media ora, alta dopo evidenze | Trasformare il patrimonio tecnico in servizio, differenziazione, retention o accesso premium |
 | Scuole | Cliente pagatore possibile | Alta | Offrire un supporto digitale ai propri allievi |
 | Federazioni | Cliente pagatore ideale | Alta ma piu' lenta | Preservare e distribuire il curriculum in modo coerente |
 | Allievi pre-esame | Sotto-segmento degli allievi intermedi | Molto alta per il pilota | Avere programma, video e checklist chiari |
 
 ### Segmento iniziale consigliato
 
-Partire da una scuola strutturata analogica/frammentata, cioe':
+Partire da una scuola/gruppo con patrimonio tecnico pronto, uso come supporto didattico interno e materiali dispersi, cioe':
 
-- curriculum gia formalizzato o stabilizzato;
-- esami/passaggi di grado regolari;
-- materiali gia esistenti: quaderni, PDF, video, link YouTube/Drive;
-- distribuzione oggi manuale o dispersa: WhatsApp, Drive, memoria, quaderni;
-- 1 maestro sponsor disposto a coinvolgere 5-15 allievi intermedi o in preparazione esame.
+- curriculum stabile per almeno un livello/esame;
+- 5-10 contenuti gia usabili o facilmente ordinabili;
+- frizione osservabile: WhatsApp, Drive, quaderni, video, memoria o domande ripetitive;
+- 1 maestro sponsor disposto ad agire, non solo interessato;
+- decision path esplicito: il champion decide o puo raggiungere chi decide;
+- setup iniziale sostenibile in <= 2-3 ore lato maestro.
 
-Non partire da pubblico generico online, da federazione intera senza sponsor locale, ne da scuole senza curriculum/materiali gia pronti.
+Non partire da pubblico generico online, da federazione intera senza sponsor locale, da scuole senza curriculum/materiali gia pronti o da lead senza autorizzazioni minime sui contenuti.
 
 ### Ipotesi da validare
 
 - Gli allievi intermedi hanno abbastanza materiale da rendere utile una guida.
 - Gli allievi pre-esame hanno il pain piu' urgente.
 - I maestri sono disposti a raccomandare l'app e integrarla nel modo in cui guidano gli allievi.
-- Le scuole strutturate ma analogiche sentono la frammentazione dei materiali come problema concreto.
+- Le scuole/gruppi con patrimonio tecnico pronto, uso didattico interno e materiali dispersi sentono la frammentazione dei materiali come problema concreto.
 - Il setup contenuti iniziale resta sostenibile se il curriculum e i materiali esistono gia.
+- Il maestro sponsor ha prontezza all'azione e un decision path chiaro.
+- La scuola distingue supporto didattico interno da possibile leva strategica/commerciale.
 - Il pagatore reale e' scuola/federazione, non l'allievo singolo.
 
 ---
@@ -605,7 +614,7 @@ Seguendo la logica della slide: il modello funziona solo se queste assunzioni so
 | Area del canvas | Questo funziona solo se... | Perche' e' critico | Come lo validiamo |
 |---|---|---|---|
 | Problema / valore | Maestri e allievi percepiscono i contenuti didattici sparsi come un problema reale, non solo come fastidio minore. | Se il problema non e' prioritario, nessuno cambia abitudine. | Interviste: racconti concreti su link persi, video sbagliati, programma poco chiaro, confusione pre-esame. |
-| Segmenti | Le scuole strutturate analogiche/frammentate hanno abbastanza curriculum, materiali e allievi intermedi/pre-esame da rendere utile uno strumento di pratica autonoma. | Se il segmento e' troppo piccolo o poco motivato, l'uso resta episodico. | Interviste a maestri + 5-15 allievi per scuola; poi pilota misurando onboarding, uso settimana 2 e settimana 6. |
+| Segmenti | Le scuole/gruppi con patrimonio tecnico pronto, uso didattico interno e materiali dispersi hanno abbastanza materiali e allievi intermedi/pre-esame da rendere utile uno strumento di pratica autonoma. | Se il segmento e' troppo piccolo o poco motivato, l'uso resta episodico. | Interviste a maestri + 5-15 allievi per scuola; poi pilota misurando onboarding, uso settimana 2 e settimana 6. |
 | Caratteristiche cliente | I maestri sono davvero disposti a raccomandare l'app e integrarla nel modo in cui guidano gli allievi. | Senza maestro sponsor gli allievi non entrano o non continuano. | Demo + pilota: osservare se il maestro invita, ricorda, commenta e usa l'app come riferimento. |
 | Canale | Gli allievi si fidano del canale scuola/maestro per adottare questo tipo di soluzione. | Se l'invito della scuola non basta, servirebbe marketing B2C molto piu' costoso. | Misurare conversione invito -> onboarding e chiedere agli allievi perche' hanno accettato. |
 | Relazione | Scuole e federazioni accettano una relazione diretta e high-touch nella fase iniziale. | Se vogliono self-service completo subito, il prodotto non e' pronto. | Verificare disponibilita' a call, referente, pilota guidato, feedback e report. |
@@ -630,7 +639,7 @@ Le tre assunzioni che, se false, fanno collassare il modello sono:
 
 ## 11. Prossimi passi consigliati
 
-1. Identificare 5 maestri/scuole candidate con segnali da "scuola strutturata analogica/frammentata".
+1. Identificare 5 maestri/scuole candidate con patrimonio tecnico pronto, supporto didattico interno, materiali dispersi, champion operativo e decision path.
 2. Fare 3-5 interviste a maestri/istruttori e 8-10 interviste ad allievi intermedi/pre-esame.
 3. Chiarire chi puo' autorizzare video e curriculum per un test reale.
 4. Scegliere un primo gruppo con 5-15 allievi e maestro sponsor.
