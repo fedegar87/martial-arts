@@ -18,6 +18,7 @@ import {
   gradesForDiscipline,
 } from "@/lib/grades";
 import { hasPlayableVideo } from "@/lib/youtube";
+import { brand } from "@/lib/brand";
 import type { Discipline, PlanStatus, Skill, SkillCategory } from "@/lib/types";
 
 type Props = {
@@ -116,7 +117,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Scuola Chang</h1>
+        <h1 className="text-2xl font-semibold">{brand.lineageLabel}</h1>
         <p className="text-muted-foreground text-sm">
           {DISCIPLINE_LABELS[discipline]} - catalogo per grado, categoria e video.
         </p>

@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LegalLinks } from "@/components/legal/LegalLinks";
+import { brand } from "@/lib/brand";
 
 export function LoginForm({
   initialError,
@@ -31,7 +32,7 @@ export function LoginForm({
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>FESK Practice</CardTitle>
+        <CardTitle>{brand.appName}</CardTitle>
         <CardDescription>
           Accedi al tuo quaderno tecnico digitale.
         </CardDescription>

@@ -1,9 +1,9 @@
 // Bump della versione a ogni release significativa: l'handler `activate` elimina
 // le cache con nome diverso, quindi cambiare versione purga gli asset dei deploy
 // precedenti (mitiga la crescita illimitata di /_next/static).
-const CACHE_NAME = "fesk-practice-v4";
+const CACHE_NAME = "fesk-practice-v5";
 const OFFLINE_URL = "/offline.html";
-const STATIC_ASSETS = [OFFLINE_URL, "/manifest.json", "/icon.svg"];
+const STATIC_ASSETS = [OFFLINE_URL, "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

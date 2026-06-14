@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { brand } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -9,14 +10,14 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy"
-      description="Come FESK Practice tratta i dati necessari al quaderno tecnico digitale."
+      description={`Come ${brand.appName} tratta i dati necessari al quaderno tecnico digitale.`}
       sections={[
         {
           title: "Titolare e contatti",
           body: [
-            'Titolare del trattamento (candidato): FESK - Federazione Europea Scuola Kung Fu "Fong Ttai". Contatto privacy: info@feskfongttai.it. Da confermare in revisione legale: denominazione legale completa, sede, codice fiscale o partita IVA ed eventuale PEC.',
-            "Responsabile della Protezione dei Dati: non nominato per il primo rollout; il referente privacy operativo e raggiungibile a info@feskfongttai.it. Da confermare in revisione legale se sia necessaria la nomina di un DPO.",
-            "FESK determina finalita e mezzi del trattamento legati all'uso di FESK Practice da parte di allievi, istruttori e amministratori.",
+            `Titolare del trattamento (candidato): ${brand.federationName}. Contatto privacy: ${brand.supportEmail}. Da confermare in revisione legale: denominazione legale completa, sede, codice fiscale o partita IVA ed eventuale PEC.`,
+            `Responsabile della Protezione dei Dati: non nominato per il primo rollout; il referente privacy operativo e raggiungibile a ${brand.supportEmail}. Da confermare in revisione legale se sia necessaria la nomina di un DPO.`,
+            `FESK determina finalita e mezzi del trattamento legati all'uso di ${brand.appName} da parte di allievi, istruttori e amministratori.`,
           ],
         },
         {
@@ -63,7 +64,7 @@ export default function PrivacyPage() {
           title: "Diritti dell'utente",
           body: [
             "Dal profilo l'utente puo scaricare un export JSON dei propri dati e inviare una richiesta di cancellazione account.",
-            "Per esercitare accesso, rettifica, cancellazione, limitazione, portabilita, opposizione e revoca del consenso, o per proporre reclamo al Garante, scrivere a info@feskfongttai.it. Da confermare in revisione legale i tempi di risposta.",
+            `Per esercitare accesso, rettifica, cancellazione, limitazione, portabilita, opposizione e revoca del consenso, o per proporre reclamo al Garante, scrivere a ${brand.supportEmail}. Da confermare in revisione legale i tempi di risposta.`,
             "La cancellazione account e gestita tramite richiesta per evitare eliminazioni accidentali e permettere al titolare di verificare obblighi residui o dati da conservare.",
           ],
         },

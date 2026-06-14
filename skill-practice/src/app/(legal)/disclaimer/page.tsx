@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { brand } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
@@ -14,7 +15,7 @@ export default function DisclaimerPage() {
         {
           title: "Supporto didattico",
           body: [
-            "FESK Practice aiuta a organizzare studio, ripassi e diario tecnico. Non sostituisce le lezioni, la correzione diretta o le indicazioni della scuola.",
+            `${brand.appName} aiuta a organizzare studio, ripassi e diario tecnico. Non sostituisce le lezioni, la correzione diretta o le indicazioni della scuola.`,
             "La progressione mostrata dall'app e un supporto organizzativo e non costituisce valutazione ufficiale di idoneita tecnica o ammissione a esame.",
           ],
         },

@@ -7,6 +7,7 @@ import {
   User,
 } from "lucide-react";
 import { HubTile } from "./HubTile";
+import { brand } from "@/lib/brand";
 
 const HUB_AREAS = [
   {
@@ -26,7 +27,7 @@ const HUB_AREAS = [
   {
     href: "/library",
     Icon: BookOpenText,
-    title: "Scuola Chang",
+    title: brand.lineageLabel,
     subtitle: "tecniche e forme",
     anim: "hub-anim-tile-3",
   },

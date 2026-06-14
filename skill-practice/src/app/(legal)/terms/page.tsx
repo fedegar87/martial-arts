@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { brand } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Termini",
@@ -14,8 +15,8 @@ export default function TermsPage() {
         {
           title: "Fornitore e ambito",
           body: [
-            'Il servizio e fornito da FESK - Federazione Europea Scuola Kung Fu "Fong Ttai". Contatto: info@feskfongttai.it. Da confermare in revisione legale: denominazione legale completa, sede e territorio di offerta.',
-            "FESK Practice e uno strumento di supporto allo studio tecnico, al diario personale e all'organizzazione dell'allenamento.",
+            `Il servizio e fornito da ${brand.federationName}. Contatto: ${brand.supportEmail}. Da confermare in revisione legale: denominazione legale completa, sede e territorio di offerta.`,
+            `${brand.appName} e uno strumento di supporto allo studio tecnico, al diario personale e all'organizzazione dell'allenamento.`,
             "L'app non sostituisce le indicazioni dell'insegnante, della scuola o di un professionista sanitario.",
           ],
         },
@@ -33,7 +34,7 @@ export default function TermsPage() {
           body: [
             "Schede, video, note didattiche e programmi sono messi a disposizione per uso personale e formativo.",
             "La riproduzione, distribuzione o pubblicazione esterna dei contenuti puo richiedere autorizzazione di FESK o della scuola.",
-            "I contenuti del curriculum (lignaggio Scuola Chang) sono di FESK o degli aventi diritto; i video sono ospitati su YouTube. Da confermare in revisione legale: licenze d'uso, limiti di riproduzione dei video e condizioni di rimozione o aggiornamento del materiale didattico.",
+            `I contenuti del curriculum (lignaggio ${brand.lineageLabel}) sono di FESK o degli aventi diritto; i video sono ospitati su YouTube. Da confermare in revisione legale: licenze d'uso, limiti di riproduzione dei video e condizioni di rimozione o aggiornamento del materiale didattico.`,
           ],
         },
         {
@@ -56,7 +57,7 @@ export default function TermsPage() {
           body: [
             "Il servizio puo essere aggiornato, sospeso o modificato per manutenzione, sicurezza o correzioni funzionali.",
             "Le funzioni offline della PWA sono limitate e non garantiscono disponibilita completa dei dati senza connessione.",
-            "Non sono garantiti SLA formali per il primo rollout; i problemi vanno segnalati a info@feskfongttai.it. Da confermare in revisione legale: tempi di preavviso per modifiche sostanziali e procedura di dismissione del servizio.",
+            `Non sono garantiti SLA formali per il primo rollout; i problemi vanno segnalati a ${brand.supportEmail}. Da confermare in revisione legale: tempi di preavviso per modifiche sostanziali e procedura di dismissione del servizio.`,
           ],
         },
         {

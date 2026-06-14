@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { brand } from "@/lib/brand";
 
 export async function GET() {
   const supabase = await createClient();
@@ -112,7 +113,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(payload, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="fesk-practice-export-${fileDate}.json"`,
+      "Content-Disposition": `attachment; filename="${brand.exportSlug}-export-${fileDate}.json"`,
       "Cache-Control": "no-store",
     },
   });

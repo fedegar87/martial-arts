@@ -7,6 +7,7 @@ import {
   Spectral,
 } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { brand } from "@/lib/brand";
 import "./globals.css";
 
 const displayFont = Cormorant_Garamond({
@@ -41,8 +42,8 @@ const serifTcFont = Noto_Serif_TC({
   preload: false,
 });
 
-const appName = "FESK Practice";
-const appDescription = "Pratica guidata del Kung Fu tradizionale FESK";
+const appName = brand.appName;
+const appDescription = brand.description;
 
 function normalizeSiteUrl(url: string | undefined) {
   if (!url) return undefined;
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
     template: `%s | ${appName}`,
   },
   description: appDescription,
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
@@ -110,7 +111,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#080808",
+  themeColor: brand.themeColor,
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

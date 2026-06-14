@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, BookOpenText, CalendarDays, Megaphone, Target } from "lucide-react";
+import { brand } from "@/lib/brand";
 
 type NavItem = {
   href: string;
@@ -29,7 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/library",
-    label: "Scuola Chang",
+    label: brand.lineageLabel,
     shortLabel: "Scuola",
     Icon: BookOpenText,
     match: ["/skill"],
