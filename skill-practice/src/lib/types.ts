@@ -103,8 +103,8 @@ export type UserProfile = {
   created_at: string;
 };
 
-// Operational template copied into the profile on invite acceptance, plus the
-// per-discipline post-exam promotion targets. Managed by admins (SQL/service role).
+// Coarse access preset/reporting row. Per-person levels live on user_invites
+// before signup and on user_profiles after signup.
 export type AccessGroup = {
   id: string;
   school_id: string;
@@ -126,8 +126,14 @@ export type UserInvite = {
   id: string;
   school_id: string;
   email: string;
-  access_group_id: string;
+  access_group_id: string | null;
   display_name: string | null;
+  assigned_level_shaolin: number;
+  assigned_level_taichi: number;
+  role: UserRole;
+  content_access_mode: ContentAccessMode;
+  can_view_extra_content: boolean;
+  profile_locked: boolean;
   status: "pending" | "accepted" | "revoked";
   accepted_user_id: string | null;
   created_at: string;
