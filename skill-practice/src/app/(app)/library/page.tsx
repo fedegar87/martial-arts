@@ -7,7 +7,6 @@ import {
   listVisibleSkillsForDiscipline,
 } from "@/lib/queries/skills";
 import { getUserPlanItems } from "@/lib/queries/plan";
-import { getExamProgramRequirements } from "@/lib/queries/exam-programs";
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
 import { GradeSection } from "@/components/library/GradeSection";
 import { LockedGradeSection } from "@/components/library/LockedGradeSection";
@@ -59,30 +58,20 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   const selectedCategorySet = new Set(selectedCategories);
   const onlyWithVideo = withVideo === "1";
   const query = normalizeQuery(q);
-  const activeSource =
-    profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const selectedExamId =
-    discipline === "shaolin"
-      ? profile.preparing_exam_id
-      : profile.preparing_exam_taichi_id;
-  const planStatusLabelPrefix =
-    profile.plan_mode === "custom"
-      ? "Nella selezione personale"
-      : "Nel programma selezionato";
-  const emptyPlanStatusLabel =
-    profile.plan_mode === "custom"
-      ? "Fuori dalla selezione personale"
-      : "Fuori dal programma selezionato";
+  // I marker di stato hanno senso solo per la selezione personale (scelta reale
+  // dell'utente). In modalita esame lo stato e' il default uniforme del programma:
+  // niente pallini, niente legenda. Coerente con /programma.
+  const showPlanStatus = profile.plan_mode === "custom";
+  const planStatusLabelPrefix = "Nella selezione personale";
+  const emptyPlanStatusLabel = "Fuori dalla selezione personale";
 
-  const [allSkills, lockedOutline, activePlanItems, examRequirements] =
-    await Promise.all([
-      listVisibleSkillsForDiscipline(discipline, profile),
-      listLockedSkillOutlineForDiscipline(discipline, profile),
-      getUserPlanItems(profile.id, discipline, activeSource),
-      profile.plan_mode === "exam" && selectedExamId
-        ? getExamProgramRequirements(selectedExamId)
-        : Promise.resolve([]),
-    ]);
+  const [allSkills, lockedOutline, activePlanItems] = await Promise.all([
+    listVisibleSkillsForDiscipline(discipline, profile),
+    listLockedSkillOutlineForDiscipline(discipline, profile),
+    showPlanStatus
+      ? getUserPlanItems(profile.id, discipline, "manual")
+      : Promise.resolve([]),
+  ]);
 
   const availableCategories = (
     Object.keys(SKILL_CATEGORY_LABELS) as SkillCategory[]
@@ -140,9 +129,6 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   );
 
   const planStatusBySkillId = new Map<string, PlanStatus>();
-  for (const requirement of examRequirements) {
-    planStatusBySkillId.set(requirement.skill_id, requirement.default_status);
-  }
   for (const item of activePlanItems) {
     planStatusBySkillId.set(item.skill_id, item.status);
   }
@@ -181,10 +167,12 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
         videoCount={videoCount}
       />
 
-      <CatalogMarkerLegend
-        planStatusLabelPrefix={planStatusLabelPrefix}
-        emptyLabel={emptyPlanStatusLabel}
-      />
+      {showPlanStatus && (
+        <CatalogMarkerLegend
+          planStatusLabelPrefix={planStatusLabelPrefix}
+          emptyLabel={emptyPlanStatusLabel}
+        />
+      )}
 
       {filteredSkills.length === 0 && !hasLockedSections ? (
         <EmptyState
