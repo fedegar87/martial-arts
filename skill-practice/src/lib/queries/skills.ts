@@ -198,6 +198,40 @@ export async function listVisibleSkillsForDiscipline(
   return (data as Skill[] | null) ?? [];
 }
 
+// Outline (sola struttura) delle skill BLOCCATE: i gradi piu' avanzati del livello in
+// preparazione, che la RLS skills_read nasconde. Ritorna solo nome/grado/categoria via
+// RPC SECURITY DEFINER: i contenuti (video, note) restano protetti. Se la RPC non e'
+// ancora applicata in DB, ritorna [] cosi' il deploy non rompe la libreria.
+export async function listLockedSkillOutlineForDiscipline(
+  discipline: Discipline,
+  scope: SkillScope,
+): Promise<SkillOption[]> {
+  if (scope.content_access_mode === "all_school_content") return [];
+  if (disciplineNotPracticed(discipline, scope)) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("list_locked_skill_outline", {
+    p_discipline: discipline,
+  });
+  if (error || !data) return [];
+
+  return (
+    data as Array<{
+      skill_id: string;
+      skill_name: string;
+      skill_name_italian: string | null;
+      minimum_grade_value: number;
+      category: SkillCategory;
+    }>
+  ).map((row) => ({
+    id: row.skill_id,
+    name: row.skill_name,
+    name_italian: row.skill_name_italian,
+    minimum_grade_value: row.minimum_grade_value,
+    category: row.category,
+  }));
+}
+
 export async function listVisibleSkillOptionsForDiscipline(
   discipline: Discipline,
   scope: SkillScope,

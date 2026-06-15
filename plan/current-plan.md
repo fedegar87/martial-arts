@@ -339,7 +339,7 @@ skill-practice/
 │   │   ├── today/                      # TodaySkillCard, PracticeCheckButton, RepsCounter, ecc.
 │   │   ├── sessions/                   # WeekdayChips, CadencePicker, RepsStepper, SetupForm, ResetScheduleSection, PlanFormsSection
 │   │   ├── calendar/                   # Calendar, CalendarDayPanel, PracticeCompletionToggle, AddFreePracticeSheet
-│   │   ├── library/                    # DisciplineToggle, LibraryFilters, GradeSection, ProgramSkillRow, CatalogMarkerLegend
+│   │   ├── library/                    # DisciplineToggle, LibraryFilters, GradeSection, LockedGradeSection, ProgramSkillRow, CatalogMarkerLegend
 │   │   ├── programma/                  # PlanTabsNav (Scuola/Programma personale)
 │   │   ├── plan/                       # Editor piano (exam/custom)
 │   │   ├── progress/                   # Visualizzazioni progresso
@@ -446,6 +446,8 @@ Sequenza aggiornata al 2026-06-03. **0001–0028 applicate** via SQL Editor Supa
 | 0032 | `extra_weapon_fundamentals` | 4 skill "fondamentali" armi fuori programma cinture: categoria `preparatori` ("Altro"), grado-sentinella `99` (`EXTRA_GRADE_VALUE`), sezione "Altro" in libreria |
 
 > **0028 applicata il 2026-06-03** (single-tenant: no-op, verificato con smoke test). Quando arriverà la 2ª federazione, l'invito utenti deve passare `school_id` (e `display_name`) nei `user_metadata`, altrimenti con più scuole `handle_new_user` fallisce di proposito.
+
+> **0033–0047** non sono ancora elencate riga per riga in questa tabella. Da notare: **0047 `list_locked_skill_outline`** aggiunge una RPC `SECURITY DEFINER` che ritorna la sola struttura (nome, grado, categoria — niente video/note) delle skill **oltre** il livello in preparazione, così la libreria può mostrarle come anteprima **bloccata** (sezione "Livelli successivi", righe sbiadite non cliccabili) senza esporre i contenuti, che restano protetti da `skills_read` (0040/0046) e dal gate `isSkillWithinLevelScope` sullo skill detail. La query `listLockedSkillOutlineForDiscipline` ingoia l'errore se la RPC non è applicata (ritorna vuoto), quindi il deploy non rompe la libreria. **Va applicata a mano nel SQL Editor Supabase.**
 
 ### 5.2 Note vincolanti sulla struttura
 
