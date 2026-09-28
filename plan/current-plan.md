@@ -59,6 +59,7 @@ Per il razionale completo vedi `archive/`:
 | **D10** | Documenti legali (privacy/terms/cookies/disclaimer) | **Pagine custom in-app, non iubenda.** Deviazione esplicita rispetto al §15.3 v3 (che suggeriva iubenda generator a €29/anno). Razionale: (a) MVP single-user non ha budget legale ricorrente; (b) i contenuti devono essere specifici per pratica fisica/scuola e non generici da generator; (c) tutto il testo non derivabile è marcato `[PLACEHOLDER: ...]` per revisione legale prima di apertura a utenti terzi. iubenda resta opzione di fallback se la federazione richiederà policy generata da fonte certificata |
 | **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/completed/2026-05-10-calendar-unification-design.md` |
 | **D12** | Promemoria push allenamento | **Implementati come opt-in stretto, UI disattivata fino a setup VAPID.** Codice in produzione e migration applicata, ma i selettori in `/today` e `/profile` sono gated da `NEXT_PUBLIC_VAPID_PUBLIC_KEY`: senza chiavi VAPID + `CRON_SECRET` configurati su Vercel la UI resta nascosta. Setup pendente: `plan/2026-05-16-push-notifications-setup-pending.md`. Design: `plan/completed/2026-05-16-training-reminder-push-notifications-plan.md` |
+| **D13** | Aggiornamento di sicurezza framework | **Implementato localmente il 2026-09-27.** Next.js ed `eslint-config-next` aggiornati da `16.2.4` a `16.3.6`, React/React DOM da `19.2.4` a `19.2.8`, per includere le correzioni di sicurezza correnti. Lint, typecheck, 79 test e build superati; verifiche HTTP anonime di login, route protette e varianti RSC superate. Verifica interattiva con account e deploy non eseguiti. |
 
 ### 2.2 Decisioni aperte ⚠️
 
@@ -84,7 +85,8 @@ Per il razionale completo vedi `archive/`:
 
 **Esplicitamente escluso:** Supabase Storage video, signed URL, API route video, compressione/upload, CDN proprio.
 
-**Note Next 16 (versione installata: 16.2.4 con Turbopack):**
+**Note Next 16 (versione installata: 16.3.6 con Turbopack):**
+- Aggiornamento di sicurezza del 2026-09-27: Next.js ed `eslint-config-next` fissati a `16.3.6`, React e React DOM a `19.2.8`. La scelta include le correzioni successive a `16.2.4`, compresa GHSA-vcvr-r3jv-pc5j; nessuna nuova funzionalità sperimentale attivata.
 - `middleware` rinominato in `proxy` (file `src/proxy.ts`, era `src/middleware.ts`)
 - `cookies()`, `headers()`, dynamic route `params` sono ora `Promise` (da `await`are)
 - Tailwind v4 (config via `globals.css` `@theme`, niente `tailwind.config.ts` per shadcn)
