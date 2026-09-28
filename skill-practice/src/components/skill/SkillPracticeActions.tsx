@@ -24,14 +24,18 @@ export function SkillPracticeActions({
   const [message, setMessage] = useState<string | null>(null);
 
   function handleFreePracticeDone() {
+    setMessage(null);
     startTransition(async () => {
-      setMessage(null);
-      const result = await markPracticeDone(skillId);
-      if (result && "error" in result) {
-        setMessage(result.error);
-        return;
+      try {
+        const result = await markPracticeDone(skillId);
+        if (!result || "error" in result) {
+          setMessage(result?.error ?? "Salvataggio non confermato. Riprova.");
+          return;
+        }
+        setDone(true);
+      } catch {
+        setMessage("Non è stato possibile confermare il salvataggio. Riprova.");
       }
-      setDone(true);
     });
   }
 
@@ -41,11 +45,12 @@ export function SkillPracticeActions({
         type="button"
         onClick={handleFreePracticeDone}
         disabled={pending || done}
+        aria-busy={pending}
         variant={done ? "outline" : "default"}
         className={done ? `h-12 w-full ${completedButtonClassName}` : "h-12 w-full"}
       >
         <Dumbbell className="mr-2 h-4 w-4" />
-        {done ? "Praticato oggi" : pending ? "..." : "Segna praticato"}
+        {pending ? "Salvataggio…" : done ? "Praticato oggi" : "Segna praticato"}
       </Button>
 
       <div className="grid grid-cols-2 gap-2">

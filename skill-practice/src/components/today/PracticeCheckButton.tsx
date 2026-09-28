@@ -24,19 +24,18 @@ export function PracticeCheckButton({
   const [message, setMessage] = useState<string | null>(null);
 
   function handleClick() {
-    setDone(true);
+    setMessage(null);
     start(async () => {
       try {
         const result = await markPracticeDone(skillId);
-        if (result && "error" in result) {
-          setDone(false);
-          setMessage(result.error);
+        if (!result || "error" in result) {
+          setMessage(result?.error ?? "Salvataggio non confermato. Riprova.");
           return;
         }
+        setDone(true);
         setNoteOpen(true);
       } catch {
-        setDone(false);
-        setMessage("Connessione assente, riprova.");
+        setMessage("Non è stato possibile confermare il salvataggio. Riprova.");
       }
     });
   }
@@ -45,8 +44,10 @@ export function PracticeCheckButton({
     <>
       <div className="grid grid-cols-[1fr_auto] gap-2">
         <Button
+          type="button"
           onClick={handleClick}
           disabled={pending || done}
+          aria-busy={pending}
           variant={done ? "outline" : "default"}
           className={
             done
@@ -55,7 +56,7 @@ export function PracticeCheckButton({
           }
         >
           <Check className="mr-2 h-4 w-4" />
-          {done ? "Praticato oggi" : pending ? "..." : "Fatto"}
+          {pending ? "Salvataggio…" : done ? "Praticato oggi" : "Fatto"}
         </Button>
         <PracticeNoteButton
           skillId={skillId}
@@ -66,7 +67,7 @@ export function PracticeCheckButton({
         />
       </div>
       {message && (
-        <p className="text-muted-foreground text-xs" role="status">
+        <p className="text-destructive text-xs" role="status">
           {message}
         </p>
       )}

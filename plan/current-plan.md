@@ -1223,6 +1223,15 @@ Ogni task chiuso solo quando:
 
 ### 17.4 Workflow consigliato
 
+**Procedura concordata per gli interventi di manutenzione (2026-09-28):** nella fase di test con pochi istruttori, procedere con un intervento di codice alla volta, proporzionato alle esigenze attuali.
+
+1. Spiegare in modo semplice il problema e la soluzione proposta, poi attendere l'approvazione dell'utente.
+2. Dopo l'approvazione, implementare l'intervento ed eseguire i controlli pertinenti.
+3. Creare commit mirati ed eseguire il push su `main`, il branch principale confermato dall'utente. Commit e push fanno parte dell'intervento approvato; escludere le modifiche estranee già presenti nel workspace.
+4. Comunicare l'esito, spiegare il prossimo intervento e attendere il nuovo via libera prima di implementarlo.
+
+Questa procedura ha precedenza sulle opzioni generali riportate di seguito per gli interventi di questa fase.
+
 **Opzione A — orchestrato con GSD** (più strutturato, audit trail completo):
 - `/gsd:new-project` per inizializzare GSD nel `skill-practice/`
 - `/gsd:plan-phase` per planificare ogni gruppo di task (Sprint 1 ≈ 3 fasi: bootstrap+DB, auth+core, UI+deploy)
