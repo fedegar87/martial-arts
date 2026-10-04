@@ -58,11 +58,27 @@ export async function requestPasswordReset(
     return { error: emailCheck.error ?? "Email non valida." };
   }
 
-  const origin = await getAppOrigin();
-  const redirectTo = `${origin}/auth/callback?next=/auth/update-password`;
-  const supabase = await createClient();
+  const failureMessage =
+    "Non è stato possibile completare la richiesta. Riprova tra qualche minuto.";
 
-  await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  try {
+    const origin = await getAppOrigin();
+    const redirectTo = `${origin}/auth/callback?next=/auth/update-password`;
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+    // Un account assente deve ricevere la stessa risposta di uno registrato.
+    if (error && error.code !== "user_not_found") {
+      return {
+        error:
+          error.status === 429
+            ? "Troppe richieste. Attendi qualche minuto prima di riprovare."
+            : failureMessage,
+      };
+    }
+  } catch {
+    return { error: failureMessage };
+  }
 
   return {
     success:
