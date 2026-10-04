@@ -20,7 +20,11 @@ export async function getUserPlanItems(
     query = query.eq("source", source);
   }
 
-  const { data } = await query;
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error("Impossibile caricare gli esercizi del piano", { cause: error });
+  }
 
   return ((data ?? []) as UserPlanItemWithSkill[]).filter((item) => {
     if (!item.skill) return false;
@@ -48,11 +52,14 @@ export async function getUserPlanItemsBySkill(
   skillId: string,
 ): Promise<UserPlanItem[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("user_plan_items")
     .select("*")
     .eq("user_id", userId)
     .eq("skill_id", skillId);
+  if (error) {
+    throw new Error("Impossibile caricare l'esercizio nel piano", { cause: error });
+  }
   return (data as UserPlanItem[] | null) ?? [];
 }
 
@@ -71,7 +78,10 @@ export async function getUserPlanCount(
     query = query.eq("source", source);
   }
 
-  const { count } = await query;
+  const { count, error } = await query;
+  if (error) {
+    throw new Error("Impossibile contare gli esercizi del piano", { cause: error });
+  }
   return count ?? 0;
 }
 
@@ -90,6 +100,9 @@ export async function getSelectedSkillIds(
     query = query.eq("source", source);
   }
 
-  const { data } = await query;
+  const { data, error } = await query;
+  if (error) {
+    throw new Error("Impossibile caricare la selezione personale", { cause: error });
+  }
   return new Set(((data ?? []) as Array<{ skill_id: string }>).map((r) => r.skill_id));
 }

@@ -6,10 +6,13 @@ export async function getTrainingSchedule(
   userId: string,
 ): Promise<TrainingSchedule | null> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("training_schedule")
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) {
+    throw new Error("Impossibile caricare le sessioni di allenamento", { cause: error });
+  }
   return (data as TrainingSchedule | null) ?? null;
 }
