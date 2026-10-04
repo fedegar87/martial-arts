@@ -6,12 +6,15 @@ import type { PracticeLog } from "@/lib/types";
 export async function getThisWeekLogs(userId: string): Promise<PracticeLog[]> {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("practice_logs")
     .select("*")
     .eq("user_id", userId)
     .gte("date", weekStartDateKey())
     .order("date", { ascending: false });
+  if (error) {
+    throw new Error("Impossibile caricare la pratica settimanale", { cause: error });
+  }
   return (data as PracticeLog[] | null) ?? [];
 }
 
@@ -21,12 +24,15 @@ export async function getRecentLogsForUser(
 ): Promise<PracticeLog[]> {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("practice_logs")
     .select("*")
     .eq("user_id", userId)
     .gte("date", dateKeyDaysAgo(days))
     .order("date", { ascending: false });
+  if (error) {
+    throw new Error("Impossibile caricare la pratica recente", { cause: error });
+  }
   return (data as PracticeLog[] | null) ?? [];
 }
 
@@ -37,7 +43,7 @@ export async function getPracticeLogsInDateRange(
 ): Promise<PracticeLog[]> {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("practice_logs")
     .select("*")
     .eq("user_id", userId)
@@ -46,6 +52,9 @@ export async function getPracticeLogsInDateRange(
     .order("date", { ascending: true })
     .order("created_at", { ascending: true });
 
+  if (error) {
+    throw new Error("Impossibile caricare la pratica nel periodo", { cause: error });
+  }
   return (data as PracticeLog[] | null) ?? [];
 }
 
@@ -55,7 +64,7 @@ export async function getPersonalNotesForSkill(
   limit = 8,
 ): Promise<PracticeLog[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("practice_logs")
     .select("*")
     .eq("user_id", userId)
@@ -65,6 +74,9 @@ export async function getPersonalNotesForSkill(
     .order("created_at", { ascending: false })
     .limit(limit);
 
+  if (error) {
+    throw new Error("Impossibile caricare le note personali", { cause: error });
+  }
   return ((data as PracticeLog[] | null) ?? []).filter(
     (log) => log.personal_note && log.personal_note.trim().length > 0,
   );
@@ -75,7 +87,7 @@ export async function getTodayLogForSkill(
   skillId: string,
 ): Promise<PracticeLog | null> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("practice_logs")
     .select("*")
     .eq("user_id", userId)
@@ -85,17 +97,23 @@ export async function getTodayLogForSkill(
     .limit(1)
     .maybeSingle();
 
+  if (error) {
+    throw new Error("Impossibile caricare la pratica di oggi", { cause: error });
+  }
   return (data as PracticeLog | null) ?? null;
 }
 
 export async function getPracticedSkillIds(userId: string): Promise<Set<string>> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("practice_logs")
     .select("skill_id")
     .eq("user_id", userId)
     .eq("completed", true);
 
+  if (error) {
+    throw new Error("Impossibile caricare gli esercizi praticati", { cause: error });
+  }
   return new Set(
     ((data ?? []) as Array<{ skill_id: string }>).map((log) => log.skill_id),
   );

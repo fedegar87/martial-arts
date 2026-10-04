@@ -119,7 +119,7 @@ async function fetchMeaningfulLogsWithSkill(
   from: string,
   to: string,
 ): Promise<PracticeLogWithSkill[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("practice_logs")
     .select(
       `
@@ -143,6 +143,9 @@ async function fetchMeaningfulLogsWithSkill(
     .order("date", { ascending: true })
     .order("created_at", { ascending: true });
 
+  if (error) {
+    throw new Error("Impossibile caricare la pratica nel calendario", { cause: error });
+  }
   return (data as PracticeLogWithSkill[] | null) ?? [];
 }
 
