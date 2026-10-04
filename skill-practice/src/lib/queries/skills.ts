@@ -85,7 +85,10 @@ export async function getSkillById(
   let query = supabase.from("skills").select("*").eq("id", skillId);
   // Difesa in profondita: scope esplicito per scuola oltre alla RLS di 0028.
   if (schoolId) query = query.eq("school_id", schoolId);
-  const { data } = await query.maybeSingle();
+  const { data, error } = await query.maybeSingle();
+  if (error) {
+    throw new Error("Impossibile caricare l'esercizio", { cause: error });
+  }
   return (data as Skill | null) ?? null;
 }
 
@@ -191,10 +194,13 @@ export async function listVisibleSkillsForDiscipline(
     }
   }
 
-  const { data } = await query
+  const { data, error } = await query
     .order("minimum_grade_value", { ascending: false })
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
+  if (error) {
+    throw new Error("Impossibile caricare il catalogo della libreria", { cause: error });
+  }
   return (data as Skill[] | null) ?? [];
 }
 
@@ -256,9 +262,12 @@ export async function listVisibleSkillOptionsForDiscipline(
     }
   }
 
-  const { data } = await query
+  const { data, error } = await query
     .order("minimum_grade_value", { ascending: false })
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
+  if (error) {
+    throw new Error("Impossibile caricare gli esercizi selezionabili", { cause: error });
+  }
   return (data as SkillOption[] | null) ?? [];
 }
