@@ -36,22 +36,32 @@ export function PracticeNoteButton({
   const [internalOpen, setInternalOpen] = useState(false);
   const [note, setNote] = useState(initialNote);
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const isControlled = open !== undefined;
   const sheetOpen = isControlled ? open : internalOpen;
   const setSheetOpen = onOpenChange ?? setInternalOpen;
 
+  function handleOpenChange(nextOpen: boolean) {
+    if (pending) return;
+    setMessage(null);
+    setError(null);
+    setSheetOpen(nextOpen);
+  }
+
   function handleSaveNote() {
+    setMessage(null);
+    setError(null);
     startTransition(async () => {
       try {
         const result = await savePracticeNote(skillId, note);
-        if (result && "error" in result) {
-          setMessage(result.error);
+        if (!result || "error" in result) {
+          setError(result?.error ?? "Salvataggio non confermato. Riprova.");
           return;
         }
         setMessage("Nota salvata.");
         setSheetOpen(false);
       } catch {
-        setMessage("Connessione assente, riprova.");
+        setError("Non è stato possibile confermare il salvataggio. Riprova.");
       }
     });
   }
@@ -64,7 +74,7 @@ export function PracticeNoteButton({
         size={block ? "default" : compact ? "sm" : "icon"}
         className={block ? "h-11 w-full" : undefined}
         aria-label="Aggiungi nota pratica"
-        onClick={() => setSheetOpen(true)}
+        onClick={() => handleOpenChange(true)}
       >
         <NotebookPen
           className={
@@ -78,7 +88,7 @@ export function PracticeNoteButton({
           {message}
         </p>
       )}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+      <Sheet open={sheetOpen} onOpenChange={handleOpenChange}>
         <SheetContent
           side="bottom"
           className="material-sheet border-border pb-[env(safe-area-inset-bottom)]"
@@ -94,18 +104,31 @@ export function PracticeNoteButton({
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
+              disabled={pending}
+              aria-label="Nota pratica"
               rows={5}
               className="border-input bg-background min-h-32 w-full resize-y rounded-md border px-3 py-2 text-base md:text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
             />
+            {error && (
+              <p className="text-destructive mt-2 text-xs" role="alert">
+                {error}
+              </p>
+            )}
           </div>
           <SheetFooter>
-            <Button onClick={handleSaveNote} disabled={pending}>
+            <Button
+              type="button"
+              onClick={handleSaveNote}
+              disabled={pending}
+              aria-busy={pending}
+            >
               {pending ? "Salvataggio..." : "Salva nota"}
             </Button>
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setSheetOpen(false)}
+              onClick={() => handleOpenChange(false)}
+              disabled={pending}
             >
               Salta
             </Button>
