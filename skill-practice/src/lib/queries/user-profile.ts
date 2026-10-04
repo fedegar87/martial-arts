@@ -22,12 +22,15 @@ export const getCurrentProfile = cache(
     if (!user) return null;
 
     const supabase = await createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("user_profiles")
       .select("*")
       .eq("id", user.id)
       .maybeSingle();
 
+    if (error) {
+      throw new Error("Impossibile caricare il profilo", { cause: error });
+    }
     return (data as UserProfile | null) ?? null;
   },
 );
@@ -38,12 +41,15 @@ export const getCurrentProfileAccount = cache(
     if (!user) return null;
 
     const supabase = await createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("user_profiles")
       .select("*, school:schools(name)")
       .eq("id", user.id)
       .maybeSingle();
 
+    if (error) {
+      throw new Error("Impossibile caricare i dati del profilo", { cause: error });
+    }
     const row = data as
       | (UserProfile & { school?: { name: string | null } | null })
       | null;

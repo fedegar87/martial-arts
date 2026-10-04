@@ -5,12 +5,7 @@ import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { isProfileOnboarded } from "@/lib/onboarding-state";
 
 export default async function HubPage() {
-  let profile = null;
-  try {
-    profile = await getCurrentProfile();
-  } catch {
-    redirect("/login");
-  }
+  const profile = await getCurrentProfile();
 
   if (!profile) {
     redirect("/login");

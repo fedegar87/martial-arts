@@ -3,8 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
-import { resolveLandingDestination } from "@/lib/landing";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
 import {
   PASSWORD_UPDATE_COOKIE,
   safeRedirectPath,
@@ -34,11 +32,7 @@ export async function login(
     return { error: loginErrorMessage(error.message) };
   }
 
-  // Se l'utente era stato rediretto da un deep link protetto, torna li;
-  // altrimenti vai alla destination corretta per il profilo.
-  if (next) redirect(next);
-  const profile = await getCurrentProfile();
-  redirect(resolveLandingDestination(profile));
+  redirect(next ?? "/hub");
 }
 
 export async function signOut(): Promise<void> {
@@ -124,8 +118,7 @@ export async function updatePassword(
     path: "/",
   });
 
-  const profile = await getCurrentProfile();
-  redirect(resolveLandingDestination(profile));
+  redirect("/hub");
 }
 
 export async function changePassword(
