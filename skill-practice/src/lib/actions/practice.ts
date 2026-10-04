@@ -123,11 +123,16 @@ export async function incrementRep(skillId: string): Promise<PracticeFormState> 
 
   const dateKey = localDateKey();
 
-  const { data: scheduleRow } = await supabase
+  const { data: scheduleRow, error: scheduleError } = await supabase
     .from("training_schedule")
     .select("reps_per_form")
     .eq("user_id", user.id)
     .maybeSingle();
+  if (scheduleError) {
+    return {
+      error: "Non è stato possibile caricare l'obiettivo delle ripetizioni. Riprova.",
+    };
+  }
   const target = (scheduleRow as { reps_per_form: number } | null)?.reps_per_form ?? 1;
 
   const { data: existing, error: selectError } = await supabase
