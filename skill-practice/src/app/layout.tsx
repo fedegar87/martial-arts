@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import {
-  Bebas_Neue,
   Cormorant_Garamond,
   Noto_Serif_TC,
+  Plus_Jakarta_Sans,
   Space_Mono,
   Spectral,
 } from "next/font/google";
@@ -23,10 +23,10 @@ const bodyFont = Spectral({
   style: ["normal", "italic"],
 });
 
-const labelFont = Bebas_Neue({
+const labelFont = Plus_Jakarta_Sans({
   variable: "--font-label",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["500", "600", "700"],
 });
 
 const monoFont = Space_Mono({

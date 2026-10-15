@@ -24,9 +24,9 @@ export function chipClassName({
     size === "sm" ? "min-h-8 px-2 text-xs" : "min-h-11 px-3",
     active
       ? tone === "accent"
-        ? "border-primary bg-primary/10 text-primary"
-        : "border-border bg-card text-foreground"
-      : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+        ? "border-primary/60 bg-primary/12 text-primary font-semibold shadow-[0_0_12px_var(--tint-glow)]"
+        : "border-border/80 bg-card text-foreground font-medium"
+      : "border-border/70 bg-card/70 text-muted-foreground hover:border-border hover:bg-card hover:text-foreground",
     muted && "opacity-45",
     className,
   );

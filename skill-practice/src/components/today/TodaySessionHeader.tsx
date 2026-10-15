@@ -24,13 +24,13 @@ export function TodaySessionHeader({
   eyebrowParts.push(gradeSummary);
 
   return (
-    <header className="material-bar sticky top-0 z-30 -mx-4 border-b border-border px-4 pt-3 pb-3">
+    <header className="material-bar sticky top-0 z-30 -mx-4 border-b border-border/80 px-4 pt-3 pb-3">
       <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className="label-font text-primary text-xs uppercase">
+        <div className="space-y-0.5">
+          <p className="label-font text-primary text-xs uppercase tracking-wider">
             {eyebrowParts.join(" · ")}
           </p>
-          <h1 className="text-2xl font-semibold capitalize tracking-tight">
+          <h1 className="text-3xl font-medium capitalize tracking-tight text-foreground">
             {dayName}
           </h1>
         </div>

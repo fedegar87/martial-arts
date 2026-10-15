@@ -19,13 +19,18 @@ export default async function HubPage() {
     <>
       <HubBackground />
       <section className="hub-page relative z-10 mx-auto">
-        <h1 className="hub-anim-heading mt-8 text-[22px] font-medium text-foreground">
-          Dove vuoi andare?
-        </h1>
-        <p className="hub-anim-subtitle mt-1 text-sm text-muted-foreground">
-          Scegli un&apos;area.
-        </p>
-        <div className="mt-8">
+        <header className="mt-8">
+          <p className="label-font text-primary text-xs tracking-wider uppercase">
+            {profile.display_name}
+          </p>
+          <h1 className="hub-anim-heading mt-1 text-2xl font-medium text-foreground">
+            Dove vuoi praticare oggi?
+          </h1>
+          <p className="hub-anim-subtitle mt-1 text-sm text-muted-foreground">
+            Scegli un&apos;area per iniziare.
+          </p>
+        </header>
+        <div className="mt-6">
           <HubGrid />
         </div>
       </section>

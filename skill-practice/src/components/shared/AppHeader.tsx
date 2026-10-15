@@ -8,16 +8,16 @@ export function AppHeader() {
       <Link
         href="/hub"
         aria-label="Torna alla home"
-        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-accent transition-opacity hover:opacity-80"
+        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-primary transition-all hover:opacity-90 active:scale-95"
       >
-        <TempleHomeIcon className="h-6 w-6" aria-hidden />
+        <TempleHomeIcon className="h-6 w-6 drop-shadow-[0_0_8px_var(--tint-glow)]" aria-hidden />
       </Link>
       <Link
         href="/profile"
         aria-label="Profilo"
-        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-accent transition-opacity hover:opacity-80"
+        className="tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center text-primary transition-all hover:opacity-90 active:scale-95"
       >
-        <User className="h-5 w-5" aria-hidden />
+        <User className="h-5 w-5 drop-shadow-[0_0_8px_var(--tint-glow)]" aria-hidden />
       </Link>
     </header>
   );

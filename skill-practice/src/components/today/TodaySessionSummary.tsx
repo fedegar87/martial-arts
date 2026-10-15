@@ -23,23 +23,24 @@ export function TodaySessionSummary({
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <p className="text-sm font-medium">
-          {completedCount}/{exerciseCount} esercizi completati
+          <span className="font-mono text-primary font-semibold">{completedCount}</span>
+          <span className="text-muted-foreground font-mono">/{exerciseCount}</span> esercizi completati
         </p>
         <p className="text-xs text-muted-foreground">
-          {repsPerForm}x - {weekPracticeText(weekDoneCount)}
+          <span className="font-mono text-foreground font-medium">{repsPerForm}x</span> · {weekPracticeText(weekDoneCount)}
         </p>
       </div>
       <div
-        className="h-1.5 overflow-hidden rounded-full bg-muted"
+        className="h-2 overflow-hidden rounded-full bg-muted border border-border/40"
         aria-hidden="true"
       >
         <div
-          className="h-full rounded-full bg-primary transition-[width]"
+          className="h-full rounded-full bg-gradient-to-r from-primary/80 to-primary shadow-[0_0_10px_var(--tint-glow)] transition-[width] duration-500 ease-out"
           style={{ width: `${completionPercent}%` }}
         />
       </div>
       {completionPercent === 100 && (
-        <p className="label-font text-xs text-primary">
+        <p className="label-font text-xs text-primary tracking-wider">
           Pratica di oggi completata
         </p>
       )}

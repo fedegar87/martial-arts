@@ -2,7 +2,7 @@ import {
   BarChart3,
   BookOpenText,
   CalendarDays,
-  Megaphone,
+  Bell,
   Target,
   User,
 } from "lucide-react";
@@ -40,7 +40,7 @@ const HUB_AREAS = [
   },
   {
     href: "/news",
-    Icon: Megaphone,
+    Icon: Bell,
     title: "Bacheca",
     subtitle: "comunicazioni della scuola",
     anim: "hub-anim-tile-5",

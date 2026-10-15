@@ -40,7 +40,7 @@ export default async function NewsPage() {
 
 function NewsCard({ item }: { item: NewsItem }) {
   return (
-    <article className="space-y-3 rounded-sm border bg-card p-4">
+    <article className="space-y-3 rounded-md border border-border/80 bg-card p-4 shadow-[0_2px_12px_rgba(0,0,0,0.35),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">

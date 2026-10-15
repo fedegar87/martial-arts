@@ -5,15 +5,15 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button label-font inline-flex shrink-0 items-center justify-center rounded-sm border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-300 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button label-font inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-300 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-[0_0_24px_var(--gold-glow)] focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background [a]:hover:bg-primary/80",
+        default: "bg-gradient-to-b from-[#dfc26a] via-[#cca74b] to-[#b38f38] text-[#0a0908] font-semibold shadow-[0_2px_14px_var(--gold-glow),inset_0_1px_0_rgba(255,255,255,0.3)] hover:brightness-105 active:brightness-95 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background [a]:hover:bg-primary/80",
         outline:
-          "border-border bg-background text-foreground hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-border/80 bg-card/60 text-foreground hover:bg-muted hover:border-border aria-expanded:bg-muted aria-expanded:text-foreground dark:border-border/80 dark:bg-card/60 dark:hover:bg-muted",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary border border-border/50 text-secondary-foreground hover:bg-secondary/80 hover:border-border aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:

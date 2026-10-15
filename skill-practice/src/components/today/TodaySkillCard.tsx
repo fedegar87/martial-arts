@@ -33,12 +33,12 @@ export function TodaySkillCard({
 
   return (
     <Card
-      className={`transition-colors duration-[var(--duration-transition)] ease-[var(--ease-spring-smooth)] ${
+      className={`transition-all duration-[var(--duration-transition)] ease-[var(--ease-spring-smooth)] ${
         completedToday
-          ? "border-[color:var(--status-success)]"
+          ? "border-[color:var(--status-success)]/60 bg-[color:var(--status-success)]/[0.02]"
           : status === "focus"
-            ? "border-primary/40"
-            : "border-transparent"
+            ? "border-primary/50 shadow-[0_2px_20px_var(--tint-glow),inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+            : "border-border/70"
       }`}
     >
       <CardHeader>

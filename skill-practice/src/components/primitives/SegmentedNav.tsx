@@ -28,7 +28,7 @@ export function SegmentedNav({
     <nav
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex max-w-full overflow-x-auto rounded-md bg-muted p-1 shadow-[inset_0_0_0_0.5px_var(--separator)]",
+        "inline-flex max-w-full overflow-x-auto rounded-lg bg-muted/80 p-1 border border-border/50",
         fullWidth && "flex w-full",
         className,
       )}
@@ -39,10 +39,10 @@ export function SegmentedNav({
           href={item.href}
           aria-current={item.active ? "page" : undefined}
           className={cn(
-            "tap-feedback label-font flex min-h-11 items-center justify-center gap-1.5 rounded-md border border-transparent px-3 text-sm text-muted-foreground transition-colors hover:text-foreground",
+            "tap-feedback label-font flex min-h-11 items-center justify-center gap-1.5 rounded-md border border-transparent px-3 text-sm text-muted-foreground transition-all hover:text-foreground",
             compact ? "min-w-0" : "min-w-20",
             fullWidth && "flex-1",
-            item.active && "border-border bg-card text-foreground shadow-sm",
+            item.active && "border-border/80 bg-card text-foreground font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.4)]",
           )}
         >
           {item.icon}

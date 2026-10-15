@@ -16,16 +16,31 @@ export function HubTile({
   subtitle,
   animClassName,
 }: HubTileProps) {
+  const isPrimary = href === "/today";
+
   return (
     <Link
       href={href}
-      className={`tap-feedback flex items-center gap-4 rounded-xl border border-accent bg-transparent px-5 py-4 transition-colors hover:bg-accent/5 active:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${animClassName}`}
+      className={`tap-feedback flex items-center gap-4 rounded-xl border border-border/80 bg-card/70 px-5 py-4 transition-all duration-300 hover:border-primary/50 hover:bg-card hover:shadow-[0_4px_20px_rgba(0,0,0,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+        isPrimary
+          ? "border-primary/40 bg-card shadow-[0_2px_16px_var(--tint-glow)]"
+          : ""
+      } ${animClassName}`}
     >
-      <Icon className="h-6 w-6 shrink-0 text-accent" aria-hidden />
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
+        <Icon className="h-5 w-5" aria-hidden />
+      </div>
       <div className="flex flex-col">
-        <span className="label-font text-base font-semibold tracking-wide text-foreground">
-          {title}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="label-font text-base font-semibold tracking-wide text-foreground">
+            {title}
+          </span>
+          {isPrimary && (
+            <span className="label-font rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
+              Oggi
+            </span>
+          )}
+        </div>
         <span className="text-[13px] text-muted-foreground">{subtitle}</span>
       </div>
     </Link>

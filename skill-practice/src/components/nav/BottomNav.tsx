@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpenText, CalendarDays, Megaphone, Target } from "lucide-react";
+import { BarChart3, BookOpenText, CalendarDays, Bell, Target } from "lucide-react";
 import { brand } from "@/lib/brand";
 
 type NavItem = {
@@ -41,7 +41,7 @@ const NAV_ITEMS: NavItem[] = [
     shortLabel: "Progressi",
     Icon: BarChart3,
   },
-  { href: "/news", label: "Bacheca", shortLabel: "Bacheca", Icon: Megaphone },
+  { href: "/news", label: "Bacheca", shortLabel: "Bacheca", Icon: Bell },
 ];
 
 export function BottomNav() {
