@@ -152,11 +152,11 @@ export function buildTrainingReminderPayload({
 }): TrainingReminderPayload {
   const count = exerciseNames.length;
   const body = includeExerciseNames
-    ? `Apri la sessione: ${formatExerciseList(exerciseNames)}`
-    : `Apri la sessione di oggi: ${count} ${count === 1 ? "esercizio" : "esercizi"}`;
+    ? `Oggi devi allenare ${formatExerciseList(exerciseNames)}`
+    : `Oggi devi allenare ${count} ${count === 1 ? "esercizio" : "esercizi"}`;
 
   return {
-    title: "Allenamento di oggi",
+    title: brand.appName,
     body,
     url: "/today",
     tag: `training-reminder-${date}`,

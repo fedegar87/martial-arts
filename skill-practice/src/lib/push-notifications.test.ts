@@ -106,7 +106,7 @@ test("isReminderTimeDue supports 90-minute catch-up window and midnight h23", ()
   );
 });
 
-test("buildTrainingReminderPayload includes brand icon and exercise names", () => {
+test("buildTrainingReminderPayload includes brand title, icon and exercise names", () => {
   assert.deepEqual(
     buildTrainingReminderPayload({
       date: "2026-05-16",
@@ -114,8 +114,8 @@ test("buildTrainingReminderPayload includes brand icon and exercise names", () =
       includeExerciseNames: true,
     }),
     {
-      title: "Allenamento di oggi",
-      body: "Apri la sessione: Tai Chi, Ta Lu",
+      title: "FESK Practice",
+      body: "Oggi devi allenare Tai Chi, Ta Lu",
       url: "/today",
       tag: "training-reminder-2026-05-16",
       icon: "/icons/icon-192.png",
