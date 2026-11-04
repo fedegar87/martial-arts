@@ -58,7 +58,9 @@ Salva.
    valore adeguato agli invii in blocco.
 2. **Authentication -> URL Configuration**: **Site URL** e **Redirect URLs** devono
    puntare al dominio di produzione (lo stesso di `NEXT_PUBLIC_SITE_URL`), altrimenti
-   il link `{{ .ConfirmationURL }}` porta sull'URL sbagliato.
+   il link costruito con `{{ .SiteURL }}` porta sull'URL sbagliato. Il template usa
+   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite` (NON
+   `{{ .ConfirmationURL }}`, che salta la route server e fallisce il set-password).
 
 ## Fase 4 — Template
 

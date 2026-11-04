@@ -17,6 +17,14 @@
 > affiliate. Questa mappa resta valida come registro assunzioni, ma le prossime
 > validazioni vanno orientate prima sul profilo V2.
 
+> Nota 2026-06-27 (Sessione 3, prima evidenza sul campo): scambio con un praticante/istruttore
+> via chat, evidenza parziale - vedi `validation-lab/2026-06-27-session-3-script-intervista.md` §6.
+> Conferma **frizione osservabile** (video dispersi, "Franco fatica a cercarli tra tutti quelli che ha")
+> e **prontezza all'azione** (stavano gia pensando a una soluzione + sito in sviluppo). Emerge una
+> nuova assunzione P0: la **protezione dei contenuti** (paura che i video escano/diventino pubblici)
+> e' pre-condizione di desiderabilita e possibile leva di value proposition, non solo vincolo legale.
+> Registrata come VP6 (§3.2) e P0-6 (§4).
+
 ## 0. Scopo
 
 Questo documento risponde alla domanda:
@@ -169,6 +177,7 @@ Assunzione aggiornata:
 | VP3 | La funzione "cosa praticare oggi" aumenta valore rispetto a una libreria statica. | Admin software spesso include curriculum, ma non necessariamente pratica guidata quotidiana. | P0 | Skill Practice perde differenziazione. | A/B qualitativo: library-only vs sessione del giorno nel pilota. |
 | VP4 | Programma esame consultabile crea valore specifico. | Molti sistemi arti marziali usano gradi/esami; competitor admin hanno belt/curriculum tracking. | P1 | L'uso diventa occasionale. | Misurare uso nelle 2-4 settimane pre-esame. |
 | VP5 | Skill Practice e' abbastanza diverso da budoo Campus. | Budoo copre contenuti scuola, app studenti, programmi digitali ed esami. | P0 | Il prodotto sembra un sottoinsieme debole di budoo. | Confronto demo/pitch: chiedere a maestri se preferiscono all-in-one o tool pedagogico leggero. |
+| VP6 (A-NEW1) | I contenuti tecnici sono condivisibili solo se la scuola mantiene il controllo: restano nel proprio giro e non diventano pubblici. La protezione e' pre-condizione del valore e possibile leva di proposta. | Intervista Sessione 3 §6: "che i video escano dal giro e vengano pubblicati... dinamica difficile e rischiosa"; "se si tiene in locale e disponibile ai maestri senza esporla pubblicamente, potrebbe essere la svolta". Evidenza media (una fonte, via chat). | P0 | La proposta "contenuti della tua scuola" non si attiva: senza garanzia di controllo la scuola non condivide. | Chiedere episodi di leak passati, come proteggono oggi, chi decide cosa si condivide, se l'accesso e' solo maestri o anche allievi. |
 
 ### 3.3 Canali
 
@@ -240,6 +249,7 @@ Assunzione aggiornata:
 | P0-3 | Allievi usano oltre novelty effect | Pilota 60-90 giorni | >25% invitati attivi settimana 6 | <10% invitati attivi settimana 6 |
 | P0-4 | Scuola/federazione paga | Report + pricing conversation | Decisore identifica budget/processo | Nessun pagatore o "solo gratis" |
 | P0-5 | Video/curriculum autorizzabili | Check con referente/proprietari | Autorizzazione chiara per pilota/uso | Dubbi o stop su contenuti |
+| P0-6 | Protezione/controllo dei contenuti e' pre-condizione perche una scuola adotti e condivida i video | Interviste maestri/scuole: episodi di leak, policy attuale, requisiti di controllo | Almeno 2 scuole confermano che con controllo garantito (locale/non pubblico, accesso maestri) condividerebbero i video | Il tema non emerge spontaneamente (non e' leva), oppure resta bloccante anche garantendo il controllo (non risolvibile) |
 
 ---
 

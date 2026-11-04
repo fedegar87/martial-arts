@@ -1,10 +1,18 @@
--- Setup scheduler gratuito per promemoria push su Supabase (pg_cron + pg_net + Vault).
--- Da incollare una tantum nel Supabase SQL Editor dell'istanza (NON committare mai
--- il vero CRON_SECRET nel repository).
+-- Setup completo promemoria push per istanza (Vercel Free + Supabase Free, costo 0 €).
 --
--- Sostituisci i due placeholder prima di eseguire:
---   1. https://<DOMINIO_VERCEL>  (es. https://fesk-practice.vercel.app, senza slash finale)
---   2. <IL_TUO_CRON_SECRET>      (lo stesso identico valore salvato in CRON_SECRET su Vercel)
+-- Checklist rapida per una nuova istanza white-label:
+--   A. Genera le chiavi localmente in skill-practice/:
+--        npx web-push generate-vapid-keys --json
+--        node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+--   B. Salva su Vercel (Environment Variables -> Production & Preview):
+--        NEXT_PUBLIC_VAPID_PUBLIC_KEY = <publicKey>   (Type: Config)
+--        VAPID_PRIVATE_KEY            = <privateKey>  (Type: Secret)
+--        CRON_SECRET                  = <hex 64 char> (Type: Secret)
+--      (VAPID_SUBJECT usa in automatico mailto: + brand.supportEmail da src/lib/brand.ts).
+--   C. Incolla questo file nel Supabase SQL Editor dell'istanza sostituendo i due
+--      placeholder qui sotto (NON committare mai il vero CRON_SECRET nel repository):
+--        1. https://<DOMINIO_VERCEL>  (es. https://fesk-practice.vercel.app, senza slash finale)
+--        2. <IL_TUO_CRON_SECRET>      (lo stesso identico valore salvato in CRON_SECRET su Vercel)
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;

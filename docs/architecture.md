@@ -23,7 +23,7 @@ Leggi prima questa sezione se sei un agent/LLM.
 5. Per UI e componenti leggi
    [../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md).
 6. Per lavoro recente di hardening/correzioni leggi
-   [../skill-practice/docs/plans/2026-06-11-review-fixes.md](../skill-practice/docs/plans/2026-06-11-review-fixes.md).
+   [../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md](../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md).
 
 Regola pratica: se il piano e il codice non coincidono, verifica il codice e
 aggiorna il documento/piano invece di copiare assunzioni vecchie.
@@ -794,7 +794,7 @@ Tecnici:
 - Regole progetto: [../skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md)
 - UI system: [../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md)
 - Review fixes 2026-06-11:
-  [../skill-practice/docs/plans/2026-06-11-review-fixes.md](../skill-practice/docs/plans/2026-06-11-review-fixes.md)
+  [../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md](../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md)
 - Migrations:
   [../skill-practice/supabase/migrations](../skill-practice/supabase/migrations)
 

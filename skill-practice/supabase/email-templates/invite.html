@@ -3,9 +3,14 @@
   Identita FESK dark/gold. Copia-incolla l'HTML nel campo "Message body" del template.
 
   Variabili disponibili nel template invite di Supabase:
-    {{ .ConfirmationURL }}  link per impostare la password e accettare l'invito
+    {{ .TokenHash }}        token da verificare server-side via /auth/confirm
     {{ .Email }}            email del destinatario
     {{ .SiteURL }}          URL del sito
+
+  IMPORTANTE: il link NON usa {{ .ConfirmationURL }} (flusso implicit, reindirizza alla
+  root del Site URL e non raggiunge la route server). Usa invece
+  {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite, che colpisce
+  src/app/auth/confirm/route.ts (verifyOtp -> /auth/update-password).
 
   Nota: i client email (Gmail/Outlook) ignorano i web font, quindi si usa Georgia
   come serif di fallback. I colori e la struttura a tabella sono robusti ovunque.
@@ -46,7 +51,7 @@
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
                 <td align="center" style="background-color:#c8a84b;border-radius:4px;">
-                  <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:14px 36px;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:bold;letter-spacing:1px;color:#080808;text-decoration:none;border-radius:4px;">
+                  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite" target="_blank" style="display:inline-block;padding:14px 36px;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:bold;letter-spacing:1px;color:#080808;text-decoration:none;border-radius:4px;">
                     Imposta la password
                   </a>
                 </td>
@@ -60,7 +65,7 @@
               Se il pulsante non funziona, copia e incolla questo link nel browser:
             </p>
             <p style="font-family:'Courier New',monospace;font-size:12px;line-height:1.5;color:#8a6e2f;margin:8px 0 0 0;text-align:center;word-break:break-all;">
-              {{ .ConfirmationURL }}
+              {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite
             </p>
           </td>
         </tr>

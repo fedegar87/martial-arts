@@ -58,7 +58,7 @@ Per il razionale completo vedi `archive/`:
 | **D9** | Min password length | **8 caratteri** (NIST 2024 baseline). Niente regex complex (es. una maiuscola + un numero) — NIST le ha rimosse |
 | **D10** | Documenti legali (privacy/terms/cookies/disclaimer) | **Pagine custom in-app, non iubenda.** Deviazione esplicita rispetto al §15.3 v3 (che suggeriva iubenda generator a €29/anno). Razionale: (a) MVP single-user non ha budget legale ricorrente; (b) i contenuti devono essere specifici per pratica fisica/scuola e non generici da generator; (c) tutto il testo non derivabile è marcato `[PLACEHOLDER: ...]` per revisione legale prima di apertura a utenti terzi. iubenda resta opzione di fallback se la federazione richiederà policy generata da fonte certificata |
 | **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/completed/2026-05-10-calendar-unification-design.md` |
-| **D12** | Promemoria push allenamento | **Implementati come opt-in stretto, UI disattivata fino a setup VAPID.** Codice in produzione e migration applicata, ma i selettori in `/today` e `/profile` sono gated da `NEXT_PUBLIC_VAPID_PUBLIC_KEY`: senza chiavi VAPID + `CRON_SECRET` configurati su Vercel la UI resta nascosta. Setup pendente: `plan/2026-05-16-push-notifications-setup-pending.md`. Design: `plan/completed/2026-05-16-training-reminder-push-notifications-plan.md` |
+| **D12** | Promemoria push allenamento | **Attivi in produzione dal 2026-11-04 (Web Push VAPID + Supabase `pg_cron`/`pg_net`).** Selettori attivi in `/today` e `/profile`, finestra di recupero di 90m con retry automatico, revoca subscription al logout, messaggio guida iOS Home Screen e fallback white-label da `src/lib/brand.ts`. Runbook per nuove istanze in `skill-practice/scripts/setup-push-cron.sql`. Design storico: `plan/completed/2026-05-16-training-reminder-push-notifications-plan.md`. |
 | **D13** | Aggiornamento di sicurezza framework | **Implementato localmente il 2026-09-27.** Next.js ed `eslint-config-next` aggiornati da `16.2.4` a `16.3.6`, React/React DOM da `19.2.4` a `19.2.8`, per includere le correzioni di sicurezza correnti. Lint, typecheck, 79 test e build superati; verifiche HTTP anonime di login, route protette e varianti RSC superate. Verifica interattiva con account e deploy non eseguiti. |
 | **D14** | Strategia White-Label e Multi-Arte Marziale | **Consolidata il 2026-11-04 in `plan/white-label-strategy.md`.** Unico codebase + deploy isolati Vercel/Supabase per organizzazioni esterne (fino a ~15-20 scuole, zero SaaS prematuro). Evoluzione strettamente attivata da trigger reali (zero over-engineering): Fase 1 per altre scuole Chang (separazione Schema SQL vs Seed + Tenant Brand/Asset Pack); Fase 2 per altre arti marziali come Taekwondo/Karate (`curriculum_tracks` `1..N`, `grade_levels` con `rank_order` crescente `1..N`, `skill_categories` con `tracking_mode`). Il rollout FESK (`0037`–`0048`, `brand.ts`, `manifest.ts`, inviti e promozioni) è archiviato in `plan/completed/2026-06-13-fesk-rollout-implementation-plan.md`. |
 
@@ -290,7 +290,7 @@ skill-practice/
 ├── CLAUDE.md                           # Regole di progetto (vincoli stack, struttura, scope)
 ├── docs/
 │   ├── ui-system.md
-│   └── ui-codebase-refactor-plan.md
+│   └── plans/completed/ui-codebase-refactor-plan.md
 ├── public/
 │   ├── manifest.json
 │   ├── icons/                          # 192, 512, maskable
@@ -459,7 +459,7 @@ Aggiornamento UI 2026-05-11:
 - `src/components/ui/` resta riservato ai componenti shadcn-managed.
 - Le primitive UI custom del progetto vanno in `src/components/primitives/<Name>.tsx` con PascalCase.
 - `src/components/shared/` resta per shell/app/layout e asset identitari, non per primitive UI pure.
-- Regole e roadmap UI sono in `skill-practice/docs/ui-system.md` e `skill-practice/docs/ui-codebase-refactor-plan.md`.
+- Regole UI sono in `skill-practice/docs/ui-system.md` (piano storico in `skill-practice/docs/plans/completed/ui-codebase-refactor-plan.md`).
 
 - **Route groups `(auth)` e `(app)`**: separano pagine pubbliche da protette. `src/proxy.ts` (ex `src/middleware.ts`, rinominato in Next 16) redirige verso `/login` qualunque rotta sotto `(app)` se la sessione manca.
 - **`lib/supabase/` con tre file**: in App Router servono client diversi per Client Components, RSC/Server Actions e proxy. Un singolo `supabase.ts` rompe SSR e session refresh.

@@ -14,11 +14,10 @@ Mappa di navigazione per agenti AI e maintainer. Indica quali documenti sono att
 3. [../docs/architecture.md](../docs/architecture.md)
    - Briefing tecnico completo dell'app (`skill-practice/`) aggiornato allo stato corrente del codice.
 
-## Piani Pendenti / Parcheggiati (Non bloccanti)
+## Piani Parcheggiati (Non bloccanti)
 
 | File | Stato | Note |
 |---|---|---|
-| [2026-05-16-push-notifications-setup-pending.md](2026-05-16-push-notifications-setup-pending.md) | Pendente | Setup esterno VAPID/cron su Vercel per attivare la UI promemoria push. |
 | [2026-05-02-monetization-strategy.md](2026-05-02-monetization-strategy.md) | Parcheggiato | Analisi monetizzazione FESK; da rivalutare dopo l'uso operativo reale. |
 
 ## Piani Completati e Riferimenti Perenni

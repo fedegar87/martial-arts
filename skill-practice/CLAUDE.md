@@ -57,7 +57,7 @@ Regole UI:
 - `src/components/primitives/` contiene wrapper e primitive UI custom del progetto, senza dominio: `Chip`, `OptionCard`, `SegmentedNav`, eventuali wrapper conferma.
 - `src/components/shared/` contiene componenti trasversali di shell/app/layout o asset identitari, non primitive UI pure.
 - Fuori da `src/components/ui/`, i file componenti restano PascalCase.
-- Le regole operative complete sono in `docs/ui-system.md` e il piano di migrazione in `docs/ui-codebase-refactor-plan.md`.
+- Le regole operative complete sono in `docs/ui-system.md` (piano storico in `docs/plans/completed/ui-codebase-refactor-plan.md`).
 
 ---
 
