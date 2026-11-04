@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { sendDueTrainingReminders } from "@/lib/training-reminder-sender";
 
@@ -16,12 +17,18 @@ export async function GET(request: NextRequest) {
   });
 }
 
+export const POST = GET;
+
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = process.env.CRON_SECRET?.trim();
   if (!secret) return false;
 
   const authorization = request.headers.get("authorization");
-  if (authorization === `Bearer ${secret}`) return true;
+  if (!authorization?.startsWith("Bearer ")) return false;
 
-  return request.nextUrl.searchParams.get("secret") === secret;
+  const provided = Buffer.from(authorization.slice("Bearer ".length));
+  const expected = Buffer.from(secret);
+  if (provided.length !== expected.length) return false;
+
+  return timingSafeEqual(provided, expected);
 }

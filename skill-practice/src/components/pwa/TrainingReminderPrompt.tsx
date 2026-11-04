@@ -5,6 +5,7 @@ import { Bell } from "lucide-react";
 import { enableTrainingReminders } from "@/lib/actions/push-notifications";
 import {
   getPushSupportState,
+  pushSupportErrorMessage,
   subscribeToTrainingReminders,
 } from "@/lib/push-client";
 import type { TrainingReminderSettings } from "@/lib/push-notifications";
@@ -33,16 +34,8 @@ export function TrainingReminderPrompt({
   const handleEnable = () => {
     setMessage(null);
     const support = getPushSupportState(publicVapidKey);
-    if (support === "missing_key") {
-      setMessage("Promemoria non configurati sul server.");
-      return;
-    }
-    if (support === "unsupported") {
-      setMessage("Questo browser non supporta le notifiche push per questa app.");
-      return;
-    }
-    if (support === "permission_denied") {
-      setMessage("Notifiche bloccate. Riattivale dalle impostazioni del browser.");
+    if (support !== "supported") {
+      setMessage(pushSupportErrorMessage(support));
       return;
     }
 
@@ -74,7 +67,8 @@ export function TrainingReminderPrompt({
         <div className="min-w-0">
           <p className="text-sm font-medium">Promemoria allenamento</p>
           <p className="text-muted-foreground text-xs">
-            Ricevi un avviso nei giorni con esercizi da completare.
+            Ricevi un avviso alle {settings.reminderTime} nei giorni con esercizi da completare
+            (orario modificabile in Profilo).
           </p>
         </div>
         <Button

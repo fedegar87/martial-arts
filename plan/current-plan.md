@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Versione brief:** v3
-**Ultimo aggiornamento:** 2026-05-16
+**Ultimo aggiornamento:** 2026-11-04
 **Sostituisce:** `archive/05-brief-v1-superseded.md`
 
 ---
@@ -60,6 +60,7 @@ Per il razionale completo vedi `archive/`:
 | **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/completed/2026-05-10-calendar-unification-design.md` |
 | **D12** | Promemoria push allenamento | **Implementati come opt-in stretto, UI disattivata fino a setup VAPID.** Codice in produzione e migration applicata, ma i selettori in `/today` e `/profile` sono gated da `NEXT_PUBLIC_VAPID_PUBLIC_KEY`: senza chiavi VAPID + `CRON_SECRET` configurati su Vercel la UI resta nascosta. Setup pendente: `plan/2026-05-16-push-notifications-setup-pending.md`. Design: `plan/completed/2026-05-16-training-reminder-push-notifications-plan.md` |
 | **D13** | Aggiornamento di sicurezza framework | **Implementato localmente il 2026-09-27.** Next.js ed `eslint-config-next` aggiornati da `16.2.4` a `16.3.6`, React/React DOM da `19.2.4` a `19.2.8`, per includere le correzioni di sicurezza correnti. Lint, typecheck, 79 test e build superati; verifiche HTTP anonime di login, route protette e varianti RSC superate. Verifica interattiva con account e deploy non eseguiti. |
+| **D14** | Strategia White-Label e Multi-Arte Marziale | **Consolidata il 2026-11-04 in `plan/white-label-strategy.md`.** Unico codebase + deploy isolati Vercel/Supabase per organizzazioni esterne (fino a ~15-20 scuole, zero SaaS prematuro). Evoluzione strettamente attivata da trigger reali (zero over-engineering): Fase 1 per altre scuole Chang (separazione Schema SQL vs Seed + Tenant Brand/Asset Pack); Fase 2 per altre arti marziali come Taekwondo/Karate (`curriculum_tracks` `1..N`, `grade_levels` con `rank_order` crescente `1..N`, `skill_categories` con `tracking_mode`). Il rollout FESK (`0037`–`0048`, `brand.ts`, `manifest.ts`, inviti e promozioni) è archiviato in `plan/completed/2026-06-13-fesk-rollout-implementation-plan.md`. |
 
 ### 2.2 Decisioni aperte ⚠️
 

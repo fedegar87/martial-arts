@@ -1,110 +1,79 @@
-# Push notifications — setup pending
+# Promemoria Push Allenamento — Guida Rapida di Attivazione (FESK + White-Label)
 
-Stato al **2026-05-16**: feature implementata e in produzione, ma **disattivata in UI** finché non vengono configurate VAPID + cron secret su Vercel.
+Ultimo aggiornamento: **2026-11-04**.
 
-## Cosa è già fatto
+Il codice applicativo e la migrazione DB (`0026_training_reminder_push_notifications.sql`) sono pronti, inclusi:
+- finestra di recupero di **90 minuti** con retry automatico su errori temporanei e zero doppi invii nello stesso giorno;
+- validazione SSRF sugli endpoint Web Push, revoca automatica della subscription del dispositivo al logout;
+- icona/badge del brand (`src/lib/brand.ts` → `notificationIcon`) e fallback automatico `VAPID_SUBJECT` da `brand.supportEmail` (pronto white-label);
+- messaggio dedicato per utenti **iPhone/iPad** che aprono da Safari senza aver ancora aggiunto la PWA alla schermata Home.
 
-- Codice feature D12/Sprint 1.16 in `main` (commit `c03c7c8`).
-- Migration `0026_training_reminder_push_notifications.sql` applicata su Supabase.
-- Service worker `public/sw.js` con handler `push` e `notificationclick` deployato.
-- Cron job dichiarato in `vercel.json` (`*/15 * * * *`).
-- Componenti `TrainingReminderPrompt` (in `/today`) e `TrainingReminderSettings` (in `/profile`) presenti nel codice ma **non renderizzati** finché manca `NEXT_PUBLIC_VAPID_PUBLIC_KEY`.
+La UI in `/today` e `/profile` resta nascosta finché `NEXT_PUBLIC_VAPID_PUBLIC_KEY` non è impostata su Vercel.
 
-## Cosa manca per attivare
+---
 
-### 1. Generare le chiavi VAPID
+## Procedura di attivazione in 4 passi (Costo 0 € su Vercel Free + Supabase Free)
 
-Le push notifications web richiedono una coppia di chiavi crittografiche per identificare il server verso FCM/Mozilla/Apple, firmare le notifiche e cifrare il payload. Si generano una volta sola e restano permanenti.
+### Passo 1 — Genera localmente le chiavi VAPID e il `CRON_SECRET`
 
-In un terminale qualsiasi:
-
-```bash
-npx web-push generate-vapid-keys --json
-```
-
-Output:
-
-```json
-{
-  "publicKey": "BJk8K9wH... (~87 caratteri)",
-  "privateKey": "kT7Hj... (~43 caratteri)"
-}
-```
-
-Tienile aperte in una nota temporanea. Non committare mai la privata.
-
-### 2. Generare il CRON_SECRET
-
-Stringa random lunga che protegge `/api/cron/training-reminders` da chiamate non autorizzate. Senza, chiunque potrebbe scatenare invii a tutti gli utenti.
-
-Su Windows PowerShell:
+Apri un terminale PowerShell nella cartella `skill-practice` sul tuo PC (non committare mai questi valori):
 
 ```powershell
-[Convert]::ToHexString((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+cd c:\martial-arts\skill-practice
+npx web-push generate-vapid-keys --json
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Va bene anche una qualsiasi stringa da 40+ caratteri imprevedibili.
+Il primo comando stampa `publicKey` e `privateKey`; il secondo stampa una stringa esadecimale da 64 caratteri da usare come `CRON_SECRET`.
 
-### 3. Configurare le env su Vercel
+### Passo 2 — Imposta le 3 variabili su Vercel
 
-**Project Settings → Environment Variables**. Per ognuna spuntare sia `Production` che `Preview`:
+Su **Vercel → Project Settings → Environment Variables** (spunta `Production` e `Preview`):
 
-| Nome | Valore | Server-only? |
+| Variabile | Valore | Note |
 |---|---|---|
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | `publicKey` dal JSON | No: il prefisso `NEXT_PUBLIC_` la espone al browser. **È il flag che ri-abilita la UI.** |
-| `VAPID_PRIVATE_KEY` | `privateKey` dal JSON | Sì. Niente prefisso `NEXT_PUBLIC_`. |
-| `VAPID_SUBJECT` | `mailto:letis87@gmail.com` | Sì. Deve essere `mailto:` o `https://`. |
-| `CRON_SECRET` | la stringa random | Sì. |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | `publicKey` generata al Passo 1 | Esposta al browser: **accende automaticamente la UI** in `/today` e `/profile`. |
+| `VAPID_PRIVATE_KEY` | `privateKey` generata al Passo 1 | Solo server (mai prefisso `NEXT_PUBLIC_`). |
+| `CRON_SECRET` | stringa random generata al Passo 1 | Protegge `/api/cron/training-reminders`. |
 
-### 4. Redeploy
+*(Opzionale: `VAPID_SUBJECT` non è più obbligatoria perché usa in automatico `mailto:` + `brand.supportEmail` da `src/lib/brand.ts`, ossia `mailto:info@feskfongttai.it` per FESK.)*
 
-Le env vars vengono lette al build. Dopo aver salvato:
+Fai **Redeploy** dell'ultimo deploy su Vercel per rendere attiva `NEXT_PUBLIC_VAPID_PUBLIC_KEY` nel bundle client.
 
-- **Deployments → ultimo deploy in Ready → menu `…` → Redeploy** (senza cache).
+### Passo 3 — Verifica immediata dell'endpoint
 
-Da qui in poi:
+Da PowerShell verifica che Vercel risponda `200`:
 
-- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` è popolata → la UI di promemoria appare automaticamente in `/today` (quando ci sono esercizi non completati) e in `/profile`.
-- Il cron Vercel ogni 15 minuti chiama l'endpoint protetto e invia le push agli utenti con orario reminder nella finestra corrente.
-
-## Come avviene il "rendi di nuovo evidenti i selettori"
-
-**Niente cambi codice richiesti.** Il rendering dei due componenti è gated da:
-
-```ts
-const pushEnabled = Boolean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
+```powershell
+curl.exe -H "Authorization: Bearer IL_TUO_CRON_SECRET" https://<DOMINIO_VERCEL>/api/cron/training-reminders
 ```
 
-in [skill-practice/src/app/(app)/today/page.tsx](../skill-practice/src/app/(app)/today/page.tsx) e [skill-practice/src/app/(app)/profile/page.tsx](../skill-practice/src/app/(app)/profile/page.tsx).
-
-Appena la variabile è popolata su Vercel e il deploy è rilanciato, i selettori riappaiono senza toccare il codice. Il gate è esplicito proprio per evitare di mostrare un bottone "Attiva" che fallisce.
-
-## Verifica post-attivazione
-
-Dopo il redeploy:
-
-```bash
-curl -H "Authorization: Bearer IL_TUO_CRON_SECRET" \
-  https://<dominio-vercel>/api/cron/training-reminders
-```
-
-Risposta attesa subito dopo il setup (nessun utente ha ancora attivato i promemoria):
+Risposta attesa:
 
 ```json
 {"checkedPreferences":0,"duePreferences":0,"sent":0,"skipped":0,"failed":0}
 ```
 
-Errori comuni:
+### Passo 4 — Attiva lo scheduler gratuito ogni 15 minuti su Supabase (`pg_cron` + `pg_net`)
 
-- `401 Unauthorized` → `CRON_SECRET` sbagliato o mancante.
-- `500 Missing VAPID configuration` → manca una delle tre chiavi VAPID/subject.
+Poiché Vercel Hobby non supporta cron ogni 15 minuti, il trigger gira gratuitamente dentro Supabase:
 
-## Note di attenzione
+1. Apri [skill-practice/scripts/setup-push-cron.sql](../skill-practice/scripts/setup-push-cron.sql).
+2. Copia il contenuto nel **Supabase SQL Editor**, sostituisci `<DOMINIO_VERCEL>` e `<IL_TUO_CRON_SECRET>` e premi **Run**.
 
-- **Vercel Hobby + cron `*/15`**: il piano Hobby ha limiti sui cron job; se non parte ogni 15 minuti, rallentare lo schedule o passare a Pro.
-- **iOS**: Web Push funziona solo da PWA installata in Home Screen. Su Safari tab normale il prompt non comparirà.
-- **Niente prompt automatici**: per design la richiesta del permesso parte solo da gesto utente (`/today` se ci sono esercizi non completati, `/profile` per gestione stabile).
+Il job `training-reminders-every-15m` chiamerà `/api/cron/training-reminders` ogni 15 minuti leggendo il secret dal Vault cifrato di Supabase.
 
-## Quando questo documento può sparire
+---
 
-Quando tutti i punti di §"Cosa manca per attivare" sono fatti e una push di test arriva sul tuo dispositivo. A quel punto è sufficiente eliminare questo file e togliere lo stato "pending" da [current-plan.md](current-plan.md) §D12/§1.16 (eventualmente promuovendo la feature a "attivata in produzione").
+## Come testarla sul tuo telefono in 1 minuto
+
+1. **Su Android:** apri l'app (o la PWA installata), assicurati di avere una cadenza attiva in `/sessions/setup` per il giorno corrente con almeno un esercizio non spuntato.
+2. **Su iPhone:** apri prima il sito in Safari → **Condividi → Aggiungi alla schermata Home**, poi aprilo dall'icona sulla Home.
+3. Vai in **Profilo → Allenamento → Promemoria**, imposta un orario tra 2–5 minuti da ora e tocca **Attiva** (concedendo il permesso notifiche al sistema operativo).
+4. Per non aspettare i 15 minuti del cron al primo test, lancia manualmente il comando `curl.exe` del Passo 3 una volta superato l'orario scelto: la notifica comparirà subito sul telefono con i nomi degli esercizi rimasti per oggi!
+
+---
+
+## Nota per future istanze White-Label
+
+Quando verrà creata un'istanza separata per un'altra scuola (`plan/white-label-strategy.md`), basterà ripetere identici i Passi 1–4 sul progetto Vercel e Supabase della nuova scuola: icona, nome app e indirizzo `mailto:` VAPID verranno presi automaticamente dal relativo `brand.ts`.

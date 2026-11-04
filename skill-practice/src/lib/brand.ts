@@ -17,6 +17,7 @@ export const brand = {
   locale: "it_IT",
   themeColor: "#080808",
   backgroundColor: "#080808",
+  notificationIcon: "/icons/icon-192.png",
   landing: {
     motto: "Fong Ttai",
     // Ideogrammi indicativi (abbondanza + pace): DA CONFERMARE con FESK.

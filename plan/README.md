@@ -1,69 +1,33 @@
-# Plan Folder Index
+# Indice Cartella `plan/`
 
-This file is the navigation map for `plan/`. It does not replace the plans; it tells agents and reviewers which documents are active and which are historical context.
+Mappa di navigazione per agenti AI e maintainer. Indica quali documenti sono attivi e dove vive lo storico.
 
-## Active Reading Order
+## Ordine di Lettura Attivo
 
-Use this order for any FESK rollout implementation work:
+1. [current-plan.md](current-plan.md)
+   - Piano prodotto master, storico decisioni (`D1`–`D14`), stack e cronologia sprint.
 
-1. [2026-06-13-fesk-rollout-implementation-plan.md](2026-06-13-fesk-rollout-implementation-plan.md)
-   - Current operational source of truth for the FESK rollout.
-   - Covers branding, Supabase verification, access groups, user invites, level locks, post-exam promotion, legal/content readiness, deployment, and rollout operations.
+2. [white-label-strategy.md](white-label-strategy.md)
+   - **Strategia architetturale canonica** per evoluzione multi-scuola, white-label (altre scuole Kung Fu Chang) e altre arti marziali (es. Taekwondo/Karate con `1..N` percorsi e propri gradi/categorie).
+   - Contiene le regole anti-overengineering, la fotografia reale post-migrazione `0048`, la roadmap attivata da trigger reali e il riepilogo operativo FESK.
 
-2. [2026-06-13-white-label-multi-instance-strategy.md](2026-06-13-white-label-multi-instance-strategy.md)
-   - Strategic architecture source.
-   - Explains why the product should use one shared codebase, FESK-first rollout, and separate Supabase/deployment instances for unrelated future organizations.
+3. [../docs/architecture.md](../docs/architecture.md)
+   - Briefing tecnico completo dell'app (`skill-practice/`) aggiornato allo stato corrente del codice.
 
-3. [current-plan.md](current-plan.md)
-   - Technical history and current app architecture.
-   - Use as a reference for schema, migrations, sprint history, and implementation context.
+## Piani Pendenti / Parcheggiati (Non bloccanti)
 
-## Current FESK Decisions
-
-- Product name: `FESK Practice`.
-- Current Supabase project is reused for FESK.
-- Current domain/deployment is reused for the first rollout.
-- Current route structure is kept; update visible labels and brand, not URLs.
-- Public landing should be redesigned for FESK using the FESK logo and FESK-aligned copy.
-- Current horse/Confucius landing should be preserved as a legacy personal variant.
-- First rollout users: teachers/instructors plus a few advanced students.
-- No minors in the first rollout.
-- Founder is operational owner for now; design should allow future handoff to a FESK operator.
-- Access is managed through invite/preassignment groups.
-- Founder/admin, selected masters, and selected instructors belong to an all-access group.
-- `Altro` / extra content is visible only to all-access users for now.
-- Shaolin and T'ai Chi promotion happen independently after exam sessions.
-- YouTube unlisted is acceptable for playback.
-- FESK Google Drive is treated as source/archive unless explicitly scoped otherwise.
-- Contact email: `info@feskfongttai.it`.
-- FESK is treated as the data-responsible/controller candidate for rollout; exact GDPR legal wording still needs legal-page review.
-
-The canonical, full decision table lives in the rollout plan section 5.3; the copy in the white-label strategy section 7A mirrors it. If they diverge, section 5.3 wins. The rollout plan also carries the executable detail: the verified access bypasses, the access-control commit plan (section 13), and the smoke-test matrix (section 14).
-
-## Active But Not Rollout-Blocking
-
-| File | Status | Notes |
+| File | Stato | Note |
 |---|---|---|
-| [2026-05-16-push-notifications-setup-pending.md](2026-05-16-push-notifications-setup-pending.md) | Pending | Push reminders are not required for the first FESK rollout. Keep disabled unless VAPID/cron are configured. |
-| [2026-05-02-monetization-strategy.md](2026-05-02-monetization-strategy.md) | Parked | Monetization is not a first-rollout implementation dependency. Revisit after operational use. |
+| [2026-05-16-push-notifications-setup-pending.md](2026-05-16-push-notifications-setup-pending.md) | Pendente | Setup esterno VAPID/cron su Vercel per attivare la UI promemoria push. |
+| [2026-05-02-monetization-strategy.md](2026-05-02-monetization-strategy.md) | Parcheggiato | Analisi monetizzazione FESK; da rivalutare dopo l'uso operativo reale. |
 
-## Historical / Reference Material
+## Piani Completati e Riferimenti Perenni
 
-Business validation and canvas documents live under [reference/business/](reference/business/). They are useful context, but they no longer override the FESK rollout decision set above.
+- **Storico sprint e rollout implementati:** [completed/](completed/) — incluso il rollout FESK chiuso in [completed/2026-06-13-fesk-rollout-implementation-plan.md](completed/2026-06-13-fesk-rollout-implementation-plan.md).
+- **Dominio FESK:** [reference/domain/curriculum-mapping-fesk.md](reference/domain/curriculum-mapping-fesk.md).
+- **Design & Visual Identity:** [reference/design/](reference/design/).
+- **Business & Validation Lab:** [reference/business/](reference/business/).
 
-Important reference files:
+## Regola per Agenti AI
 
-- [reference/business/validation-lab-workbook.md](reference/business/validation-lab-workbook.md)
-- [reference/business/validation-lab/2026-06-10-session-2-where-to-play.md](reference/business/validation-lab/2026-06-10-session-2-where-to-play.md)
-- [reference/business/business-model-canvas.md](reference/business/business-model-canvas.md)
-- [reference/business/business-model-canvas-draft.md](reference/business/business-model-canvas-draft.md)
-- [reference/business/business-model-canvas-assumption-map.md](reference/business/business-model-canvas-assumption-map.md)
-- [reference/business/positioning-analysis.md](reference/business/positioning-analysis.md)
-
-## Naming Note
-
-The old `2026-06-13-fesk-pilot-implementation-plan.md` name has been replaced by `2026-06-13-fesk-rollout-implementation-plan.md`. The project framing is rollout, not pilot.
-
-## Rule For Future Agents
-
-Do not restart discovery/interview planning unless the user explicitly asks for it. For the current work, implement the FESK rollout plan, keep the architecture future-ready for separate instances, and avoid building a generic SaaS platform before a real second client exists.
+Non anticipare refactoring multi-tenant o astrazioni multi-disciplina finché l'utente non dichiara attivo il relativo trigger reale descritto in [white-label-strategy.md](white-label-strategy.md).

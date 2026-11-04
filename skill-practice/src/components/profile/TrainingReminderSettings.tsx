@@ -9,6 +9,7 @@ import {
 } from "@/lib/actions/push-notifications";
 import {
   getPushSupportState,
+  pushSupportErrorMessage,
   subscribeToTrainingReminders,
   unsubscribeFromTrainingReminders,
 } from "@/lib/push-client";
@@ -44,16 +45,8 @@ export function TrainingReminderSettings({
   const handleEnable = () => {
     setMessage(null);
     const support = getPushSupportState(publicVapidKey);
-    if (support === "missing_key") {
-      setMessage("Promemoria non configurati sul server.");
-      return;
-    }
-    if (support === "unsupported") {
-      setMessage("Questo browser non supporta le notifiche push per questa app.");
-      return;
-    }
-    if (support === "permission_denied") {
-      setMessage("Notifiche bloccate. Riattivale dalle impostazioni del browser.");
+    if (support !== "supported") {
+      setMessage(pushSupportErrorMessage(support));
       return;
     }
 
@@ -83,33 +76,41 @@ export function TrainingReminderSettings({
   const handleDisable = () => {
     setMessage(null);
     startTransition(async () => {
-      const endpoint = await unsubscribeFromTrainingReminders();
-      const result = await disableTrainingReminders(endpoint);
+      try {
+        const endpoint = await unsubscribeFromTrainingReminders();
+        const result = await disableTrainingReminders(endpoint);
 
-      if (result && "error" in result) {
-        setMessage(result.error);
-        return;
+        if (result && "error" in result) {
+          setMessage(result.error);
+          return;
+        }
+
+        setEnabled(false);
+        setMessage("Promemoria disattivati.");
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Disattivazione non riuscita.");
       }
-
-      setEnabled(false);
-      setMessage("Promemoria disattivati.");
     });
   };
 
   const handleSave = () => {
     setMessage(null);
     startTransition(async () => {
-      const result = await updateTrainingReminderSettings({
-        reminderTime,
-        timeZone: localTimeZone,
-      });
+      try {
+        const result = await updateTrainingReminderSettings({
+          reminderTime,
+          timeZone: localTimeZone,
+        });
 
-      if (result && "error" in result) {
-        setMessage(result.error);
-        return;
+        if (result && "error" in result) {
+          setMessage(result.error);
+          return;
+        }
+
+        setMessage("Orario aggiornato.");
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Salvataggio non riuscito.");
       }
-
-      setMessage("Orario aggiornato.");
     });
   };
 

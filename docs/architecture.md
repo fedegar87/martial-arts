@@ -1,6 +1,6 @@
 # Architettura e briefing operativo per LLM
 
-Data aggiornamento: 2026-06-11. Repo: `martial-arts/`, app principale:
+Data aggiornamento: 2026-11-04. Repo: `martial-arts/`, app principale:
 `skill-practice/`.
 
 Questo documento e' la mappa tecnica canonica dell'app. Serve a dare contesto
@@ -14,11 +14,15 @@ Leggi prima questa sezione se sei un agent/LLM.
 1. Per il contesto tecnico parti da questo file.
 2. Per scope, prodotto, decisioni strategiche e priorita leggi
    [../plan/current-plan.md](../plan/current-plan.md).
-3. Per regole concrete di implementazione leggi
+3. Per evoluzione white-label, altre scuole Chang o altre arti marziali
+   (es. Taekwondo) leggi **obbligatoriamente**
+   [../plan/white-label-strategy.md](../plan/white-label-strategy.md) (regola
+   zero: niente over-engineering o astrazioni anticipate prima del trigger).
+4. Per regole concrete di implementazione leggi
    [../skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md).
-4. Per UI e componenti leggi
+5. Per UI e componenti leggi
    [../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md).
-5. Per lavoro recente di hardening/correzioni leggi
+6. Per lavoro recente di hardening/correzioni leggi
    [../skill-practice/docs/plans/2026-06-11-review-fixes.md](../skill-practice/docs/plans/2026-06-11-review-fixes.md).
 
 Regola pratica: se il piano e il codice non coincidono, verifica il codice e
@@ -28,15 +32,18 @@ aggiorna il documento/piano invece di copiare assunzioni vecchie.
 
 `skill-practice` e' una PWA Next.js per guidare la pratica personale di arti
 marziali tradizionali, oggi centrata sul curriculum FESK / Scuola Chang
-Shaolin + T'ai Chi. Il valore principale e': "oggi fai questi esercizi",
-con video YouTube unlisted, piano per esame o selezione personale, sessioni
-programmate, diario pratica, progresso e promemoria.
+Shaolin + T'ai Chi (`FESK Practice`). Il valore principale e': "oggi fai questi
+esercizi", con video YouTube unlisted, piano per esame o selezione personale,
+sessioni programmate, diario pratica, progresso e promemoria.
 
 Stato prodotto:
 
-- MVP personale single-user in produzione.
-- Predisposizione multi-utente e multi-scuola a livello schema/RLS, ma dominio
-  ancora FESK-first.
+- Rollout FESK invite-only in produzione (`access_groups`, `user_invites`,
+  profilo bloccato per studenti e sblocco progressivo per grado).
+- Identita testuale e manifest PWA centralizzati in `src/lib/brand.ts` e
+  `src/app/manifest.ts`; dominio DB/UI ancora FESK-first per scelta deliberata
+  fino all'arrivo di una seconda organizzazione reale (vedi
+  [../plan/white-label-strategy.md](../plan/white-label-strategy.md)).
 - Non e' un SaaS self-service, non e' un LMS, non ospita video, non sostituisce
   software gestionali di palestra/federazione.
 - Auth e DB sono Supabase; hosting Vercel; video esterni su YouTube unlisted.
@@ -50,29 +57,20 @@ Principi architetturali:
 - Logica algoritmica pura in `src/lib/*-logic.ts`, testata con `node --test`.
 - Service worker statico manuale in `public/sw.js`; `next-pwa` e' stato rimosso.
 
-## 2. Mappa documenti e ridondanze
+## 2. Mappa documenti
 
-Cartella [docs/](.) oggi contiene quattro documenti:
+Cartella [docs/](.) contiene tre documenti:
 
 | Documento | Ruolo | Stato |
 | --- | --- | --- |
 | [architecture.md](architecture.md) | Briefing tecnico canonico per LLM/maintainer | Fonte tecnica primaria |
-| [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md) | Analisi approfondita multi-scuola/white-label | Da tenere separato: dettagli troppo specifici per il briefing |
-| [performance-assessment.md](performance-assessment.md) | Diagnosi e piano performance | Da tenere separato, ma alcune sezioni sono superate da fix gia implementati |
+| [performance-assessment.md](performance-assessment.md) | Diagnosi e piano performance | Storico/deep dive; alcune sezioni sono superate da fix gia implementati |
 | [marketing-video-promo-guide.md](marketing-video-promo-guide.md) | Guida operativa per video promozionale | Non tecnica, nessuna fusione con architettura |
 
-Decisione documentale:
-
-- Non cancellare documenti in `docs/` ora.
-- Non fondere `architecture-multitenancy-readiness.md`: resta utile come deep
-  dive quando si discute una seconda scuola.
-- Non fondere `performance-assessment.md`: e' un piano operativo storico; questo
-  file ne riporta solo lo stato tecnico corrente.
-- Non fondere `marketing-video-promo-guide.md`: riguarda comunicazione, non
-  architettura.
-- Per ridurre ambiguita, `performance-assessment.md` e
-  `architecture-multitenancy-readiness.md` hanno un banner di stato che rimanda
-  a questo documento per lo stato corrente.
+La strategia white-label, multi-istanza e generalizzazione multi-arte marziale
+vive ora in un unico documento canonico:
+[../plan/white-label-strategy.md](../plan/white-label-strategy.md) (che ha
+assorbito e sostituito il vecchio `architecture-multitenancy-readiness.md`).
 
 ## 3. Struttura repository
 
@@ -85,12 +83,13 @@ martial-arts/
 |   `-- training-reminders.yml
 |-- docs/
 |   |-- architecture.md
-|   |-- architecture-multitenancy-readiness.md
 |   |-- performance-assessment.md
 |   `-- marketing-video-promo-guide.md
 |-- plan/
 |   |-- current-plan.md
+|   |-- white-label-strategy.md
 |   |-- README.md
+|   |-- CLAUDE.md
 |   |-- completed/
 |   `-- reference/
 |-- archive/
@@ -99,6 +98,7 @@ martial-arts/
     |-- next.config.ts
     |-- vercel.json
     |-- public/
+    |-- scripts/
     |-- src/
     |-- supabase/migrations/
     `-- docs/
@@ -119,13 +119,13 @@ Fonte primaria: [../skill-practice/package.json](../skill-practice/package.json)
 
 | Area | Scelta |
 | --- | --- |
-| Framework | Next.js 16.2.4, App Router |
-| React | React 19.2.4 |
+| Framework | Next.js 16.3.6, App Router |
+| React | React 19.2.8 |
 | Linguaggio | TypeScript strict |
 | Stile | Tailwind CSS v4, shadcn/ui, Radix UI, class-variance-authority |
 | Icone | lucide-react |
 | Auth/DB | Supabase Auth + Postgres, `@supabase/ssr`, `@supabase/supabase-js` |
-| PWA | Service worker statico + manifest, niente `next-pwa` |
+| PWA | Service worker statico (`public/sw.js`) + manifest dinamico (`src/app/manifest.ts` da `src/lib/brand.ts`), niente `next-pwa` |
 | Push | Web Push, VAPID, `web-push` |
 | Hosting | Vercel, region fissata a `fra1` in `vercel.json` |
 | Test | `node --test` nativo |
@@ -191,7 +191,8 @@ Pagine:
 
 | Route | Tipo | Scopo |
 | --- | --- | --- |
-| `/` | pubblica | Landing/entrypoint |
+| `/` | pubblica | Landing/entrypoint FESK (`FeskLandingHero`) |
+| `/landing-legacy` | pubblica | Landing storica personale cavallo/Confucio preservata |
 | `/login` | pubblica auth | Login email/password, consuma `next` sicuro |
 | `/forgot-password` | pubblica auth | Richiesta reset password |
 | `/auth/update-password` | auth-only | Cambio password dopo recovery |
@@ -334,12 +335,14 @@ Entita statiche:
 | `exam_programs` | Programmi esame per grado/disciplina |
 | `exam_skill_requirements` | Junction esplicita exam -> skill, no JSONB |
 | `news_items` | Bacheca scuola |
+| `access_groups` | Template di accesso per grado/ruolo + puntatori promozione |
 
 Entita utente:
 
 | Tabella | Scopo |
 | --- | --- |
-| `user_profiles` | Profilo, scuola, gradi, esami, ruolo, mode piano |
+| `user_invites` | Pre-assegnazione email -> scuola/gruppo/livelli (invite-only) |
+| `user_profiles` | Profilo, scuola, gradi, esami, ruolo, `profile_locked`, `content_access_mode` |
 | `user_plan_items` | Piano utente, source exam/manual, status focus/maintenance |
 | `practice_logs` | Diario giornaliero per skill, note, reps, completed |
 | `training_schedule` | Giorni e ciclo di allenamento |
@@ -401,52 +404,44 @@ Sequenza presente nel repo:
 | 0034 | Drop indice duplicato practice_logs |
 | 0035 | Revoke EXECUTE pubblico su RPC SECURITY DEFINER |
 | 0036 | Hardening `handle_new_user` contro metadata tenant non fidati |
+| 0037-0045 | Rollout FESK: `access_groups`, `user_invites`, `profile_locked`, scope RLS per livello, `skills.is_extra`, bulk ops e promozioni post-esame |
+| 0046 | `is_skill_in_scope`: sblocco fino al livello successivo (quello in preparazione) |
+| 0047 | `list_locked_skill_outline`: anteprima solo-titolo delle skill future bloccate |
+| 0048 | Fix attribuzione video Mei Hua |
 
 Stato applicazione DB:
 
-- Il piano corrente dice che 0001-0028 sono applicate.
-- 0033-0036 sono presenti nel repo come migration di hardening/fix; prima di
-  assumere che siano applicate, verificare il DB Supabase reale.
+- Le migrazioni `0001`–`0048` rappresentano lo schema e il seed FESK correnti.
 - Ogni nuova modifica schema deve avere una migration numerata; niente cambio
   manuale da dashboard senza file corrispondente.
 
-## 11. RLS e multi-tenancy
+## 11. RLS, visibilita per grado e strategia multi-scuola
 
 Stato reale del dominio:
 
-- L'app e' single-tenant/FESK nella pratica.
-- Il modello contiene `school_id` su contenuti statici e profili.
-- La migration 0028 introduce isolamento per scuola su letture statiche e
-  `WITH CHECK` tenant-aware su `user_plan_items`/`practice_logs`.
-- Il dominio UI/TS resta FESK-first: discipline fisse, categorie cinesi,
-  gradi Chi/Chieh/Mezza Luna, testi Scuola Chang.
+- L'app e' in produzione per FESK in modalita invite-only (`handle_new_user`
+  richiede un invito `pending` in `user_invites` e copia livelli/scope).
+- Il modello contiene `school_id` su contenuti statici e profili con isolamento
+  RLS (`0028`).
+- La visibilita del catalogo e del piano e' governata lato DB da
+  `public.is_skill_in_scope(skill_id)` (`0046`): gli studenti
+  (`up_to_assigned_level`, `profile_locked = true`) vedono fino al livello
+  successivo a quello posseduto per le discipline praticate (`<> 0`), senza
+  `Altro` (`is_extra`), piu l'outline solo-titolo dei livelli futuri
+  (`list_locked_skill_outline`, `0047`); gli utenti `all_school_content` vedono
+  tutto.
+- Il dominio DB/TS resta deliberatamente FESK-first (`shaolin`/`taichi`, scala
+  Chi/Chieh/Mezza Luna `8..-7`) finche non si attiva una seconda organizzazione
+  reale.
 
-RLS:
+Strategia white-label e altre arti marziali:
 
-- Tabelle dinamiche: owner-bound su `auth.uid()`.
-- Tabelle statiche: con 0028, lettura limitata alla scuola del profilo.
-- `account_deletion_requests`: utente vede/inserisce proprie richieste; admin
-  vede/aggiorna quelle della propria scuola.
-- `notification_deliveries`: scrittura cron/service role, lettura utente sulle
-  proprie delivery.
-
-RPC SECURITY DEFINER:
-
-- Necessarie per transazioni atomiche di piano/esame.
-- La migration 0035 rimuove `EXECUTE` da `PUBLIC`/`anon` per le RPC mutanti e
-  concede solo ad `authenticated`; verificare sul DB reale se e' gia applicata.
-
-Limiti multi-scuola ancora veri:
-
-- Non esiste tabella dinamica `disciplines`.
-- Non esiste tabella `grade_levels`/`grade_scales`.
-- Profilo ha colonne dedicate Shaolin/T'ai Chi.
-- Pannello admin multi-scuola non esiste.
-- Per una seconda scuola reale serve un flusso inviti/allowlist server-side; i
-  metadata utente non bastano come fonte di tenant.
-
-Per analisi completa vedi
-[architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md).
+- Architettura decisa: **1 codebase unico + deploy isolati Vercel/Supabase**
+  fino a ~15-20 scuole (zero fork Git, zero SaaS multi-tenant prematuro).
+- Roadmap attivata da trigger reali (Fase 1 per altre scuole Chang; Fase 2 con
+  `curriculum_tracks` `1..N`, `grade_levels` con `rank_order` crescente e
+  `skill_categories` con `tracking_mode` per discipline come Taekwondo/Karate):
+  leggi [../plan/white-label-strategy.md](../plan/white-label-strategy.md).
 
 ## 12. Query, actions e RPC
 
@@ -586,8 +581,8 @@ Design:
 Service worker:
 
 - File: [../skill-practice/public/sw.js](../skill-practice/public/sw.js).
-- Cache name attuale: `kung-fu-practice-v3`.
-- Precache: `/offline.html`, `/manifest.json`, `/icon.svg`.
+- Cache name attuale: `fesk-practice-v6`.
+- Precache: `/offline.html`, `/manifest.webmanifest`, `/icon.svg`.
 - `install`: cache asset + `skipWaiting`.
 - `activate`: elimina cache con nome diverso + `clients.claim`.
 - `fetch`: solo GET same-origin.
@@ -606,9 +601,12 @@ Push reminders:
 - Preferenze in `notification_preferences`.
 - Subscription in `push_subscriptions`.
 - Delivery/dedup in `notification_deliveries`.
-- Cron: `/api/cron/training-reminders`, runtime nodejs, auth con
-  `Authorization: Bearer <CRON_SECRET>` o query `?secret=`.
-- Sender: `src/lib/training-reminder-sender.ts`, usa service role e `web-push`.
+- Cron endpoint: `/api/cron/training-reminders`, runtime nodejs, auth timing-safe
+  con header `Authorization: Bearer <CRON_SECRET>`; schedulato ogni 15 minuti via
+  Supabase `pg_cron` + `pg_net` (`scripts/setup-push-cron.sql`, finestra di
+  recupero 90m e retry sui `failed`).
+- Sender: `src/lib/training-reminder-sender.ts`, usa service role, `web-push` e
+  fallback `VAPID_SUBJECT` da `brand.supportEmail`.
 - Payload costruito in `src/lib/push-notifications.ts`.
 
 GitHub workflow:
@@ -734,13 +732,15 @@ Quando tocchi:
 
 ## 19. Known risks e debito consapevole
 
-Debito architetturale:
+Debito architetturale consapevole (gestito a trigger in `plan/white-label-strategy.md`):
 
-- Dominio FESK hardcoded in disciplina, gradi, categorie, testi e UI.
+- Dominio FESK hardcoded in disciplina (`shaolin`/`taichi`), gradi (`8..-7`),
+  categorie e asset statici; testi base gia centralizzati in `src/lib/brand.ts`
+  e `src/app/manifest.ts`.
 - `types.ts` e' manuale, puo divergere dallo schema DB.
-- Nessun admin panel per contenuti/utenti.
-- PWA manifest statico; non pronto per white-label runtime.
-- No i18n/terminology layer.
+- Nessun admin panel web per contenuti/utenti (operativita tramite script CLI in
+  `skill-practice/scripts/`).
+- No i18n/terminology layer finche non si attiva una scuola non-Chang.
 - No test E2E/RLS.
 
 Rischi funzionali:
@@ -752,12 +752,10 @@ Rischi funzionali:
   configurazione JWT Supabase.
 - Push/cron ha finding esclusi dal piano 2026-06-11 perche non prioritari.
 
-Rischi multi-tenant:
+Evoluzione multi-scuola / altre arti marziali:
 
-- 0028 chiude una parte importante, ma una seconda scuola richiede flusso inviti
-  robusto e validazione tenant server-side.
-- Per scuole non simili a FESK serve refactor di discipline, gradi, categorie e
-  concetto di esercizio.
+- Non anticipare refactoring: seguire esclusivamente i trigger definiti in
+  [../plan/white-label-strategy.md](../plan/white-label-strategy.md).
 
 ## 20. Cosa fare quando si modifica il progetto
 
@@ -803,11 +801,11 @@ Tecnici:
 Prodotto/strategia:
 
 - Piano attivo: [../plan/current-plan.md](../plan/current-plan.md)
+- Strategia white-label e multi-arte marziale:
+  [../plan/white-label-strategy.md](../plan/white-label-strategy.md)
 - Indice piani: [../plan/README.md](../plan/README.md)
 - Curriculum FESK:
   [../plan/reference/domain/curriculum-mapping-fesk.md](../plan/reference/domain/curriculum-mapping-fesk.md)
-- Multi-tenancy:
-  [architecture-multitenancy-readiness.md](architecture-multitenancy-readiness.md)
 - Performance:
   [performance-assessment.md](performance-assessment.md)
 - Video promo:

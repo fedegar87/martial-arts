@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
+  isAllowedPushEndpoint,
   normalizeReminderTime,
   normalizeTimeZone,
   validateBrowserPushSubscription,
@@ -47,7 +48,6 @@ export async function enableTrainingReminders({
       training_reminders_enabled: true,
       reminder_time: normalizedReminderTime,
       time_zone: normalizedTimeZone,
-      include_exercise_names: true,
     });
 
   if (preferenceError) return { error: preferenceError.message };
@@ -97,11 +97,11 @@ export async function updateTrainingReminderSettings({
       training_reminders_enabled: true,
       reminder_time: normalizedReminderTime,
       time_zone: normalizeTimeZone(timeZone),
-      include_exercise_names: true,
     });
 
   if (error) return { error: error.message };
 
+  revalidatePath("/today");
   revalidatePath("/profile");
   return { success: true };
 }
@@ -140,4 +140,25 @@ export async function disableTrainingReminders(
   revalidatePath("/today");
   revalidatePath("/profile");
   return { success: true };
+}
+
+export async function revokePushSubscriptionOnSignOut(
+  endpoint: string,
+): Promise<void> {
+  const trimmed = endpoint.trim();
+  if (!isAllowedPushEndpoint(trimmed)) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const now = new Date().toISOString();
+  await supabase
+    .from("push_subscriptions")
+    .update({ revoked_at: now, last_seen_at: now })
+    .eq("user_id", user.id)
+    .eq("endpoint", trimmed)
+    .is("revoked_at", null);
 }

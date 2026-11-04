@@ -1,8 +1,8 @@
 # FESK Rollout Implementation Plan
 
 **Date:** 2026-06-13  
-**Status:** Draft for review, updated with confirmed FESK rollout decisions  
-**Related strategy:** `plan/2026-06-13-white-label-multi-instance-strategy.md`  
+**Status:** Completed (implementato in migrazioni `0037`–`0048`, `src/lib/brand.ts`, `src/app/manifest.ts`)  
+**Related strategy:** `../white-label-strategy.md` (sostituisce `2026-06-13-white-label-multi-instance-strategy.md`)  
 **Primary app:** `skill-practice/`  
 
 ---

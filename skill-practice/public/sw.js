@@ -1,7 +1,7 @@
 // Bump della versione a ogni release significativa: l'handler `activate` elimina
 // le cache con nome diverso, quindi cambiare versione purga gli asset dei deploy
 // precedenti (mitiga la crescita illimitata di /_next/static).
-const CACHE_NAME = "fesk-practice-v5";
+const CACHE_NAME = "fesk-practice-v6";
 const OFFLINE_URL = "/offline.html";
 const STATIC_ASSETS = [OFFLINE_URL, "/manifest.webmanifest", "/icon.svg"];
 
@@ -48,6 +48,8 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(payload.title, {
       body: payload.body,
       tag: payload.tag,
+      icon: payload.icon,
+      badge: payload.badge,
       data: {
         url: payload.url || "/today",
       },
@@ -111,6 +113,8 @@ function readPushPayload(event) {
       body: payload.body,
       url: typeof payload.url === "string" ? payload.url : "/today",
       tag: typeof payload.tag === "string" ? payload.tag : "training-reminder",
+      icon: typeof payload.icon === "string" ? payload.icon : "/icons/icon-192.png",
+      badge: typeof payload.badge === "string" ? payload.badge : "/icons/icon-192.png",
     };
   } catch {
     return null;

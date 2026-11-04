@@ -3,11 +3,13 @@ import webpush, {
   WebPushError,
   type PushSubscription as WebPushSubscription,
 } from "web-push";
+import { brand } from "@/lib/brand";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { localDateKey } from "@/lib/date";
 import {
   buildTrainingReminderPayload,
-  normalizeReminderTime,
+  isAllowedPushEndpoint,
+  isReminderTimeDue,
 } from "@/lib/push-notifications";
 import { getScheduledPlanItems, getScheduledSession } from "@/lib/session-scheduler";
 import type {
@@ -21,6 +23,7 @@ import type {
 } from "@/lib/types";
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
+type AdminSupabaseClient = ReturnType<typeof createAdminClient>;
 
 type ReminderRunResult = {
   checkedPreferences: number;
@@ -29,8 +32,6 @@ type ReminderRunResult = {
   skipped: number;
   failed: number;
 };
-
-const REMINDER_WINDOW_MINUTES = 15;
 
 export async function sendDueTrainingReminders(
   now = new Date(),
@@ -55,10 +56,18 @@ export async function sendDueTrainingReminders(
   };
 
   for (const preference of preferences) {
-    if (!isReminderDue(preference, now)) continue;
+    if (
+      !isReminderTimeDue({
+        reminderTime: preference.reminder_time,
+        timeZone: preference.time_zone,
+        now,
+      })
+    ) {
+      continue;
+    }
     result.duePreferences++;
 
-    const userResult = await sendReminderForUser(preference, vapid, now);
+    const userResult = await sendReminderForUser(supabase, preference, vapid, now);
     result.sent += userResult.sent;
     result.skipped += userResult.skipped;
     result.failed += userResult.failed;
@@ -68,11 +77,11 @@ export async function sendDueTrainingReminders(
 }
 
 async function sendReminderForUser(
+  supabase: AdminSupabaseClient,
   preference: NotificationPreference,
   vapid: VapidDetails,
   now: Date,
 ): Promise<Pick<ReminderRunResult, "sent" | "skipped" | "failed">> {
-  const supabase = createAdminClient();
   const date = localDateKey(now, preference.time_zone);
   const userId = preference.user_id;
   const sourceFilter = await getPlanSourceForUser(supabase, userId);
@@ -135,7 +144,13 @@ async function sendReminderForUser(
   const counters = { sent: 0, skipped: 0, failed: 0 };
 
   for (const subscription of subscriptions) {
-    const deliveryId = await createPendingDelivery({
+    if (!isAllowedPushEndpoint(subscription.endpoint)) {
+      await revokeSubscription(supabase, subscription.id);
+      counters.failed++;
+      continue;
+    }
+
+    const deliveryId = await claimPendingDelivery(supabase, {
       userId,
       subscriptionId: subscription.id,
       date,
@@ -157,12 +172,12 @@ async function sendReminderForUser(
           topic: "training-reminder",
         },
       );
-      await markDeliverySent(deliveryId);
+      await markDeliverySent(supabase, deliveryId);
       counters.sent++;
     } catch (error) {
-      await markDeliveryFailed(deliveryId, error);
+      await markDeliveryFailed(supabase, deliveryId, error);
       if (isExpiredSubscriptionError(error)) {
-        await revokeSubscription(subscription.id);
+        await revokeSubscription(supabase, subscription.id);
       }
       counters.failed++;
     }
@@ -172,7 +187,7 @@ async function sendReminderForUser(
 }
 
 async function getPlanSourceForUser(
-  supabase: ReturnType<typeof createAdminClient>,
+  supabase: AdminSupabaseClient,
   userId: string,
 ): Promise<"exam_program" | "manual" | null> {
   const { data } = await supabase
@@ -186,16 +201,18 @@ async function getPlanSourceForUser(
   return profile.plan_mode === "custom" ? "manual" : "exam_program";
 }
 
-async function createPendingDelivery({
-  userId,
-  subscriptionId,
-  date,
-}: {
-  userId: string;
-  subscriptionId: string;
-  date: string;
-}): Promise<string | null> {
-  const supabase = createAdminClient();
+async function claimPendingDelivery(
+  supabase: AdminSupabaseClient,
+  {
+    userId,
+    subscriptionId,
+    date,
+  }: {
+    userId: string;
+    subscriptionId: string;
+    date: string;
+  },
+): Promise<string | null> {
   const { data, error } = await supabase
     .from("notification_deliveries")
     .insert({
@@ -208,16 +225,34 @@ async function createPendingDelivery({
     .select("id")
     .maybeSingle();
 
-  if (error) {
-    if (error.code === "23505") return null;
+  if (!error) {
+    return (data as { id: string } | null)?.id ?? null;
+  }
+
+  if (error.code !== "23505") {
     throw new Error(error.message);
   }
 
-  return (data as { id: string } | null)?.id ?? null;
+  // Se un tentativo precedente nello stesso giorno e' fallito per un errore di rete
+  // transitorio (subscription non revocata), consente il retry al giro cron successivo.
+  const { data: retryData, error: retryError } = await supabase
+    .from("notification_deliveries")
+    .update({
+      status: "pending",
+      error: null,
+    })
+    .eq("subscription_id", subscriptionId)
+    .eq("kind", "training_reminder")
+    .eq("date", date)
+    .eq("status", "failed")
+    .select("id")
+    .maybeSingle();
+
+  if (retryError) throw new Error(retryError.message);
+  return (retryData as { id: string } | null)?.id ?? null;
 }
 
-async function markDeliverySent(deliveryId: string) {
-  const supabase = createAdminClient();
+async function markDeliverySent(supabase: AdminSupabaseClient, deliveryId: string) {
   await supabase
     .from("notification_deliveries")
     .update({
@@ -228,8 +263,11 @@ async function markDeliverySent(deliveryId: string) {
     .eq("id", deliveryId);
 }
 
-async function markDeliveryFailed(deliveryId: string, error: unknown) {
-  const supabase = createAdminClient();
+async function markDeliveryFailed(
+  supabase: AdminSupabaseClient,
+  deliveryId: string,
+  error: unknown,
+) {
   await supabase
     .from("notification_deliveries")
     .update({
@@ -239,8 +277,10 @@ async function markDeliveryFailed(deliveryId: string, error: unknown) {
     .eq("id", deliveryId);
 }
 
-async function revokeSubscription(subscriptionId: string) {
-  const supabase = createAdminClient();
+async function revokeSubscription(
+  supabase: AdminSupabaseClient,
+  subscriptionId: string,
+) {
   await supabase
     .from("push_subscriptions")
     .update({
@@ -248,40 +288,6 @@ async function revokeSubscription(subscriptionId: string) {
       last_seen_at: new Date().toISOString(),
     })
     .eq("id", subscriptionId);
-}
-
-function isReminderDue(preference: NotificationPreference, now: Date): boolean {
-  const reminderTime = normalizeReminderTime(preference.reminder_time);
-  if (!reminderTime) return false;
-
-  const currentMinutes = localMinutes(now, preference.time_zone);
-  const reminderMinutes = timeToMinutes(reminderTime);
-  return (
-    currentMinutes >= reminderMinutes &&
-    currentMinutes < reminderMinutes + REMINDER_WINDOW_MINUTES
-  );
-}
-
-function localMinutes(date: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-
-  const values = Object.fromEntries(
-    parts
-      .filter((part) => part.type !== "literal")
-      .map((part) => [part.type, part.value]),
-  );
-
-  return Number(values.hour) * 60 + Number(values.minute);
-}
-
-function timeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
 }
 
 function toWebPushSubscription(
@@ -303,9 +309,9 @@ type VapidDetails = {
 };
 
 function getVapidDetails(): VapidDetails {
-  const subject = process.env.VAPID_SUBJECT;
-  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const subject = process.env.VAPID_SUBJECT?.trim() || `mailto:${brand.supportEmail}`;
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+  const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
 
   if (!subject || !publicKey || !privateKey) {
     throw new Error("Missing VAPID configuration");

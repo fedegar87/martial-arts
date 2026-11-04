@@ -1,3 +1,5 @@
+import { brand } from "./brand.ts";
+
 export type BrowserPushSubscription = {
   endpoint: string;
   expirationTime?: number | null;
@@ -20,9 +22,21 @@ export type TrainingReminderPayload = {
   body: string;
   url: string;
   tag: string;
+  icon: string;
+  badge: string;
 };
 
+export const REMINDER_WINDOW_MINUTES = 90;
+
 const MAX_EXERCISE_NAMES = 4;
+
+const ALLOWED_PUSH_HOST_SUFFIXES = [
+  ".googleapis.com",
+  ".google.com",
+  ".push.apple.com",
+  ".push.services.mozilla.com",
+  ".notify.windows.com",
+];
 
 export function defaultTrainingReminderSettings(): TrainingReminderSettings {
   return {
@@ -52,6 +66,23 @@ export function normalizeTimeZone(value: string): string {
   }
 }
 
+export function isAllowedPushEndpoint(endpoint: string): boolean {
+  if (!endpoint || endpoint.length > 2048) return false;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(endpoint);
+  } catch {
+    return false;
+  }
+
+  if (parsed.protocol !== "https:") return false;
+  if (parsed.username || parsed.password) return false;
+
+  const hostname = parsed.hostname.toLowerCase();
+  return ALLOWED_PUSH_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
+}
+
 export function validateBrowserPushSubscription(
   subscription: BrowserPushSubscription,
 ): { endpoint: string; p256dh: string; auth: string } | null {
@@ -60,7 +91,54 @@ export function validateBrowserPushSubscription(
   const auth = subscription.keys?.auth?.trim();
 
   if (!endpoint || !p256dh || !auth) return null;
+  if (p256dh.length > 256 || auth.length > 128) return null;
+  if (!isAllowedPushEndpoint(endpoint)) return null;
+
   return { endpoint, p256dh, auth };
+}
+
+export function isReminderTimeDue({
+  reminderTime,
+  timeZone,
+  now,
+  windowMinutes = REMINDER_WINDOW_MINUTES,
+}: {
+  reminderTime: string;
+  timeZone: string;
+  now: Date;
+  windowMinutes?: number;
+}): boolean {
+  const normalized = normalizeReminderTime(reminderTime);
+  if (!normalized) return false;
+
+  const currentMinutes = localMinutesOfDay(now, normalizeTimeZone(timeZone));
+  const reminderMinutes = timeToMinutes(normalized);
+  return (
+    currentMinutes >= reminderMinutes &&
+    currentMinutes < reminderMinutes + windowMinutes
+  );
+}
+
+function localMinutesOfDay(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
+  return (Number(values.hour) % 24) * 60 + Number(values.minute);
+}
+
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
 }
 
 export function buildTrainingReminderPayload({
@@ -82,6 +160,8 @@ export function buildTrainingReminderPayload({
     body,
     url: "/today",
     tag: `training-reminder-${date}`,
+    icon: brand.notificationIcon,
+    badge: brand.notificationIcon,
   };
 }
 

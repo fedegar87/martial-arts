@@ -2,7 +2,7 @@
 
 ## Fonte di verità
 
-Il file `../plan/current-plan.md` è la fonte autoritativa per scope, stack, modello dati, struttura cartelle, sprint plan e esclusioni. **Leggilo prima di qualsiasi modifica strutturale.**
+Il file `../plan/current-plan.md` è la fonte autoritativa per scope, stack, modello dati, struttura cartelle, sprint plan e esclusioni; `../plan/white-label-strategy.md` governa branding, evoluzione multi-scuola/white-label e altre arti marziali (regola zero: niente over-engineering). **Leggili prima di qualsiasi modifica strutturale.**
 
 In caso di conflitto fra questo file e il piano: vince il piano. Aggiorna questo file e segnala la deviazione.
 
@@ -15,9 +15,10 @@ Non sostituire questi pezzi senza approvazione esplicita (e aggiornamento del pi
 - **Next.js 14+ App Router** + TypeScript strict
 - **Tailwind CSS** + **shadcn/ui** — niente altre UI library
 - **Supabase** (Auth + Postgres) — no localStorage/IndexedDB come storage primario
-- **Service worker statico** in `public/sw.js` (registrato da `ServiceWorkerRegister`) + manifest in `public/manifest.json` — niente `next-pwa` (era fermo al Pages Router, mai importato, rimosso)
+- **Service worker statico** in `public/sw.js` (registrato da `ServiceWorkerRegister`) + manifest dinamico in `src/app/manifest.ts` (alimentato da `src/lib/brand.ts`) — niente `next-pwa` (era fermo al Pages Router, mai importato, rimosso)
 - **YouTube unlisted embed** — niente upload video, niente signed URL, niente storage video proprio
 - **Vercel** per hosting
+- **Tema dark/gold FESK** (`globals.css`): niente UI chiare o palette fuori tema senza aggiornare `../plan/reference/design/visual-identity-plan.md`
 
 Se hai dubbi su una libreria nuova: **non aggiungerla**. Chiedi prima.
 
@@ -81,8 +82,7 @@ Regole UI:
 
 ## Convenzioni codice
 
-- File piccoli e focalizzati. Default: un componente = un file.
-- Nomi chiari > nomi brevi. Niente abbreviazioni criptiche.
+- Default: un componente = un file.
 - **Niente commenti** se il nome è chiaro. Commento solo per il "perché" non ovvio (vincolo nascosto, workaround per bug specifico).
 - Niente JSDoc/TSDoc su funzioni con tipi già espliciti.
 - TypeScript strict. Niente `any` salvo `unknown` con narrowing.
@@ -100,21 +100,3 @@ Regole UI:
 4. Implementa rispettando struttura e pattern
 5. `npm run lint && npm run build` prima di considerare fatto un task
 6. Aggiorna il piano se il lavoro ha chiuso/aperto decisioni
-
----
-
-## Stato attuale
-
-Aggiornamento 2026-04-25:
-
-- Sprint base completato; sprint operativi 1.5-1.8 sono in corso nei file dedicati sotto `../plan/`.
-- Schema locale previsto: `0001` base, `0003` FESK, `0004` seed FESK generato da `scripts/generate-fesk-seed.mjs`, `0005` plan mode.
-- UI implementata: lazy `VideoPlayer`, libreria con disciplina/program view, profilo con editor gradi e modalità, plan routes `/plan/exam` e `/plan/custom`, tab `/progress`.
-- Verifica automatica corrente: `npm run lint` e `npm run build` passano. La verifica Supabase (`supabase db reset`) non è stata eseguita perché la CLI non è disponibile nel PATH.
-- Visual identity: dark/gold FESK theme applicato via `globals.css`; non usare UI chiare o palette fuori tema senza aggiornare `plan/reference/design/visual-identity-plan.md`.
-
-Quando questo file viene letto per la prima volta dopo lo scaffolding, aggiornare questa sezione con:
-
-- Sprint in corso (1, 2 o 3)
-- Task corrente (numero da §9)
-- Decisioni aperte rilevanti (lista da §2.2)

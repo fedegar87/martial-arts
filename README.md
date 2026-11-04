@@ -9,12 +9,12 @@ martial-arts/
 ├── CLAUDE.md                    ← Istruzioni workspace per Claude (gerarchia fonti)
 ├── plan/
 │   ├── current-plan.md          ← PIANO ATTIVO. Inizia da qui.
+│   ├── white-label-strategy.md  ← Strategia white-label e multi-arte marziale
 │   ├── README.md                ← Indice dei piani (completati / reference / attivi)
 │   ├── completed/               ← Design + plan di sprint chiusi (storico implementato)
 │   └── reference/               ← Documenti perenni (curriculum, identity, positioning, gui/ios)
 ├── docs/                        ← Architettura e assessment del workspace
 │   ├── architecture.md                  Architettura attuale di skill-practice
-│   ├── architecture-multitenancy-readiness.md  Prontezza multi-tenant
 │   ├── performance-assessment.md        Diagnosi performance + piano
 │   └── marketing-video-promo-guide.md   Guida produzione video promo
 ├── archive/                     ← Ricerca storica e brief superati (read-only)
