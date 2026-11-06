@@ -339,7 +339,7 @@ skill-practice/
 │   │   ├── nav/BottomNav.tsx
 │   │   ├── landing/                    # Hero / CTA / lock screen
 │   │   ├── hub/                        # Tile, grid, background
-│   │   ├── today/                      # TodaySkillCard, PracticeCheckButton, RepsCounter, ecc.
+│   │   ├── today/                      # TodaySkillCard, TodayVideoDisclosure (video di ripasso chiuso di default), PracticeCheckButton, RepsCounter, ecc.
 │   │   ├── sessions/                   # WeekdayChips, CadencePicker, RepsStepper, SetupForm, ResetScheduleSection, PlanFormsSection
 │   │   ├── calendar/                   # Calendar, CalendarDayPanel, PracticeCompletionToggle, AddFreePracticeSheet
 │   │   ├── library/                    # DisciplineToggle, LibraryFilters, GradeSection, LockedGradeSection, ProgramSkillRow, CatalogMarkerLegend

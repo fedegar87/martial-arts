@@ -20,8 +20,9 @@ export default function Loading() {
         <Skeleton className="h-1.5 w-full rounded-full" />
       </div>
       <div className="space-y-3">
-        <Skeleton className="h-64 w-full rounded-xl" />
-        <Skeleton className="h-64 w-full rounded-xl" />
+        <Skeleton className="h-40 w-full rounded-md" />
+        <Skeleton className="h-40 w-full rounded-md" />
+        <Skeleton className="h-40 w-full rounded-md" />
       </div>
     </section>
   );

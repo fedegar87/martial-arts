@@ -1,11 +1,12 @@
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { VideoPlayer } from "@/components/skill/VideoPlayer";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { TeacherNote } from "@/components/skill/TeacherNote";
-import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
 import { PracticeCheckButton } from "./PracticeCheckButton";
 import { RepsCounter } from "./RepsCounter";
+import { TodayVideoDisclosure } from "./TodayVideoDisclosure";
 import type { PlanStatus, Skill } from "@/lib/types";
 
 type Props = {
@@ -42,18 +43,23 @@ export function TodaySkillCard({
       }`}
     >
       <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="space-y-1">
-            <CardTitle className="text-2xl">{skill.name}</CardTitle>
+        <div className="flex items-start justify-between gap-2">
+          <Link href={`/skill/${skill.id}`} className="min-w-0 space-y-1">
+            <CardTitle className="flex items-baseline gap-1.5 text-2xl">
+              <span>{skill.name}</span>
+              <ArrowUpRight
+                className="text-muted-foreground h-4 w-4 shrink-0 self-center"
+                aria-hidden
+              />
+            </CardTitle>
             {skill.name_italian && (
               <p className="text-muted-foreground text-xs">
                 {skill.name_italian}
               </p>
             )}
-          </div>
-          <div className="flex flex-wrap gap-1">
+          </Link>
+          <div className="flex shrink-0 items-center gap-1.5">
             <StatusBadge status={status} />
-            <VideoAvailabilityBadge videoUrl={skill.video_url} compact />
             <SkillStatusMenu
               skillId={skill.id}
               currentStatus={status}
@@ -63,10 +69,6 @@ export function TodaySkillCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <VideoPlayer
-          videoUrl={skill.video_url}
-          title={skill.name}
-        />
         <TeacherNote note={skill.teacher_notes} compact />
         {typeof repsTarget === "number" && typeof repsDone === "number" ? (
           <RepsCounter
@@ -82,6 +84,12 @@ export function TodaySkillCard({
             initialNote={todayNote}
           />
         )}
+        <TodayVideoDisclosure
+          skillId={skill.id}
+          skillName={skill.name}
+          videoUrl={skill.video_url}
+          secondaryVideoUrl={skill.secondary_video_url}
+        />
       </CardContent>
     </Card>
   );

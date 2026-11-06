@@ -299,7 +299,11 @@ Allenamento:
 1. `/sessions/setup` definisce weekdays, durata, lunghezza ciclo, reps e
    discipline incluse.
 2. `/today` prende piano attivo + schedule e genera la sessione del giorno.
-3. L'utente segna completamento, reps e note.
+3. L'utente segna completamento, reps e note. Nelle card di `/today` nota del
+   maestro e contatore sono subito visibili; il video di ripasso
+   (`TodayVideoDisclosure`) e' chiuso di default e monta `VideoPlayer` solo
+   dopo il tap su "Ripassa il video". Aprire o guardare il video non segna la
+   pratica.
 4. Le mutazioni aggiornano `practice_logs`, `user_plan_items.last_practiced_at`
    e revalidano le rotte impattate.
 

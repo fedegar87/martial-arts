@@ -1,0 +1,49 @@
+{
+  "inspection_date": "2026-11-06",
+  "timezone": "Europe/Rome",
+  "coverage": "partial",
+  "viewport_css_px": {
+    "width": 390,
+    "height": 844
+  },
+  "device_type": "Mobile",
+  "capture_method": "Chrome DevTools Capture screenshot",
+  "export_note": "Native export approx 2x; 1px vertical rounding retained; no image edits",
+  "screenshots": [
+    {
+      "file": "screenshots/02-submeta-course-preview.png",
+      "source_url": "https://submeta.io/@lachlangiles/courses/introduction",
+      "width_px": 780,
+      "height_px": 1687,
+      "sha256": "605aae81d2bb63d5852c076793f8187ffdc3ad5e9c90b71dfd6f8cde23ceded7"
+    },
+    {
+      "file": "screenshots/03-submeta-chapter-expanded.png",
+      "source_url": "https://submeta.io/@lachlangiles/courses/introduction",
+      "width_px": 780,
+      "height_px": 1687,
+      "sha256": "3839d418644ea1ac90fc7186f563320bc316a49309aeb91a5f0a29dab1516e5d"
+    },
+    {
+      "file": "screenshots/05-submeta-troubleshooting.png",
+      "source_url": "https://submeta.io/@lachlangiles/courses/face-choke",
+      "width_px": 780,
+      "height_px": 1687,
+      "sha256": "380f68e177974849b2cd1e20ac43e7526112272cbdfc0c81a802681cc2d78504"
+    },
+    {
+      "file": "screenshots/04-submeta-gameplan-redirect.png",
+      "source_url": "https://submeta.io/",
+      "width_px": 780,
+      "height_px": 1687,
+      "sha256": "956d2741494e9cc7b89a8eaa690e5e255ffa7ab8c7bb8be1c84e3f37de320e62"
+    },
+    {
+      "file": "screenshots/01-submeta-entry.png",
+      "source_url": "https://submeta.io/",
+      "width_px": 780,
+      "height_px": 1687,
+      "sha256": "956d2741494e9cc7b89a8eaa690e5e255ffa7ab8c7bb8be1c84e3f37de320e62"
+    }
+  ]
+}
