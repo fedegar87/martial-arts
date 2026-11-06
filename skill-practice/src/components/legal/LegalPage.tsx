@@ -24,12 +24,14 @@ export function LegalPage({ title, description, sections }: Props) {
             <h1 className="text-3xl font-semibold">{title}</h1>
             <p className="text-muted-foreground text-sm">{description}</p>
             <p className="text-muted-foreground text-xs">
-              Bozza FESK aggiornata al 13 giugno 2026, da confermare con un
-              consulente legale prima della pubblicazione definitiva.
+              Bozza aggiornata al 6 novembre 2026. I dati del gestore e le
+              verifiche ancora indicate devono essere completati prima
+              dell&apos;apertura a utenti esterni.
             </p>
             <p className="text-muted-foreground text-xs">
-              Le voci marcate &quot;Da confermare in revisione legale&quot; restano
-              da validare con il referente privacy FESK.
+              Questo testo non costituisce una dichiarazione di conformità del
+              servizio: le informazioni devono corrispondere ai trattamenti e
+              alle condizioni effettivamente adottati.
             </p>
           </div>
           <LegalLinks />
