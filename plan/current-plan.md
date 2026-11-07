@@ -538,6 +538,37 @@ temporaneamente `git.deploymentEnabled: false` per consentire commit e push su
 `main` senza auto-deploy. Rimuovere il blocco nel commit del rilascio finale,
 quando autorizzato dall'utente; la produzione resta su P2.2/P3 (`c896244`).
 
+### P5 — Navigazione (implementato il 2026-11-07)
+
+La quinta voce della barra inferiore diventa Profilo. Bacheca resta accessibile
+dalla campanella nell'intestazione, con nome accessibile e stato attivo su
+`/news`; gli avvisi delle nuove comunicazioni restano in Allenamento.
+Scelta essenziale A: nessun pallino globale, query nel layout o nuova funzione.
+Home, hub e associazioni delle altre quattro voci restano come prima.
+Commit e push fanno parte dell'intervento; il deploy resta rinviato.
+Verificati lint, typecheck, 95 test, build e audit UI; collaudo Chromium delle
+destinazioni attive, header nascosto sul hub, target 48 px e layout 320/375/390 px.
+
+### Valutazione successiva — Editor del programma personale (non implementata)
+
+Il filtro grado mantiene il Set React, ma smonta i checkbox degli altri gradi.
+`saveCustomSelectionFromForm` riceve soltanto gli input `skillIds` presenti nel
+DOM; la RPC `save_custom_selection` elimina dalla disciplina modificata le voci
+assenti nel payload. Riprodotto in browser con dati fittizi: 2 selezionati tra
+due gradi, salvataggio da un grado invia 1 ID; tornando a Tutti ne invia 2.
+
+Proposta: serializzare la selezione completa indipendentemente dal filtro e
+aggiungere una sola azione Seleziona/Deseleziona visibili, additiva rispetto
+agli altri gradi. Con filtro Tutti equivale al ripasso generale del catalogo
+accessibile della disciplina. Contatore e passaggio di disciplina vanno
+verificati: gli ID iniziali provengono oggi da entrambe le discipline, mentre
+lista e RPC operano su una disciplina per volta.
+
+Le forme da stage già accessibili non richiedono un nuovo tipo di programma.
+Per account limitati, contenuti oltre il livello successivo restano soggetti a
+scope e RLS; un eventuale accesso a singole tecniche assegnato dall'istruttore
+richiede un intervento separato. Non rimuovere i controlli di accesso del catalogo.
+
 ### 6.1 "Oggi fai questo" (`practice-logic.ts`)
 
 Input: tutte le `UserPlanItem` non nascoste dell'utente.
@@ -580,15 +611,15 @@ Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi 
 
 Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
 
-In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile (sinistra → torna a `/hub`) e icona utente (destra → `/profile`). È non-sticky di design: l'AppHeader scrolla via per non collidere con la sticky pre-esistente su `/today`. Vedi `plan/completed/2026-05-01-hub-page-design.md`.
+In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile (sinistra → torna a `/hub`) e campanella Bacheca (destra → `/news`). È non-sticky di design: l'AppHeader scrolla via per non collidere con la sticky pre-esistente su `/today`. Vedi `plan/completed/2026-05-01-hub-page-design.md` per il design storico.
 
 ### 7.1 Bottom navigation
 
 ```
-[ Allenamento ]  [ Programma ]  [ Scuola ]  [ Progressi ]  [ Bacheca ]
+[ Allenamento ]  [ Programma ]  [ Scuola ]  [ Progressi ]  [ Profilo ]
 ```
 
-5 slot riservati alle aree ad alta frequenza di pratica. Il **Profilo non occupa uno slot**: si raggiunge via icona utente in alto a destra in `AppHeader` (oltre che dalla tile `/hub`). Razionale: gradi/sessions setup/password/logout sono destinazioni rare rispetto alla pratica giornaliera, e Bacheca (notifiche scuola) merita la promozione in nav permanente.
+La barra conserva 5 slot e include Profilo. Bacheca si raggiunge dalla campanella nell'header, dagli avvisi in Allenamento e dalla tile del hub. Non è presente un pallino globale dei non letti; il layout non aggiunge query.
 
 `/calendar` non occupa uno slot BottomNav: è il calendario generale dell'app. Si raggiunge da `/today` (sticky header), `/progress` (bottone "Apri calendario") e `/profile` (card Allenamento).
 

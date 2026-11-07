@@ -232,6 +232,12 @@ Loading states:
 
 ## 7. Auth, sessione e Supabase clients
 
+Navigazione corrente (P5, 2026-11-07): la barra inferiore contiene Allenamento,
+Programma, Scuola, Progressi e Profilo. Nell'header, nascosto sul hub, Home resta
+a sinistra e Bacheca e' raggiungibile dalla campanella a destra, con stato attivo
+su `/news`. Le nuove comunicazioni sono segnalate dal banner in Allenamento;
+nessun badge globale o lettura DB aggiuntiva nel layout.
+
 Auth:
 
 - Supabase Auth email/password.
