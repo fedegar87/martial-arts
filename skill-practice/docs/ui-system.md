@@ -109,8 +109,9 @@ accessi diretti. Non annidare altri accordion intorno a questi controlli.
 I riepiloghi devono rappresentare lo stato salvato, non le bozze dei form;
 eventuali richieste pendenti devono essere riconoscibili anche a sezione chiusa.
 
-Lingua usa lo stesso `Disclosure`, con la lingua salvata nel riepilogo, e
-`FormSelect` come i gradi. Il selettore non compare nella barra superiore
+Lingua usa lo stesso `Disclosure`, con il solo titolo, e `FormSelect` come i gradi.
+Il menu mostra la lingua corrente senza riepilogo o etichetta visibile ripetuta;
+il nome accessibile del campo resta Lingua. Il selettore non compare nella barra superiore
 dell'app. Titoli dei pannelli e `CardTitle` condividono font, dimensione, peso
 e interlinea; errori delle impostazioni usano `Alert`.
 Le azioni del profilo usano `wrappingButtonClassName` da `ui-classes.ts` per

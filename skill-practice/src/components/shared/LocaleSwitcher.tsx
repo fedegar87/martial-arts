@@ -48,7 +48,7 @@ export function LocaleSwitcher({
     >
       {settings ? (
         <FormSelect
-          label={tr("language")}
+          aria-label={tr("language")}
           value={locale}
           disabled={pending}
           onChange={(event) => changeLocale(event.target.value)}

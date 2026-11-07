@@ -662,7 +662,7 @@ Regole:
   `src/lib/ui-classes.ts`.
 - `FormSelect` usa font mobile-safe per evitare zoom iOS.
 - Header e bottom sheets gestiscono safe-area PWA.
-- Il Profilo mostra subito identita' e gradi; Lingua usa `Disclosure` e `FormSelect` come le altre impostazioni, con riepilogo della lingua salvata. L'header autenticato contiene solo Home e Bacheca. `Disclosure` raccoglie dettagli
+- Il Profilo mostra subito identita' e gradi; Lingua usa `Disclosure` con il solo titolo e `FormSelect` con la lingua corrente selezionata, senza riepilogo o etichette visibili ripetute. L'header autenticato contiene solo Home e Bacheca. `Disclosure` raccoglie dettagli
   account, programma, promemoria, sicurezza e privacy/dati senza smontare i form.
   Gli esiti riaprono la sezione; riepiloghi di modalita' e promemoria indicano
   dati salvati. Allenamento/Calendario ed Esci restano direttamente accessibili.

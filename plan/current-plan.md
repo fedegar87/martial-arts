@@ -773,7 +773,8 @@ Dettagli account, Lingua, Programma, Promemoria, Sicurezza e Privacy/dati apribi
 indipendentemente. Allenamento e Calendario conservano collegamenti diretti;
 Esci resta visibile. `primitives/Disclosure.tsx` usa details/summary nativi,
 stile Card condiviso e riapertura sugli esiti delle azioni, senza smontare i
-campi. Lingua usa `FormSelect` come i gradi, con la lingua salvata nel riepilogo;
+campi. Lingua mostra solo il titolo e, all'apertura, `FormSelect` con la lingua
+corrente selezionata, senza riepilogo o etichette visibili ripetute;
 il selettore e' assente dall'header autenticato. Titoli dei pannelli e delle card
 condividono tipografia e interlinea. Riepiloghi visibili per modalita' programma e promemoria effettivamente
 salvati; richiesta di cancellazione pendente riconoscibile anche da chiusa.

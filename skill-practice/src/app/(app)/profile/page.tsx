@@ -18,14 +18,13 @@ import type { TrainingSchedule, UserRole } from "@/lib/types";
 import { wrappingButtonClassName } from "@/lib/ui-classes";
 import { CalendarDays, CalendarPlus, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 export default async function ProfilePage() {
   const tr = await getTranslations("ui");
-  const locale = await getLocale();
   const profile = await getCurrentProfileAccount();
   if (!profile) redirect("/login");
 
@@ -86,10 +85,7 @@ export default async function ProfilePage() {
         </p>
       </Disclosure>
 
-      <Disclosure
-        title={tr("language")}
-        summary={locale === "fr" ? "Français" : "Italiano"}
-      >
+      <Disclosure title={tr("language")}>
         <LocaleSwitcher variant="settings" />
       </Disclosure>
 

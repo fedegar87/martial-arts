@@ -216,9 +216,10 @@ try {
   await page.getByRole("heading", { name: "Nome di collaudo" }).waitFor();
   assert.equal(await page.locator("header.material-bar select").count(), 0);
   const language = panel(/^Lingua/);
-  assert.match(await language.locator("summary").innerText(), /Italiano/);
+  assert.equal(await language.locator("summary").innerText(), "Lingua");
   await language.locator("summary").click();
   const select = page.getByRole("combobox", { name: "Lingua", exact: true });
+  assert.equal(await select.inputValue(), "it");
   await page.evaluate(() => {
     window.__hold = true;
   });
@@ -232,11 +233,17 @@ try {
   await panel(/^Langue/)
     .getByRole("combobox", { name: "Langue", exact: true })
     .waitFor();
-  assert.match(
+  assert.equal(
     await panel(/^Langue/)
       .locator("summary")
       .innerText(),
-    /Français/,
+    "Langue",
+  );
+  assert.equal(
+    await page
+      .getByRole("combobox", { name: "Langue", exact: true })
+      .inputValue(),
+    "fr",
   );
   await panel(/^Sécurité/)
     .locator("summary")
@@ -345,11 +352,20 @@ try {
         path: path.join(screenshots, `${locale}-${width}-expanded.png`),
         fullPage: true,
       });
+      if (width === 320) {
+        const languagePanel = panel(locale === "fr" ? /^Langue$/ : /^Lingua$/);
+        await languagePanel.evaluate((element) =>
+          element.scrollIntoView({ block: "center" }),
+        );
+        await languagePanel.screenshot({
+          path: path.join(screenshots, `${locale}-language-320.png`),
+        });
+      }
     }
   }
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: actual profile page with mocked data/actions; language in profile only, saved summary, pending/error/retry, Italian/French headings, shared typography/surfaces, no overflow at 320/390px and landscape. No database writes.",
+    "PASS: actual profile page with mocked data/actions; language panel has a single visible label and current selection, pending/error/retry, Italian/French headings, shared typography/surfaces, no overflow at 320/390px and landscape. No database writes.",
   );
 } finally {
   await browser?.close();
