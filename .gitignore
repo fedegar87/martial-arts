@@ -39,3 +39,8 @@ screenshots-mobile/
 .playwright-mcp/
 
 .vercel
+
+# Local video production tools, models and recordings
+.video-cache/
+tools/video/.venv/
+tools/video/work/

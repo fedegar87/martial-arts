@@ -1,0 +1,19 @@
+{
+  "name": "skill-practice-video-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.jsx --port=3100",
+    "render:smoke": "remotion render src/index.jsx SetupCheck work/setup-check.mp4 --codec=h264",
+    "capture": "node capture.mjs",
+    "capture:smoke": "node capture-smoke.mjs",
+    "check": "powershell -NoProfile -ExecutionPolicy Bypass -File check.ps1"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.540",
+    "playwright": "1.60.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.540"
+  }
+}

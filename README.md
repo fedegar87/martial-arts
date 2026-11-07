@@ -33,6 +33,8 @@ martial-arts/
 
 ## Quick start
 
+Per preparare e produrre il video tutorial dell'app: [setup video locale](docs/video-tutorial-setup.md), con strumenti in `tools/video/`.
+
 1. Leggi `plan/current-plan.md` — è autosufficiente
 2. Verifica le **decisioni aperte** marcate con ⚠️ nella sezione 2
 3. La cartella `archive/` serve solo per il razionale — non è richiesta per implementare
