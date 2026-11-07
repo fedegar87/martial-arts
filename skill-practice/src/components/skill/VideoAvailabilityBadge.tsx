@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   videoUrl: string | null | undefined;
+  secondaryVideoUrl?: string | null;
   compact?: boolean;
 };
 
-export function VideoAvailabilityBadge({ videoUrl, compact = false }: Props) {
-  const available = hasPlayableVideo(videoUrl);
+export function VideoAvailabilityBadge({ videoUrl, secondaryVideoUrl, compact = false }: Props) {
+  const available = hasPlayableVideo(videoUrl) || hasPlayableVideo(secondaryVideoUrl);
   const Icon = available ? Video : VideoOff;
   const label = available ? "Video disponibile" : "Video mancante";
 

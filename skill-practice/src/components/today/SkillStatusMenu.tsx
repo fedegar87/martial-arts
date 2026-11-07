@@ -52,7 +52,7 @@ export function SkillStatusMenu({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label="Modifica stato">
+        <Button variant="ghost" size="icon" className="size-11" aria-label="Modifica stato">
           <MoreVertical className="h-4 w-4" />
         </Button>
       </SheetTrigger>

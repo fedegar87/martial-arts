@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Play, VideoOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { extractYouTubeId } from "@/lib/youtube";
 import { localVideoThumbnailUrl } from "@/lib/skill-video";
+import { YouTubePlayback } from "./YouTubePlayback";
 
 type Props = {
   videoUrl: string;
@@ -20,15 +21,10 @@ export function VideoPlayer({
 }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [failedThumbnailUrl, setFailedThumbnailUrl] = useState<string | null>(null);
-  const frameRef = useRef<HTMLIFrameElement>(null);
   const videoId = extractYouTubeId(videoUrl);
   const safeThumbnailUrl = localVideoThumbnailUrl(thumbnailUrl);
   const showThumbnail =
     safeThumbnailUrl !== null && failedThumbnailUrl !== safeThumbnailUrl;
-
-  useEffect(() => {
-    if (isPlaying) frameRef.current?.focus({ preventScroll: true });
-  }, [isPlaying]);
 
   if (!videoId) {
     return <UnavailablePlaceholder />;
@@ -37,17 +33,7 @@ export function VideoPlayer({
   return (
     <div className="space-y-2">
       {isPlaying ? (
-        <div className="relative aspect-video min-h-[200px] w-full overflow-hidden rounded-md bg-black">
-          <iframe
-            ref={frameRef}
-            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1`}
-            title={title}
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowFullScreen
-            referrerPolicy="strict-origin-when-cross-origin"
-            className="absolute inset-0 h-full w-full border-0"
-          />
-        </div>
+        <YouTubePlayback key={videoId} videoId={videoId} title={title} />
       ) : (
         <Button
           type="button"

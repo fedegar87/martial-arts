@@ -329,7 +329,25 @@ Scheda tecnica e video (P2, 2026-11-07):
   `/video-thumbnails/<nome>.<png|jpg|jpeg|webp|avif>`, servita come asset locale
   senza ottimizzazione remota; il secondario non eredita quella miniatura.
   Errori dell'immagine ripristinano la superficie tipografica. Non vengono
-  aggiunti controlli velocita' via IFrame API o meccanismi di consenso.
+  aggiunti meccanismi di consenso.
+
+Ripasso video e liste (P2.2 / P3 ridotto, 2026-11-07):
+
+- `YouTubePlayback` viene montato solo dopo Play, crea l'iframe in un
+  contenitore di cui React non gestisce i figli e collega l'IFrame API tramite
+  `lib/youtube-api.ts`. Lo script e' condiviso tra player, con timeout e retry.
+  Se l'API fallisce l'iframe resta utilizzabile. Lo smontaggio distrugge il
+  player senza lasciare iframe o callback attivi sul componente.
+- Le velocita' `0,5x / 0,75x / 1x` compaiono solo se disponibili e in numero
+  maggiore di uno; il valore selezionato segue l'evento confermato dall'API.
+  Ogni nuova variante parte a 1x. `origin` deriva dal dominio corrente e il
+  Referer conserva la policy `strict-origin-when-cross-origin`.
+- `lib/skill-presentation.ts` omette nomi italiani vuoti o ridondanti e durate
+  non valide. Programma e Scuola permettono il ritorno a capo di titolo e
+  sottotitolo, senza nuovi badge di pratica o grado. Ogni riga ha un solo link;
+  il menu di stato resta separato, con target di 44x44.
+- Badge e filtro video includono il secondario valido, coerentemente con la
+  scheda tecnica e senza interrogazioni DB aggiuntive.
 
 Calendario:
 

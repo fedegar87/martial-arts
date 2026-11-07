@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getSkillVideoVariants, localVideoThumbnailUrl, selectSkillVideo } from "./skill-video.ts";
+import { getSkillVideoVariants, hasSkillVideo, localVideoThumbnailUrl, selectSkillVideo } from "./skill-video.ts";
 
 const skill = {
   video_url: "https://youtu.be/abcdefghijk",
@@ -9,6 +9,13 @@ const skill = {
   secondary_video_label: "Forma Pang Fa (bastone corto)",
   thumbnail_url: "/video-thumbnails/tan-tao.webp",
 };
+
+test("skill video availability includes secondary-only videos and excludes placeholders", () => {
+  assert.equal(hasSkillVideo(skill), true);
+  assert.equal(hasSkillVideo({ ...skill, video_url: "PLACEHOLDER" }), true);
+  assert.equal(hasSkillVideo({ ...skill, secondary_video_url: null }), true);
+  assert.equal(hasSkillVideo({ video_url: "PLACEHOLDER", secondary_video_url: "invalid" }), false);
+});
 
 test("video variants retain database labels and associate the thumbnail only with the primary", () => {
   const variants = getSkillVideoVariants(skill);

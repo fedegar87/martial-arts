@@ -20,7 +20,7 @@ import {
   EXTRA_GRADE_VALUE,
   gradesForDiscipline,
 } from "@/lib/grades";
-import { hasPlayableVideo } from "@/lib/youtube";
+import { hasSkillVideo } from "@/lib/skill-video";
 import { brand } from "@/lib/brand";
 import type {
   Discipline,
@@ -103,7 +103,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   );
   const hasLockedSections = lockedSkills.length > 0;
   const categoryCountBase = searchMatchedSkills.filter((s) =>
-    onlyWithVideo ? hasPlayableVideo(s.video_url) : true,
+    onlyWithVideo ? hasSkillVideo(s) : true,
   );
   const categoryOptions = availableCategories.map((value) => ({
     value,
@@ -113,12 +113,12 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
     .filter((s) =>
       selectedCategorySet.size > 0 ? selectedCategorySet.has(s.category) : true,
     )
-    .filter((s) => hasPlayableVideo(s.video_url)).length;
+    .filter(hasSkillVideo).length;
   const filteredSkills = searchMatchedSkills
     .filter((s) =>
       selectedCategorySet.size > 0 ? selectedCategorySet.has(s.category) : true,
     )
-    .filter((s) => (onlyWithVideo ? hasPlayableVideo(s.video_url) : true));
+    .filter((s) => (onlyWithVideo ? hasSkillVideo(s) : true));
 
   const byGrade = filteredSkills.reduce<Record<number, Skill[]>>(
     (acc, skill) => {

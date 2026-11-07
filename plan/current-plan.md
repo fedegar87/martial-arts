@@ -483,8 +483,9 @@ e conservazione della query nel redirect al login per sessioni scadute.
 Miniature facoltative solo da file raster locali in `public/video-thumbnails/`
 (Opzione 2A), associate al solo video principale; nessuna richiesta Google prima
 di Play. Player alto almeno 200 px, etichette delle varianti leggibili su mobile.
-La scheda passa la nota di oggi alla finestra note già esistente. Controlli di
-velocità personalizzati (P2.2) rinviati; nessuna dipendenza o migrazione aggiunta.
+La scheda passa la nota di oggi alla finestra note già esistente. I controlli di
+velocità personalizzati sono descritti nel successivo P2.2; nessuna dipendenza
+o migrazione aggiunta.
 
 Verifiche: lint, typecheck, 90 test, build di produzione e confronto ui:audit
 senza nuove segnalazioni; rendering server della pagina con fixture per tutte
@@ -493,6 +494,29 @@ La verifica visiva autenticata su mobile resta da fare: il servizio di controllo
 browser non ha esposto una finestra utilizzabile durante l'intervento.
 
 ## 6. LOGICA CENTRALE
+
+### P2.2 e P3 — Implementati il 2026-11-07
+
+- P2.2: controlli velocità `0,5× / 0,75× / 1×` solo dopo Play e solo se
+  supportati. Loader condiviso `lib/youtube-api.ts`, player client locale
+  `components/skill/YouTubePlayback.tsx`, fallback all'iframe normale se l'API
+  non risponde. Stato confermato dall'API, reset a 1× al cambio video e pulizia
+  coordinata con React. Nessuna richiesta Google pre-play o nuova dipendenza.
+- P3 ridotto su richiesta dell'utente: titoli leggibili, sottotitolo italiano
+  solo se presente e non ridondante, un unico link per riga e menu separato
+  con target 44×44. Durate valide e disponibilità coerente anche quando esiste
+  soltanto il video secondario. Logica di presentazione in `lib/skill-presentation.ts`.
+- Esclusi P3.2 (etichette In coppia / Solo-coppia) e P3.4 (badge/evidenza grado
+  in preparazione). Il grado successivo resta il riferimento implicito, senza
+  ulteriori informazioni nelle liste. Nessuna modifica a scope, gradi o RLS.
+
+Criterio UX concordato: privilegiare l'azione del momento e la leggibilità;
+non aggiungere etichette o metriche solo perché il dato è disponibile.
+Verifiche: lint, typecheck, 95 test, build, confronto ui:audit e collaudo
+Chromium con componenti reali e API simulata (320/375/390 px, link, touch,
+privacy pre-play, più player, errori e smontaggio). Verificato anche un video
+dimostrativo YouTube reale con cambio confermato a 0,5×. Non è un collaudo
+autenticato su telefono fisico. Nessuna nuova dipendenza o migrazione.
 
 ### 6.1 "Oggi fai questo" (`practice-logic.ts`)
 

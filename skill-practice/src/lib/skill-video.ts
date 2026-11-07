@@ -1,4 +1,4 @@
-import { extractYouTubeId } from "./youtube.ts";
+import { extractYouTubeId, hasPlayableVideo } from "./youtube.ts";
 import type { Skill } from "./types.ts";
 
 type SkillVideos = Pick<
@@ -17,6 +17,10 @@ export type SkillVideoVariant = {
   label: string;
   thumbnailUrl: string | null;
 };
+
+export function hasSkillVideo(skill: Pick<Skill, "video_url" | "secondary_video_url">): boolean {
+  return hasPlayableVideo(skill.video_url) || hasPlayableVideo(skill.secondary_video_url);
+}
 
 export function localVideoThumbnailUrl(
   url: string | null | undefined,
