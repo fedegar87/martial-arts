@@ -14,6 +14,9 @@ type Props = {
   ariaLabel: string;
   compact?: boolean;
   fullWidth?: boolean;
+  replace?: boolean;
+  scroll?: boolean;
+  wrapLabels?: boolean;
   className?: string;
 };
 
@@ -22,6 +25,9 @@ export function SegmentedNav({
   ariaLabel,
   compact = false,
   fullWidth = false,
+  replace = false,
+  scroll = true,
+  wrapLabels = false,
   className,
 }: Props) {
   return (
@@ -37,16 +43,25 @@ export function SegmentedNav({
         <Link
           key={item.href}
           href={item.href}
+          replace={replace}
+          scroll={scroll}
           aria-current={item.active ? "page" : undefined}
           className={cn(
             "tap-feedback label-font flex min-h-11 items-center justify-center gap-1.5 rounded-md border border-transparent px-3 text-sm text-muted-foreground transition-all hover:text-foreground",
             compact ? "min-w-0" : "min-w-20",
             fullWidth && "flex-1",
+            wrapLabels && "min-w-0 basis-0 py-2",
             item.active && "border-border/80 bg-card text-foreground font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.4)]",
           )}
         >
           {item.icon}
-          <span className="truncate">{item.label}</span>
+          <span
+            className={wrapLabels
+              ? "min-w-0 whitespace-normal wrap-break-word text-center leading-snug"
+              : "truncate"}
+          >
+            {item.label}
+          </span>
         </Link>
       ))}
     </nav>

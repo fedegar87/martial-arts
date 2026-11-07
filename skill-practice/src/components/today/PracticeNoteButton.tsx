@@ -97,7 +97,7 @@ export function PracticeNoteButton({
             <SheetTitle>Nota pratica</SheetTitle>
             <SheetDescription>
               Registra un dettaglio da ricordare la prossima volta che lavori
-              su questo video.
+              su questa tecnica.
             </SheetDescription>
           </SheetHeader>
           <div className="px-4">

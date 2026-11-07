@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronUp, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
-import { hasPlayableVideo } from "@/lib/youtube";
+import { getSkillVideoVariants } from "@/lib/skill-video";
 
 type Props = {
   skillId: string;
@@ -22,8 +22,16 @@ export function TodayVideoDisclosure({
 }: Props) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const variants = getSkillVideoVariants({
+    video_url: videoUrl,
+    secondary_video_url: secondaryVideoUrl ?? null,
+    video_label: null,
+    secondary_video_label: null,
+    thumbnail_url: null,
+  });
+  const firstVideo = variants[0];
 
-  if (!hasPlayableVideo(videoUrl)) {
+  if (!firstVideo) {
     return (
       <p className="text-muted-foreground text-xs">
         Video non ancora disponibile.
@@ -31,7 +39,7 @@ export function TodayVideoDisclosure({
     );
   }
 
-  const hasSecondary = hasPlayableVideo(secondaryVideoUrl);
+  const hasSecondary = variants.length > 1;
 
   return (
     <div className="space-y-3">
@@ -57,7 +65,11 @@ export function TodayVideoDisclosure({
       </Button>
       {open && (
         <div id={panelId} className="space-y-2">
-          <VideoPlayer videoUrl={videoUrl} title={skillName} />
+          <VideoPlayer
+            key={firstVideo.videoId}
+            videoUrl={firstVideo.url}
+            title={skillName}
+          />
           {hasSecondary && (
             <div>
               <Button
@@ -66,7 +78,7 @@ export function TodayVideoDisclosure({
                 size="xs"
                 className="h-auto px-0 whitespace-normal"
               >
-                <Link href={`/skill/${skillId}`}>
+                <Link href={`/skill/${skillId}?v=2`}>
                   Vedi anche il secondo video nella scheda
                 </Link>
               </Button>

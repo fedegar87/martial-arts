@@ -11,35 +11,16 @@ import { BackButton } from "@/components/skill/BackButton";
 import { PersonalNotesPanel } from "@/components/skill/PersonalNotesPanel";
 import { SkillPracticeActions } from "@/components/skill/SkillPracticeActions";
 import { TeacherNote } from "@/components/skill/TeacherNote";
+import { SegmentedNav } from "@/components/primitives/SegmentedNav";
+import { getSkillVideoVariants, selectSkillVideo } from "@/lib/skill-video";
 import { gradeLabelForDiscipline, isSkillWithinLevelScope } from "@/lib/grades";
 
-type Props = { params: Promise<{ skillId: string }> };
+type Props = {
+  params: Promise<{ skillId: string }>;
+  searchParams: Promise<{ v?: string | string[] }>;
+};
 
-function LabeledVideo({
-  url,
-  label,
-  skillName,
-}: {
-  url: string;
-  label: string | null;
-  skillName: string;
-}) {
-  return (
-    <figure className="space-y-2">
-      {label && (
-        <figcaption className="text-muted-foreground text-sm font-medium">
-          {label}
-        </figcaption>
-      )}
-      <VideoPlayer
-        videoUrl={url}
-        title={label ? `${skillName} — ${label}` : skillName}
-      />
-    </figure>
-  );
-}
-
-export default async function SkillDetailPage({ params }: Props) {
+export default async function SkillDetailPage({ params, searchParams }: Props) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -62,6 +43,8 @@ export default async function SkillDetailPage({ params }: Props) {
     null;
   const inPersonalSelection = manualPlanItem !== null;
   const practicedToday = todayLog?.completed ?? false;
+  const variants = getSkillVideoVariants(skill);
+  const activeVideo = selectSkillVideo(variants, (await searchParams).v);
 
   return (
     <div className="space-y-6">
@@ -78,22 +61,28 @@ export default async function SkillDetailPage({ params }: Props) {
         </p>
       </header>
 
-      {skill.secondary_video_url ? (
-        <div className="space-y-4">
-          <LabeledVideo
-            url={skill.video_url}
-            label={skill.video_label}
-            skillName={skill.name}
+      <section aria-label="Video della tecnica" className="space-y-3">
+        {variants.length > 1 && (
+          <SegmentedNav
+            ariaLabel="Variante video"
+            fullWidth
+            wrapLabels
+            replace
+            scroll={false}
+            items={variants.map((variant) => ({
+              href: `/skill/${skillId}${variant.value === "2" ? "?v=2" : ""}`,
+              label: variant.label,
+              active: variant.value === activeVideo?.value,
+            }))}
           />
-          <LabeledVideo
-            url={skill.secondary_video_url}
-            label={skill.secondary_video_label}
-            skillName={skill.name}
-          />
-        </div>
-      ) : (
-        <VideoPlayer videoUrl={skill.video_url} title={skill.name} />
-      )}
+        )}
+        <VideoPlayer
+          key={activeVideo?.videoId ?? "unavailable"}
+          videoUrl={activeVideo?.url ?? ""}
+          title={activeVideo ? `${skill.name} — ${activeVideo.label}` : skill.name}
+          thumbnailUrl={activeVideo?.thumbnailUrl}
+        />
+      </section>
 
       <TeacherNote note={skill.teacher_notes} />
 
@@ -104,6 +93,7 @@ export default async function SkillDetailPage({ params }: Props) {
           skillId={skillId}
           inPersonalSelection={inPersonalSelection}
           practicedToday={practicedToday}
+          todayNote={todayLog?.personal_note ?? ""}
         />
       </div>
     </div>

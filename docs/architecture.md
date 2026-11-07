@@ -307,6 +307,30 @@ Allenamento:
 4. Le mutazioni aggiornano `practice_logs`, `user_plan_items.last_practiced_at`
    e revalidano le rotte impattate.
 
+Scheda tecnica e video (P2, 2026-11-07):
+
+- `/skill/[skillId]` monta una sola variante valida; `?v=2` apre il secondo
+  video. `SegmentedNav` usa `replace` e `scroll={false}` per i soli cambi
+  variante, con etichette intere su mobile. Il link da `/today` al secondo
+  video apre direttamente `?v=2` con normale navigazione. Il proxy conserva
+  pathname e query nel parametro interno `next` del login; pagina e azione
+  login continuano a validare la destinazione con `safeRedirectPath`.
+- `lib/skill-video.ts` sceglie la prima sorgente valida se il parametro e'
+  assente, ripetuto o non disponibile, e deduplica gli ID YouTube. `youtube.ts`
+  valida ID, protocolli e host prima di costruire l'embed sul dominio fisso
+  `youtube-nocookie.com`.
+- Solo il player ha una key dipendente dal video: il cambio interrompe la
+  riproduzione e torna a pre-play; azioni, stato pratica e bozze note restano
+  associati alla tecnica. `SkillPracticeActions` riceve la nota del giorno
+  gia' caricata dalla pagina.
+- Il player ha altezza minima 200 px e usa `Button` per il pre-play. Non
+  carica iframe, script o miniature Google prima di Play. L'eventuale
+  `thumbnail_url` del principale e' ammessa solo nel formato
+  `/video-thumbnails/<nome>.<png|jpg|jpeg|webp|avif>`, servita come asset locale
+  senza ottimizzazione remota; il secondario non eredita quella miniatura.
+  Errori dell'immagine ripristinano la superficie tipografica. Non vengono
+  aggiunti controlli velocita' via IFrame API o meccanismi di consenso.
+
 Calendario:
 
 - `/calendar` mostra sessioni programmate, pratica libera retroattiva, note e

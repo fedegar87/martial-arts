@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   isAllowedNextPath,
+  safeRedirectPath,
   validateEmail,
   validatePasswordMatch,
   validatePasswordStrength,
@@ -96,4 +97,18 @@ test("isAllowedNextPath: /onboarding is allowed", () => {
 
 test("isAllowedNextPath: /hub is allowed", () => {
   assert.equal(isAllowedNextPath("/hub"), "/hub");
+});
+
+test("safeRedirectPath preserves the video variant through login", () => {
+  const destination = "/skill/11111111-1111-1111-1111-111111111111?v=2";
+  assert.equal(safeRedirectPath(destination), destination);
+});
+
+test("safeRedirectPath rejects external and unknown destinations", () => {
+  for (const destination of [
+    "https://example.com/skill/technique?v=2",
+    "//example.com/skill/technique",
+    "/unknown?v=2",
+    "/skill-external?v=2",
+  ]) assert.equal(safeRedirectPath(destination), null);
 });

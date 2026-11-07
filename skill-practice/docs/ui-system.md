@@ -67,6 +67,11 @@ border-border bg-card text-foreground
 
 Non usare gold pieno.
 
+Per varianti video con etichette lunghe usare `wrapLabels`; gli altri utilizzi
+mantengono il testo troncato predefinito. `replace` e `scroll={false}` sono
+opzioni esplicite per cambiare variante senza accumulare history o spostare la
+pagina: non applicarle automaticamente alle altre navigazioni.
+
 ## OptionCard
 
 Usare per scelte grandi nei form: disciplina onboarding, cadenza, scope sessioni.

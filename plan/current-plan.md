@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Versione brief:** v3
-**Ultimo aggiornamento:** 2026-11-04
+**Ultimo aggiornamento:** 2026-11-07
 **Sostituisce:** `archive/05-brief-v1-superseded.md`
 
 ---
@@ -346,7 +346,7 @@ skill-practice/
 │   │   ├── programma/                  # PlanTabsNav (Scuola/Programma personale)
 │   │   ├── plan/                       # Editor piano (exam/custom)
 │   │   ├── progress/                   # Visualizzazioni progresso
-│   │   ├── skill/                      # VideoPlayer, badge livello/stato
+│   │   ├── skill/                      # VideoPlayer (unica variante attiva), badge livello/stato
 │   │   ├── profile/                    # GradeEditor, PlanModeSection, ChangePasswordSection, PrivacyDataSection, TrainingReminderSettings, SignOutButton
 │   │   ├── news/                       # Lista bacheca + badge unread
 │   │   ├── legal/                      # LegalLinks, LegalPage
@@ -381,6 +381,7 @@ skill-practice/
 │   │   │   ├── news.ts
 │   │   │   ├── push-notifications.ts
 │   │   │   └── account.ts              # Richiesta cancellazione (Sprint 1.11)
+│   │   ├── skill-video.ts              # Varianti video, selezione ?v=2 e miniature locali (puro, P2)
 │   │   ├── practice-logic.ts           # Fallback "oggi fai questo" senza schedule (puro)
 │   │   ├── session-scheduler.ts        # getScheduledSession(date, schedule, items) puro
 │   │   ├── calendar-logic.ts           # DayView calendario (puro, testato)
@@ -470,6 +471,26 @@ Aggiornamento UI 2026-05-11:
 - **Niente `helpers/`, `services/`, `api/` custom**: la convenzione del progetto è `queries/` (read) + `actions/` (write). Punto.
 
 ---
+
+### P2 — Scheda video (implementato il 2026-11-07)
+
+Un solo player nella scheda skill, varianti valide selezionate con `?v=2`,
+`SegmentedNav` con sostituzione della history e scroll conservato. Il cambio
+variante riavvia solo il player, senza modificare pratica o note della tecnica.
+Gestione di principale/secondario mancanti e parametri ripetuti, validazione
+rigorosa degli URL YouTube, collegamento diretto al secondo video da `/today`
+e conservazione della query nel redirect al login per sessioni scadute.
+Miniature facoltative solo da file raster locali in `public/video-thumbnails/`
+(Opzione 2A), associate al solo video principale; nessuna richiesta Google prima
+di Play. Player alto almeno 200 px, etichette delle varianti leggibili su mobile.
+La scheda passa la nota di oggi alla finestra note già esistente. Controlli di
+velocità personalizzati (P2.2) rinviati; nessuna dipendenza o migrazione aggiunta.
+
+Verifiche: lint, typecheck, 90 test, build di produzione e confronto ui:audit
+senza nuove segnalazioni; rendering server della pagina con fixture per tutte
+le combinazioni video, e smoke HTTP del redirect al login con query conservata.
+La verifica visiva autenticata su mobile resta da fare: il servizio di controllo
+browser non ha esposto una finestra utilizzabile durante l'intervento.
 
 ## 6. LOGICA CENTRALE
 

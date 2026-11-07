@@ -12,7 +12,7 @@ export function PersonalNotesPanel({ notes }: Props) {
       <div>
         <h2 className="text-lg font-medium">Diario pratica</h2>
         <p className="text-sm text-muted-foreground">
-          Ultimi appunti salvati dopo aver lavorato su questo video.
+          Ultimi appunti salvati su questa tecnica, comuni alle sue varianti video.
         </p>
       </div>
       <div className="space-y-3">

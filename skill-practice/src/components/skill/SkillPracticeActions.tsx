@@ -12,12 +12,14 @@ type Props = {
   skillId: string;
   inPersonalSelection: boolean;
   practicedToday: boolean;
+  todayNote?: string;
 };
 
 export function SkillPracticeActions({
   skillId,
   inPersonalSelection,
   practicedToday,
+  todayNote,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(practicedToday);
@@ -58,7 +60,12 @@ export function SkillPracticeActions({
           skillId={skillId}
           inPersonalSelection={inPersonalSelection}
         />
-        <PracticeNoteButton skillId={skillId} block showStatus={false} />
+        <PracticeNoteButton
+          skillId={skillId}
+          block
+          showStatus={false}
+          initialNote={todayNote}
+        />
       </div>
 
       {message && (
