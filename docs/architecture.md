@@ -153,7 +153,10 @@ Note:
 - `next-pwa` non e' installato.
 - `vercel.json` fissa la regione `fra1`; l'integrazione Git Vercel pubblica i
   push su `main`. Il blocco temporaneo usato durante P4/P5 e' stato rimosso.
-- `next.config.ts` contiene solo security headers globali.
+- `next.config.ts` contiene security headers globali e disabilita la cache
+  persistente Turbopack delle build: verificato riuso di CSS obsoleto in locale
+  e su Vercel dopo modifiche a `globals.css`. Il controllo del rilascio deve
+  verificare HTML e CSS sul dominio pubblico, oltre allo stato del deploy.
 
 ## 5. Convenzioni architetturali vincolanti
 

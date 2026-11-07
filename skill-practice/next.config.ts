@@ -15,6 +15,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // La cache persistente ha ripubblicato CSS obsoleto dopo modifiche a globals.css.
+  experimental: { turbopackFileSystemCacheForBuild: false },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

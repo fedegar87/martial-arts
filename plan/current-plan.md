@@ -94,6 +94,7 @@ Per il razionale completo vedi `archive/`:
 - Tailwind v4 (config via `globals.css` `@theme`, niente `tailwind.config.ts` per shadcn)
 - shadcn preset usato: **Nova** (Lucide + Geist), base color: **neutral**
 - `npm run dev` forza `next dev --webpack`: Turbopack dev ha dato panic locale su `/login`; `npm run build` resta verde con Turbopack
+- Cache persistente Turbopack delle build disattivata (`turbopackFileSystemCacheForBuild: false`): il 2026-11-07 ha riutilizzato CSS obsoleto sia in locale sia su Vercel. La verifica pubblica del rilascio include i CSS effettivamente collegati dall'HTML.
 - `next-pwa` **rimosso il 2026-06-02** (era fermo al Pages Router, incompatibile con App Router/Next 16, mai importato). Offline locale implementato con `public/sw.js` + `ServiceWorkerRegister`
 - Per breaking changes complete vedi `skill-practice/node_modules/next/dist/docs/01-app/`
 
