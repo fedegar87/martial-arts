@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import { TempleHomeIcon } from "./TempleHomeIcon";
+import { Button } from "@/components/ui/button";
 
 export function AppHeader({ newsActive = false }: { newsActive?: boolean }) {
   return (
@@ -12,15 +13,21 @@ export function AppHeader({ newsActive = false }: { newsActive?: boolean }) {
       >
         <TempleHomeIcon className="h-6 w-6 drop-shadow-[0_0_8px_var(--tint-glow)]" aria-hidden />
       </Link>
-      <Link
-        href="/news"
-        aria-label="Bacheca"
-        title="Bacheca"
-        aria-current={newsActive ? "page" : undefined}
-        className={`tap-feedback inline-flex min-h-12 min-w-12 items-center justify-center transition-all hover:opacity-90 active:scale-95 ${newsActive ? "text-primary" : "text-muted-foreground"}`}
+      <Button
+        asChild
+        variant="ghost"
+        size="icon"
+        className={`min-h-12 min-w-12 ${newsActive ? "text-primary" : "text-muted-foreground"}`}
       >
-        <Bell className="h-5 w-5" aria-hidden />
-      </Link>
+        <Link
+          href="/news"
+          aria-label="Bacheca"
+          title="Bacheca"
+          aria-current={newsActive ? "page" : undefined}
+        >
+          <Bell className="h-5 w-5" aria-hidden />
+        </Link>
+      </Button>
     </header>
   );
 }

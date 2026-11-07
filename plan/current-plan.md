@@ -650,6 +650,14 @@ Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola
 
 In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile (sinistra → torna a `/hub`) e campanella Bacheca (destra → `/news`). È non-sticky di design: l'AppHeader scrolla via per non collidere con la sticky pre-esistente su `/today`. Vedi `plan/completed/2026-05-01-hub-page-design.md` per il design storico.
 
+Correzione implementata il 2026-11-07: anche il hub mostra la campanella Bacheca,
+integrata a destra nell'intestazione esistente, senza barra aggiuntiva o Home.
+La tile Bacheca resta. I due accessi superiori usano `Button` ghost con target
+48×48 px e nome accessibile; nessun badge, contatore, query o notifica aggiunti.
+Verificati lint, typecheck, build e collaudo Chromium con pagina reale/query
+simulate: link e focus da tastiera, tile esistente, assenza della barra globale
+sul hub, stato attivo su `/news`, nomi lunghi e layout 320/375/390/844 px.
+
 ### 7.1 Bottom navigation
 
 ```

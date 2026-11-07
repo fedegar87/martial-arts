@@ -237,6 +237,9 @@ Programma, Scuola, Progressi e Profilo. Nell'header, nascosto sul hub, Home rest
 a sinistra e Bacheca e' raggiungibile dalla campanella a destra, con stato attivo
 su `/news`. Le nuove comunicazioni sono segnalate dal banner in Allenamento;
 nessun badge globale o lettura DB aggiuntiva nel layout.
+Nel hub la stessa campanella compare a destra dell'intestazione, senza barra
+aggiuntiva o pulsante Home; resta anche la tile Bacheca. Entrambe le campanelle
+usano `Button` ghost con target 48x48 e link `/news` con nome accessibile.
 
 Auth:
 
