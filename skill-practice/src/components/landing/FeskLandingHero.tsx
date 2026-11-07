@@ -20,25 +20,25 @@ export function FeskLandingHero({ ctaHref }: { ctaHref: string }) {
           alt={brand.shortName}
           width={176}
           height={176}
-          className="landing-anim-horse h-44 w-44 rounded-3xl shadow-xl"
+          className="landing-hero__brand-logo landing-anim-horse h-44 w-44"
         />
 
-        <h1 className="landing-anim-ideogram mt-8 text-4xl font-display font-semibold text-foreground">
+        <h1 className="landing-hero__brand-title landing-anim-ideogram mt-8 text-4xl font-display font-semibold text-foreground">
           {brand.appName}
         </h1>
 
         <p
-          className="landing-anim-citation mt-5 text-5xl text-accent font-serif-tc font-medium tracking-[0.15em]"
+          className="landing-hero__brand-symbol landing-anim-citation mt-5 text-5xl text-accent font-serif-tc font-medium tracking-[0.15em]"
           lang="zh-Hant"
         >
           {brand.landing.ideogram}
         </p>
 
-        <p className="landing-anim-translation mt-3 text-xl italic text-muted-foreground">
+        <p className="landing-hero__brand-motto landing-anim-translation mt-3 text-xl italic text-muted-foreground">
           {brand.landing.motto}
         </p>
 
-        <div className="landing-anim-cta mt-12">
+        <div className="landing-hero__cta landing-anim-cta mt-12">
           <EnterButton href={ctaHref} />
         </div>
       </div>

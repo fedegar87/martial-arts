@@ -201,16 +201,18 @@ async function getPlanSourceForUser(
   return profile.plan_mode === "custom" ? "manual" : "exam_program";
 }
 
-async function claimPendingDelivery(
+export async function claimPendingDelivery(
   supabase: AdminSupabaseClient,
   {
     userId,
     subscriptionId,
     date,
+    eventId,
   }: {
     userId: string;
     subscriptionId: string;
     date: string;
+    eventId?: string;
   },
 ): Promise<string | null> {
   const { data, error } = await supabase
@@ -218,7 +220,8 @@ async function claimPendingDelivery(
     .insert({
       user_id: userId,
       subscription_id: subscriptionId,
-      kind: "training_reminder",
+      kind: eventId ? "event_reminder" : "training_reminder",
+      event_id: eventId ?? null,
       date,
       status: "pending",
     })
@@ -235,16 +238,18 @@ async function claimPendingDelivery(
 
   // Se un tentativo precedente nello stesso giorno e' fallito per un errore di rete
   // transitorio (subscription non revocata), consente il retry al giro cron successivo.
-  const { data: retryData, error: retryError } = await supabase
+  let retryQuery = supabase
     .from("notification_deliveries")
     .update({
       status: "pending",
       error: null,
+      date,
     })
     .eq("subscription_id", subscriptionId)
-    .eq("kind", "training_reminder")
-    .eq("date", date)
-    .eq("status", "failed")
+    .eq("kind", eventId ? "event_reminder" : "training_reminder")
+    .eq("status", "failed");
+  retryQuery = eventId ? retryQuery.eq("event_id", eventId) : retryQuery.eq("date", date);
+  const { data: retryData, error: retryError } = await retryQuery
     .select("id")
     .maybeSingle();
 
@@ -252,7 +257,7 @@ async function claimPendingDelivery(
   return (retryData as { id: string } | null)?.id ?? null;
 }
 
-async function markDeliverySent(supabase: AdminSupabaseClient, deliveryId: string) {
+export async function markDeliverySent(supabase: AdminSupabaseClient, deliveryId: string) {
   await supabase
     .from("notification_deliveries")
     .update({
@@ -263,7 +268,7 @@ async function markDeliverySent(supabase: AdminSupabaseClient, deliveryId: strin
     .eq("id", deliveryId);
 }
 
-async function markDeliveryFailed(
+export async function markDeliveryFailed(
   supabase: AdminSupabaseClient,
   deliveryId: string,
   error: unknown,
@@ -277,7 +282,7 @@ async function markDeliveryFailed(
     .eq("id", deliveryId);
 }
 
-async function revokeSubscription(
+export async function revokeSubscription(
   supabase: AdminSupabaseClient,
   subscriptionId: string,
 ) {
@@ -290,7 +295,7 @@ async function revokeSubscription(
     .eq("id", subscriptionId);
 }
 
-function toWebPushSubscription(
+export function toWebPushSubscription(
   subscription: PushSubscriptionRecord,
 ): WebPushSubscription {
   return {
@@ -308,7 +313,7 @@ type VapidDetails = {
   privateKey: string;
 };
 
-function getVapidDetails(): VapidDetails {
+export function getVapidDetails(): VapidDetails {
   const subject = process.env.VAPID_SUBJECT?.trim() || `mailto:${brand.supportEmail}`;
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
   const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();

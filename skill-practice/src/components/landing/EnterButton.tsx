@@ -1,21 +1,10 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function EnterButton({ href }: { href: string }) {
   return (
-    <Link
-      href={href}
-      className="
-        inline-flex items-center justify-center
-        px-12 py-4
-        rounded-lg
-        border border-accent text-accent
-        text-lg font-medium tracking-wide
-        transition-colors duration-300 ease-out
-        hover:bg-accent hover:text-background
-        active:scale-[0.98]
-      "
-    >
-      Entra
-    </Link>
+    <Button asChild size="lg" className="min-h-14 px-12 text-lg">
+      <Link href={href}>Entra</Link>
+    </Button>
   );
 }

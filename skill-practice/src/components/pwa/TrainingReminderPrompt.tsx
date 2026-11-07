@@ -6,7 +6,7 @@ import { enableTrainingReminders } from "@/lib/actions/push-notifications";
 import {
   getPushSupportState,
   pushSupportErrorMessage,
-  subscribeToTrainingReminders,
+  subscribeToPushNotifications,
 } from "@/lib/push-client";
 import type { TrainingReminderSettings } from "@/lib/push-notifications";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -41,7 +41,7 @@ export function TrainingReminderPrompt({
 
     startTransition(async () => {
       try {
-        const subscription = await subscribeToTrainingReminders(publicVapidKey);
+        const subscription = await subscribeToPushNotifications(publicVapidKey);
         const result = await enableTrainingReminders({
           subscription,
           reminderTime: settings.reminderTime,

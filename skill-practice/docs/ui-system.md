@@ -109,6 +109,18 @@ accessi diretti. Non annidare altri accordion intorno a questi controlli.
 I riepiloghi devono rappresentare lo stato salvato, non le bozze dei form;
 eventuali richieste pendenti devono essere riconoscibili anche a sezione chiusa.
 
+Nel Calendario gli eventi federali riusano celle e giorno esistenti: un solo
+indicatore, elenco essenziale e dettagli su richiesta nel `material-sheet`.
+Il pannello deve restare scorrevole entro il viewport, con focus ripristinato
+alla riga, chiusura accessibile e feedback visibile dopo le azioni asincrone.
+Ricordamelo e' per singolo evento; il Profilo conserva l'orario comune e
+l'interruttore separato degli allenamenti, senza nuovi pannelli o filtri.
+
+Home usa `House` Lucide nello stesso `Button` ghost della campanella (48 px).
+Entra nella landing usa il `Button` primario condiviso. Il logo resta un asset
+nitido: il glass si applica alle superfici di navigazione e sovrapposizione,
+senza blur sul marchio, sulle celle o sui testi degli eventi.
+
 ## Tailwind locale
 
 Ammesso nei componenti dominio:

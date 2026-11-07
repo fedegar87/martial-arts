@@ -5,6 +5,7 @@ import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { Badge } from "@/components/ui/badge";
+import { CalendarEventCard } from "@/components/calendar/CalendarEventCard";
 import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import type {
   FreePracticeItem,
@@ -16,9 +17,11 @@ import type {
 type Props = {
   day: CalendarDayView | undefined;
   skillOptions: CalendarSkill[];
+  publicVapidKey?: string;
+  eventReminderTime?: string;
 };
 
-export function CalendarDayPanel({ day, skillOptions }: Props) {
+export function CalendarDayPanel({ day, skillOptions, publicVapidKey = "", eventReminderTime = "09:00" }: Props) {
   if (!day) return null;
 
   const title = new Date(`${day.date}T00:00:00Z`).toLocaleDateString("it-IT", {
@@ -38,6 +41,15 @@ export function CalendarDayPanel({ day, skillOptions }: Props) {
         <DayBadge day={day} />
       </header>
 
+      {day.events.length > 0 && (
+        <section className="space-y-2">
+          <h3 className="text-muted-foreground text-sm font-medium uppercase">Eventi federali</h3>
+          <div className="divide-border divide-y">
+            {day.events.map((event) => <CalendarEventCard key={event.id} event={event} publicVapidKey={publicVapidKey} reminderTime={eventReminderTime} />)}
+          </div>
+        </section>
+      )}
+
       {day.scheduled.length > 0 ? (
         <section className="space-y-2">
           <h3 className="text-sm font-medium uppercase text-muted-foreground">
@@ -49,9 +61,7 @@ export function CalendarDayPanel({ day, skillOptions }: Props) {
             ))}
           </div>
         </section>
-      ) : (
-        <EmptyScheduledState day={day} />
-      )}
+      ) : null}
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -133,26 +143,6 @@ function DayBadge({ day }: { day: CalendarDayView }) {
   }
 
   return <Badge variant="outline">Diario</Badge>;
-}
-
-function EmptyScheduledState({ day }: { day: CalendarDayView }) {
-  if (day.sessionKind === "rest_day" && day.freePractice.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Riposo. Nessuna pratica registrata.
-      </p>
-    );
-  }
-
-  if (day.sessionKind !== "training") {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Nessuna sessione programmata.
-      </p>
-    );
-  }
-
-  return null;
 }
 
 function ScheduledPracticeRow({

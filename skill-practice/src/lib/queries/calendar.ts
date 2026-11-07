@@ -9,6 +9,7 @@ import {
 } from "@/lib/session-scheduler";
 import { buildCalendarDayViewsInRange } from "@/lib/calendar-logic";
 import { localDateKey } from "@/lib/date";
+import { getFederationCalendarData } from "@/lib/queries/federation-events";
 import type {
   CalendarDayView,
   CalendarSkill,
@@ -26,6 +27,8 @@ export type CalendarData = {
   logs: PracticeLog[];
   schedule: TrainingSchedule | null;
   repsPerForm: number;
+  eventsUnavailable: boolean;
+  eventReminderTime: string;
 };
 
 type PracticeLogWithSkill = PracticeLog & {
@@ -45,10 +48,11 @@ export async function getCalendarDataInRange({
 }): Promise<CalendarData> {
   const supabase = await createClient();
   const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const [schedule, items, logsWithSkill] = await Promise.all([
+  const [schedule, items, logsWithSkill, federation] = await Promise.all([
     getTrainingSchedule(userId),
     getUserPlanItems(userId, undefined, sourceFilter),
     fetchMeaningfulLogsWithSkill(supabase, userId, from, to),
+    getFederationCalendarData(userId, from, to),
   ]);
 
   const scheduledItems = schedule
@@ -81,11 +85,16 @@ export async function getCalendarDataInRange({
       hasSchedule: schedule !== null,
       scheduleStart: schedule?.start_date ?? null,
       scheduleEnd: schedule?.end_date ?? null,
-    }),
+    }).map((day) => ({
+      ...day,
+      events: federation.events.filter((event) => event.starts_on <= day.date && event.ends_on >= day.date),
+    })),
     rows,
     logs,
     schedule,
     repsPerForm,
+    eventsUnavailable: federation.unavailable,
+    eventReminderTime: federation.reminderTime,
   };
 }
 

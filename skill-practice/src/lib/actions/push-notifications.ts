@@ -94,7 +94,6 @@ export async function updateTrainingReminderSettings({
     .from("notification_preferences")
     .upsert({
       user_id: user.id,
-      training_reminders_enabled: true,
       reminder_time: normalizedReminderTime,
       time_zone: normalizeTimeZone(timeZone),
     });
@@ -106,9 +105,7 @@ export async function updateTrainingReminderSettings({
   return { success: true };
 }
 
-export async function disableTrainingReminders(
-  endpoint?: string,
-): Promise<PushNotificationActionState> {
+export async function disableTrainingReminders(): Promise<PushNotificationActionState> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -125,17 +122,6 @@ export async function disableTrainingReminders(
     });
 
   if (preferenceError) return { error: preferenceError.message };
-
-  let query = supabase
-    .from("push_subscriptions")
-    .update({ revoked_at: now, last_seen_at: now })
-    .eq("user_id", user.id)
-    .is("revoked_at", null);
-
-  if (endpoint) query = query.eq("endpoint", endpoint);
-
-  const { error: subscriptionError } = await query;
-  if (subscriptionError) return { error: subscriptionError.message };
 
   revalidatePath("/today");
   revalidatePath("/profile");

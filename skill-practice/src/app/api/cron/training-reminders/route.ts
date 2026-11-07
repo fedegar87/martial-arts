@@ -1,15 +1,28 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { sendDueTrainingReminders } from "@/lib/training-reminder-sender";
+import { syncFederationEvents } from "@/lib/federation-event-sync";
+import { sendDueEventReminders } from "@/lib/event-reminder-sender";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = await sendDueTrainingReminders();
+  let calendarAvailable = true;
+  try {
+    await syncFederationEvents();
+  } catch {
+    calendarAvailable = false;
+    console.error("Federation calendar sync failed; event reminders skipped.");
+  }
+  const result = {
+    ...await sendDueTrainingReminders(),
+    events: calendarAvailable ? await sendDueEventReminders() : { sourceUnavailable: true },
+  };
   return NextResponse.json(result, {
     headers: {
       "Cache-Control": "no-store",

@@ -1,6 +1,6 @@
 # Architettura e briefing operativo per LLM
 
-Data aggiornamento: 2026-11-04. Repo: `martial-arts/`, app principale:
+Data aggiornamento: 2026-11-07. Repo: `martial-arts/`, app principale:
 `skill-practice/`.
 
 Questo documento e' la mappa tecnica canonica dell'app. Serve a dare contesto
@@ -151,10 +151,8 @@ Note:
 - `next dev` forza Webpack; Turbopack dev aveva dato problemi locali.
 - `next build` usa il comportamento standard di Next 16.
 - `next-pwa` non e' installato.
-- `vercel.json` fissa la regione `fra1`. Durante P4 l'utente ha richiesto commit
-  e push senza deploy: `git.deploymentEnabled` e' temporaneamente `false`.
-  Rimuovere il blocco solo al rilascio finale autorizzato; la produzione resta
-  al commit P2.2/P3 `c896244` fino a quel momento.
+- `vercel.json` fissa la regione `fra1`; l'integrazione Git Vercel pubblica i
+  push su `main`. Il blocco temporaneo usato durante P4/P5 e' stato rimosso.
 - `next.config.ts` contiene solo security headers globali.
 
 ## 5. Convenzioni architetturali vincolanti
@@ -208,7 +206,7 @@ Pagine:
 | `/plan/exam` | protetta | Selezione piano da esame |
 | `/plan/custom` | protetta | Selezione personale |
 | `/sessions/setup` | protetta | Giorni, durata, ciclo e reps |
-| `/calendar` | protetta | Calendario unificato sessioni + pratica libera |
+| `/calendar` | protetta | Sessioni, pratica libera, eventi federali e promemoria scelti |
 | `/progress` | protetta | Progresso, streak, calendario, top skill |
 | `/news` | protetta | Bacheca scuola |
 | `/profile` | protetta | Profilo, gradi, account, sicurezza, privacy, reminder |
@@ -378,6 +376,21 @@ Calendario:
   toggles.
 - Non permette di segnare giorni futuri.
 - `practice_logs` e' la fonte comune per sessioni programmate e pratica libera.
+- Gli eventi federali non modificano cadenza, esercizi o stato della pratica.
+  Una piccola icona li segnala nelle celle; nel giorno selezionato appaiono
+  titolo, orario italiano e luogo. `CalendarEventCard` apre un Sheet condiviso,
+  scorrevole su mobile, con dettagli, fonte ufficiale e Ricordamelo opzionale.
+- `brand.calendar` configura pagina ufficiale, feed pubblico e fuso della fonte.
+  `ical-events.ts` usa `ical.js` per timezone, all-day, ricorrenze ed eccezioni;
+  `federation-event-sync.ts` salva anno corrente e successivo in Supabase.
+  Il cron esistente sincronizza al massimo ogni ora: HTTPS/host vincolati,
+  redirect rifiutati, timeout 10 s, limite 2 MB. Il browser non contatta Google.
+  Un errore conserva l'ultimo snapshot e sospende i soli promemoria eventi.
+- Per il primo import/manuale: `npm run sync:events` con `.env.local` e service
+  role. Lo script non invia push. Migrazione 0049 applicata e primo import di
+  52 eventi verificato il 2026-11-07.
+- Gli eventi scelti sono inclusi nell'export personale; l'informativa descrive
+  separatamente la disattivazione di allenamenti ed eventi.
 
 Progresso:
 
@@ -425,6 +438,8 @@ Entita utente:
 | `notification_preferences` | Preferenze reminder |
 | `push_subscriptions` | Subscription Web Push browser/device |
 | `notification_deliveries` | Storico deduplicato delivery reminder |
+| `federation_events` | Snapshot del calendario pubblico federale dell'istanza |
+| `federation_event_reminders` | Eventi scelti dall'utente, RLS proprietario |
 
 Campi/semantiche importanti:
 
@@ -482,10 +497,11 @@ Sequenza presente nel repo:
 | 0046 | `is_skill_in_scope`: sblocco fino al livello successivo (quello in preparazione) |
 | 0047 | `list_locked_skill_outline`: anteprima solo-titolo delle skill future bloccate |
 | 0048 | Fix attribuzione video Mei Hua |
+| 0049 | Calendario federale, sync atomica service role, promemoria e delivery eventi |
 
 Stato applicazione DB:
 
-- Le migrazioni `0001`–`0048` rappresentano lo schema e il seed FESK correnti.
+- Le migrazioni `0001`–`0049` rappresentano lo schema e il seed FESK correnti.
 - Ogni nuova modifica schema deve avere una migration numerata; niente cambio
   manuale da dashboard senza file corrispondente.
 
@@ -533,6 +549,7 @@ Query files:
 | --- | --- |
 | `account.ts` | Deletion/export account |
 | `calendar.ts` | DayView calendario e skill options |
+| `federation-events.ts` | Eventi nel periodo e selezioni/preferenze dell'utente |
 | `exam-programs.ts` | Programmi esame e requisiti |
 | `news.ts` | Bacheca/unread |
 | `plan.ts` | Piano utente |
@@ -558,6 +575,7 @@ Action files:
 | `account.ts` | Richiesta cancellazione account |
 | `auth.ts` | Login, logout, reset/update/change password |
 | `calendar.ts` | Toggle completamento per data, pratica libera |
+| `federation-events.ts` | Opt-in/rimozione evento con auth, validazione e rilettura server |
 | `news.ts` | Mark news seen |
 | `onboarding.ts` | Setup iniziale e scelta esame |
 | `plan.ts` | Piano exam/custom, add/hide/status |
@@ -588,6 +606,8 @@ Moduli testabili in `src/lib/`:
 | `practice-logic.ts` | Fallback "oggi": focus tutti i giorni + maintenance meno praticate |
 | `session-scheduler.ts` | Scheduler deterministico su ciclo N settimane x giorni |
 | `calendar-logic.ts` | DayView calendario, scheduled/free, future/toggle |
+| `ical-events.ts` | Parser ICS con timezone, ricorrenze, annullamenti e limiti |
+| `federation-event-logic.ts` | Disponibilita', scadenza, orari e payload eventi |
 | `progress-logic.ts` | Calendar 90 giorni, readiness, conteggi sessioni |
 | `session-progress.ts` | Stato sessioni e reps su periodo |
 | `grades.ts` | Scala FESK, label, next grade, esami selezionabili |
@@ -692,6 +712,22 @@ Push reminders:
 - Sender: `src/lib/training-reminder-sender.ts`, usa service role, `web-push` e
   fallback `VAPID_SUBJECT` da `brand.supportEmail`.
 - Payload costruito in `src/lib/push-notifications.ts`.
+- Eventi: `event-reminder-sender.ts` invia solo quelli scelti con Ricordamelo,
+  il giorno prima all'orario/fuso comune salvato. Esclude annullati e iniziati;
+  topic distinti per evento, deduplica `(subscription_id,event_id)` e retry dei
+  falliti. Il delivery giornaliero degli allenamenti rimane distinto.
+- Disattivare gli allenamenti cambia solo il relativo opt-in; preserva la
+  sottoscrizione necessaria agli eventi. Salvare l'orario comune non abilita
+  gli allenamenti. Il logout revoca la sottoscrizione del dispositivo per tutti.
+- `sync_federation_events` e' una RPC atomica service-role-only con lock,
+  UID/occorrenza stabili e rifiuto di snapshot obsoleti; gli eventi rimossi
+  diventano annullati. RLS nega scritture eventi ai client e accesso ai
+  promemoria altrui; lettura eventi pubblici a tutti gli autenticati dell'istanza.
+- Test browser isolato: `node scripts/federation-calendar-smoke.mjs` dopo build;
+  usa il tooling Chromium del workspace e azioni/push simulate, senza account
+  o invii reali. Verifica dettagli, focus, errori, selezione/rimozione, orario
+  condiviso indipendente dagli allenamenti e mobile/landscape. Test puri in
+  `ical-events.test.ts` e `federation-event-logic.test.ts` inclusi in `npm test`.
 
 GitHub workflow:
 

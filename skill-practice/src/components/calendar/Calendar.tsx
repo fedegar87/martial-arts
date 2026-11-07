@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   ChevronLeft,
   ChevronRight,
+  CalendarDays,
   Circle,
   Dumbbell,
   Moon,
@@ -21,6 +22,8 @@ type Props = {
   previousDate: string;
   nextDate: string;
   skillOptions?: CalendarSkill[];
+  publicVapidKey?: string;
+  eventReminderTime?: string;
 };
 
 const WEEKDAY_LABELS = ["L", "M", "M", "G", "V", "S", "D"];
@@ -33,6 +36,8 @@ export function Calendar({
   previousDate,
   nextDate,
   skillOptions = [],
+  publicVapidKey = "",
+  eventReminderTime = "09:00",
 }: Props) {
   const selectedDay = days.find((day) => day.date === selectedDate);
 
@@ -52,7 +57,7 @@ export function Calendar({
         <MonthCalendar days={days} selectedDate={selectedDate} />
       )}
 
-      <CalendarDayPanel day={selectedDay} skillOptions={skillOptions} />
+      <CalendarDayPanel day={selectedDay} skillOptions={skillOptions} publicVapidKey={publicVapidKey} eventReminderTime={eventReminderTime} />
     </div>
   );
 }
@@ -217,6 +222,7 @@ function DayCell({
         )}
       </span>
       <DayCellBody day={day} />
+      {day.events.length > 0 && <CalendarDays className="text-muted-foreground h-3 w-3" aria-hidden />}
     </>
   );
   const className = cn(
@@ -280,14 +286,15 @@ function dayCellLabel(date: Date, day: CalendarDayView): string {
     month: "long",
   });
 
+  const eventLabel = day.events.length ? `, ${day.events.length} ${day.events.length === 1 ? "evento federale" : "eventi federali"}` : "";
   if (day.sessionKind === "training") {
     return `${formattedDate}: ${day.scheduled.length} ${
       day.scheduled.length === 1 ? "esercizio" : "esercizi"
-    }`;
+    }${eventLabel}`;
   }
-  if (day.freePractice.length > 0) return `${formattedDate}: pratica registrata`;
-  if (day.sessionKind === "rest_day") return `${formattedDate}: riposo`;
-  return `${formattedDate}: nessuna sessione`;
+  if (day.freePractice.length > 0) return `${formattedDate}: pratica registrata${eventLabel}`;
+  if (day.sessionKind === "rest_day") return `${formattedDate}: riposo${eventLabel}`;
+  return `${formattedDate}: nessuna sessione${eventLabel}`;
 }
 
 function calendarHref(view: CalendarView, date: string): string {

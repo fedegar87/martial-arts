@@ -10,8 +10,7 @@ import {
 import {
   getPushSupportState,
   pushSupportErrorMessage,
-  subscribeToTrainingReminders,
-  unsubscribeFromTrainingReminders,
+  subscribeToPushNotifications,
 } from "@/lib/push-client";
 import type { TrainingReminderSettings as TrainingReminderSettingsModel } from "@/lib/push-notifications";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -36,6 +35,7 @@ export function TrainingReminderSettings({
   );
   const [reminderTime, setReminderTime] = useState(settings.reminderTime);
   const [savedReminderTime, setSavedReminderTime] = useState(settings.reminderTime);
+  const [savedTimeZone, setSavedTimeZone] = useState(settings.timeZone);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -54,7 +54,7 @@ export function TrainingReminderSettings({
 
     startTransition(async () => {
       try {
-        const subscription = await subscribeToTrainingReminders(publicVapidKey);
+        const subscription = await subscribeToPushNotifications(publicVapidKey);
         const result = await enableTrainingReminders({
           subscription,
           reminderTime,
@@ -69,7 +69,8 @@ export function TrainingReminderSettings({
 
         setEnabled(true);
         setSavedReminderTime(reminderTime);
-        setMessage("Promemoria attivati.");
+        setSavedTimeZone(localTimeZone);
+        setMessage("Promemoria allenamenti attivati.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Attivazione non riuscita.");
       }
@@ -80,8 +81,7 @@ export function TrainingReminderSettings({
     setMessage(null);
     startTransition(async () => {
       try {
-        const endpoint = await unsubscribeFromTrainingReminders();
-        const result = await disableTrainingReminders(endpoint);
+        const result = await disableTrainingReminders();
 
         if (result && "error" in result) {
           setMessage(result.error);
@@ -89,7 +89,7 @@ export function TrainingReminderSettings({
         }
 
         setEnabled(false);
-        setMessage("Promemoria disattivati.");
+        setMessage("Promemoria allenamenti disattivati.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Disattivazione non riuscita.");
       }
@@ -111,6 +111,7 @@ export function TrainingReminderSettings({
         }
 
         setSavedReminderTime(reminderTime);
+        setSavedTimeZone(localTimeZone);
         setMessage("Orario aggiornato.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Salvataggio non riuscito.");
@@ -121,7 +122,7 @@ export function TrainingReminderSettings({
   return (
     <Disclosure
       title="Promemoria"
-      summary={enabled ? `Attivi · ${savedReminderTime}` : "Disattivati"}
+      summary={`${enabled ? "Allenamento attivo" : "Allenamento disattivato"} · ${savedReminderTime}`}
       revealKey={message}
     >
       <div className="space-y-3">
@@ -129,8 +130,8 @@ export function TrainingReminderSettings({
           <div>
             <p className="text-muted-foreground text-xs">
               {enabled
-                ? "Attivi nei giorni con esercizi ancora da fare."
-                : "Disattivati per questo dispositivo."}
+              ? "Allenamenti: attivi nei giorni con esercizi ancora da fare."
+              : "Allenamenti: disattivati."}
             </p>
           </div>
           {enabled ? (
@@ -166,14 +167,14 @@ export function TrainingReminderSettings({
               type="time"
               value={reminderTime}
               onChange={(event) => setReminderTime(event.target.value)}
-              disabled={!hasSchedule || isPending}
+              disabled={isPending}
               className="max-w-32"
             />
             <Button
               type="button"
               variant="outline"
               size="icon"
-              disabled={!hasSchedule || isPending || !enabled}
+              disabled={isPending}
               onClick={handleSave}
               aria-label="Salva orario promemoria"
             >
@@ -181,13 +182,14 @@ export function TrainingReminderSettings({
             </Button>
           </div>
           <p className="text-muted-foreground text-xs">
-            Fuso orario rilevato: {localTimeZone || settings.timeZone}.
+            L&apos;orario vale anche per gli eventi scelti nel Calendario.
+            {" "}Fuso orario: {savedTimeZone}.
           </p>
         </div>
 
         {!hasSchedule && (
           <p className="text-muted-foreground text-xs">
-            Disponibile dopo aver impostato una cadenza di allenamento.
+            Per attivare gli avvisi degli allenamenti, imposta una cadenza.
           </p>
         )}
 

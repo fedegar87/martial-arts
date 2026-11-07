@@ -79,8 +79,9 @@ Per il razionale completo vedi `archive/`:
 | UI | Tailwind CSS + shadcn/ui | Componenti accessibili pronti |
 | PWA | Service worker statico + manifest | `public/sw.js` registrato in produzione; `next-pwa` rimosso il 2026-06-02 |
 | Database | Supabase (PostgreSQL + Auth) | Auth predisposta multi-utente |
-| Push reminder | Web Push + VAPID + Vercel Cron | Subscription salvate in Supabase; invio server-only via `web-push` |
+| Push reminder | Web Push + VAPID + Supabase `pg_cron`/`pg_net` | Cron esistente ogni 15 minuti; invio server-only via `web-push` |
 | Video | YouTube unlisted embed | Zero infrastruttura video |
+| Calendario federale | Feed iCalendar pubblico, parser `ical.js` solo server | Snapshot Supabase, promemoria solo su eventi scelti |
 | Hosting | Vercel | Free tier |
 | Monorepo | No | Singolo progetto |
 
@@ -279,6 +280,22 @@ Tabella `account_deletion_requests` (migration `0016_profile_account_privacy.sql
 
 La stessa migration aggiunge un trigger `prevent_user_profile_privilege_changes` su `user_profiles` che blocca l'aggiornamento di `role` e `school_id` quando il chiamante è il proprietario autenticato. **Limite noto:** il trigger blocca anche un admin loggato che tenti di modificare il proprio `role`/`school_id` dalla UI. Per cambi privilegi serve operatività via service role (Supabase dashboard / SQL Editor). Accettabile finché l'admin è il founder; da rivedere quando arriveranno admin di scuola.
 
+### 4.5 Calendario federale e promemoria scelti (2026-11-07)
+
+Migration `0049_federation_calendar.sql`, applicata dall'utente e verificata con
+primo import di 52 eventi. `federation_events` conserva UID/occorrenza unici,
+titolo, descrizione, luogo, timestamp UTC, giornate inclusive nel fuso della
+fonte, flag giornata intera/annullato e `synced_at`. Sono eventi pubblici della
+federazione dell'istanza: lettura agli autenticati, scritture solo service role.
+`federation_event_reminders` collega utente/evento con chiave primaria composta
+e RLS proprietario; inserimento solo per eventi futuri non annullati.
+
+`notification_deliveries` aggiunge `event_id` e `kind=event_reminder`: deduplica
+per evento/dispositivo, mantenendo quella giornaliera degli allenamenti.
+RPC `sync_federation_events` atomica e riservata al service role: ID stabili,
+snapshot obsoleti ignorati, eventi rimossi marcati annullati senza cancellare
+preferenze o storico. Altre federazioni hanno istanze isolate, come da D14.
+
 ---
 
 ## 5. STRUTTURA CARTELLE PROGETTO
@@ -341,7 +358,7 @@ skill-practice/
 │   │   ├── hub/                        # Tile, grid, background
 │   │   ├── today/                      # TodaySkillCard, TodayVideoDisclosure (video di ripasso chiuso di default), PracticeCheckButton, RepsCounter, ecc.
 │   │   ├── sessions/                   # WeekdayChips, CadencePicker, RepsStepper, SetupForm, ResetScheduleSection, PlanFormsSection
-│   │   ├── calendar/                   # Calendar, CalendarDayPanel, PracticeCompletionToggle, AddFreePracticeSheet
+│   │   ├── calendar/                   # Calendar, CalendarDayPanel, CalendarEventCard, PracticeCompletionToggle, AddFreePracticeSheet
 │   │   ├── library/                    # DisciplineToggle, LibraryFilters, GradeSection, LockedGradeSection, ProgramSkillRow, CatalogMarkerLegend
 │   │   ├── programma/                  # PlanTabsNav (Scuola/Programma personale)
 │   │   ├── plan/                       # Editor piano (exam/custom)
@@ -351,7 +368,7 @@ skill-practice/
 │   │   ├── news/                       # Lista bacheca + badge unread
 │   │   ├── legal/                      # LegalLinks, LegalPage
 │   │   ├── pwa/                        # ServiceWorkerRegister, TrainingReminderPrompt
-│   │   └── shared/                     # AppHeader, AppHeaderConditional, AppRouteSkeleton, EmptyState, MetricStrip, TempleHomeIcon
+│   │   └── shared/                     # AppHeader (House Lucide), AppHeaderConditional, AppRouteSkeleton, EmptyState, MetricStrip
 │   ├── lib/
 │   │   ├── supabase/
 │   │   │   ├── admin.ts                # service-role client per cron/server-only
@@ -364,6 +381,7 @@ skill-practice/
 │   │   │   ├── plan.ts
 │   │   │   ├── practice-log.ts
 │   │   │   ├── calendar.ts             # DayView calendario (Sprint 1.14, ex journal.ts)
+│   │   │   ├── federation-events.ts    # Eventi pubblici e promemoria dell'utente
 │   │   │   ├── training-schedule.ts
 │   │   │   ├── user-profile.ts
 │   │   │   ├── progress.ts             # Aggregati progresso
@@ -375,6 +393,7 @@ skill-practice/
 │   │   │   ├── plan.ts                 # add / hide / change-status
 │   │   │   ├── practice.ts             # mark done + reps
 │   │   │   ├── calendar.ts             # retroattiva / pratica libera (Sprint 1.13-1.14)
+│   │   │   ├── federation-events.ts    # Opt-in/rimozione promemoria evento
 │   │   │   ├── training-schedule.ts
 │   │   │   ├── profile.ts
 │   │   │   ├── onboarding.ts
@@ -397,6 +416,10 @@ skill-practice/
 │   │   ├── push-client.ts              # Browser permission + subscription helper
 │   │   ├── push-notifications.ts       # Tipi/helper payload promemoria
 │   │   ├── training-reminder-sender.ts # Cron sender server-only
+│   │   ├── ical-events.ts             # Parser puro ICS, timezone/ricorrenze/eccezioni
+│   │   ├── federation-event-sync.ts   # Import server-only da feed pubblico configurato in brand
+│   │   ├── federation-event-logic.ts  # Date, disponibilita' e payload promemoria eventi
+│   │   ├── event-reminder-sender.ts   # Invio eventi scelti, indipendente dagli allenamenti
 │   │   ├── date.ts | labels.ts | ui-classes.ts | perf.ts
 │   │   ├── types.ts                    # Tipi condivisi (DB + UI)
 │   │   └── utils.ts
@@ -407,6 +430,8 @@ skill-practice/
 │   └── migrations/                     # 26 migrations al 2026-05-16, vedi §5.1
 ├── scripts/
 │   ├── generate-fesk-seed.mjs          # Genera 0004_seed_fesk.sql da curriculum-mapping-fesk.md
+│   ├── sync-federation-events.mjs     # Primo import/manuale, nessun invio push
+│   ├── federation-calendar-smoke.mjs  # Test browser isolato con azioni/push simulate
 │   └── ui-audit.mjs
 ├── .env.local.example
 ├── next.config.ts
@@ -448,6 +473,7 @@ Sequenza aggiornata al 2026-06-03. **0001–0028 applicate** via SQL Editor Supa
 | 0030 | `skill_secondary_video` | Colonne `video_label`, `secondary_video_url`, `secondary_video_label`: una skill puo' avere 2 video etichettati (ruoli paired o esecuzioni alternative) |
 | 0031 | `more_skill_video_urls` | Video FESK aggiuntivi + primi 2 skill a doppio video (Tan Tao Tui Pang Fa, Shuang Tao 1 Lu) |
 | 0032 | `extra_weapon_fundamentals` | 4 skill "fondamentali" armi fuori programma cinture: categoria `preparatori` ("Altro"), grado-sentinella `99` (`EXTRA_GRADE_VALUE`), sezione "Altro" in libreria |
+| 0049 | `federation_calendar` | Eventi pubblici federali, promemoria selettivi con RLS, sync atomica service role e deduplica delivery per evento |
 
 > **0028 applicata il 2026-06-03** (single-tenant: no-op, verificato con smoke test). Quando arriverà la 2ª federazione, l'invito utenti deve passare `school_id` (e `display_name`) nei `user_metadata`, altrimenti con più scuole `handle_new_user` fallisce di proposito.
 
@@ -668,6 +694,30 @@ La barra conserva 5 slot e include Profilo. Bacheca si raggiunge dalla campanell
 
 `/calendar` non occupa uno slot BottomNav: è il calendario generale dell'app. Si raggiunge da `/today` (sticky header), `/progress` (bottone "Apri calendario") e `/profile` (card Allenamento).
 
+Dal 2026-11-07 comprende gli eventi del calendario ufficiale FESK nell'anno
+corrente e successivo. Un'icona nella cella segnala gli eventi; titolo, orario
+italiano e luogo compaiono nel giorno, i dettagli nel Sheet condiviso. Nessun
+filtro, nuova dashboard o copia in Bacheca. Eventi e pratica restano indipendenti.
+Home usa `House` Lucide e lo stesso `Button` ghost della campanella; la landing
+usa `Button` per Entra e conserva il logo integro, senza blur sul marchio.
+
+Fonte e fuso sono in `brand.calendar`. `ical.js` gestisce VTIMEZONE, ricorrenze,
+eccezioni e fine esclusiva all-day solo sul server. Il cron esistente sincronizza
+al massimo una volta all'ora; host HTTPS fisso, redirect negati, limite 2 MB e
+timeout 10 s. Un errore conserva lo snapshot e sospende i soli avvisi eventi.
+Query e azioni dedicate sono `lib/queries/federation-events.ts` e
+`lib/actions/federation-events.ts`. Primo import manuale: `npm run sync:events`.
+
+Ricordamelo e' una scelta esplicita per ogni evento: avviso il giorno prima,
+all'orario/fuso salvati nel Profilo. Nessun avviso per eventi annullati o iniziati;
+il comando compare solo prima della scadenza del promemoria. Gli avvisi degli
+allenamenti mantengono il loro interruttore: disattivarli non revoca le push
+degli eventi. Cambiare l'orario comune non attiva gli allenamenti. Logout revoca
+la sottoscrizione del dispositivo per entrambi. Nessuna push reale nei test.
+Gli eventi scelti sono inclusi nell'export dei dati personali; l'informativa
+descrive i due opt-in e i rispettivi comandi di disattivazione. La landing in
+orizzontale compatta logo e spazi per mantenere Entra visibile senza scroll.
+
 ### 7.2 Tab "Oggi"
 
 ```
@@ -820,7 +870,7 @@ PIANO LIBERO
 | Upload video dall'app | Idem |
 | Signed URL / API route video | Non servono per contenuti unlisted |
 | Pannello admin Sprint 1 | Gestione via Supabase dashboard finché serve |
-| Push generiche/marketing | Ammesso solo il promemoria allenamento opt-in di D12 |
+| Push generiche/marketing | Ammessi solo promemoria allenamento opt-in D12 ed eventi scelti con Ricordamelo |
 | Gamification (punti, badge, streak) | Non risolve il core, distrae |
 | Chat / messaggistica | WhatsApp esiste |
 | AI di qualsiasi tipo | Tecnologia non matura per MA, fuori scope |
@@ -1213,7 +1263,7 @@ Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock scree
 
 Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 6 tile che mostrano le aree dell'app e fungono da crocevia panoramico. Vedi `plan/completed/2026-05-01-hub-page-design.md`.
 
-Il flusso completo: landing `/` → Entra → `/hub` → scegli area → BottomNav per saltare fra aree → ideogramma 丙午 in `AppHeader` per tornare al hub. Login/onboarding redirigono a `/hub`. Logout torna a `/` (landing).
+Il flusso completo: landing `/` → Entra → `/hub` → scegli area → BottomNav per saltare fra aree → casetta Lucide in `AppHeader` per tornare al hub. Login/onboarding redirigono a `/hub`. Logout torna a `/` (landing).
 
 L'AppHeader è non-sticky per evitare collisioni con sub-header sticky pre-esistenti.
 

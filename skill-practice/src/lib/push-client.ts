@@ -48,7 +48,7 @@ function isStandaloneDisplayMode(): boolean {
   return window.matchMedia?.("(display-mode: standalone)").matches === true;
 }
 
-export async function subscribeToTrainingReminders(
+export async function subscribeToPushNotifications(
   publicVapidKey: string,
 ): Promise<BrowserPushSubscription> {
   const permission = await Notification.requestPermission();
@@ -68,7 +68,7 @@ export async function subscribeToTrainingReminders(
   return subscription.toJSON() as BrowserPushSubscription;
 }
 
-export async function unsubscribeFromTrainingReminders(): Promise<string | undefined> {
+export async function unsubscribeFromPushNotifications(): Promise<string | undefined> {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return undefined;
   const registration = await navigator.serviceWorker.getRegistration();
   const subscription = await registration?.pushManager.getSubscription();

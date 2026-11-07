@@ -201,7 +201,8 @@ export type NotificationDelivery = {
   id: string;
   user_id: string;
   subscription_id: string | null;
-  kind: "training_reminder";
+  kind: "training_reminder" | "event_reminder";
+  event_id: string | null;
   date: string;
   status: "pending" | "sent" | "failed" | "skipped";
   error: string | null;
@@ -280,5 +281,26 @@ export type CalendarDayView = {
   repsPerForm: number;
   scheduled: ScheduledPracticeItem[];
   freePractice: FreePracticeItem[];
-  events: [];
+  events: CalendarFederationEvent[];
+};
+
+export type FederationEvent = {
+  id: string;
+  source_uid: string;
+  recurrence_key: string;
+  title: string;
+  description: string;
+  location: string;
+  starts_at: string;
+  ends_at: string;
+  starts_on: string;
+  ends_on: string;
+  all_day: boolean;
+  cancelled: boolean;
+  synced_at: string;
+};
+
+export type CalendarFederationEvent = FederationEvent & {
+  reminderSelected: boolean;
+  canRemind: boolean;
 };

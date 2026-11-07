@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
 import { revokePushSubscriptionOnSignOut } from "@/lib/actions/push-notifications";
-import { unsubscribeFromTrainingReminders } from "@/lib/push-client";
+import { unsubscribeFromPushNotifications } from "@/lib/push-client";
 
 export function SignOutButton() {
   const [pending, start] = useTransition();
@@ -32,7 +32,7 @@ export function SignOutButton() {
 
 async function clearClientState() {
   try {
-    const endpoint = await unsubscribeFromTrainingReminders();
+    const endpoint = await unsubscribeFromPushNotifications();
     if (endpoint) {
       await revokePushSubscriptionOnSignOut(endpoint);
     }

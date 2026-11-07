@@ -18,6 +18,11 @@ export const brand = {
   themeColor: "#080808",
   backgroundColor: "#080808",
   notificationIcon: "/icons/icon-192.png",
+  calendar: {
+    sourceUrl: "https://www.feskfongttai.it/la-f-e-s-k/eventi/calendario.html",
+    feedUrl: "https://calendar.google.com/calendar/ical/c_21b2296138d499b918f2f950fb93be1b499adb800503e2adcf598aba5b511ee9%40group.calendar.google.com/public/basic.ics",
+    timeZone: "Europe/Rome",
+  },
   landing: {
     motto: "Fong Ttai",
     // Ideogrammi indicativi (abbondanza + pace): DA CONFERMARE con FESK.

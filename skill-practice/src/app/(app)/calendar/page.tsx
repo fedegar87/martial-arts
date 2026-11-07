@@ -45,9 +45,11 @@ export default async function CalendarPage({ searchParams }: Props) {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Calendario</h1>
         <p className="text-muted-foreground text-sm">
-          Sessioni programmate e pratica libera.
+          Allenamenti, pratica libera ed eventi federali.
         </p>
       </header>
+
+      {calendarData.eventsUnavailable && <p className="text-muted-foreground text-sm" role="status">Eventi federali temporaneamente non disponibili.</p>}
 
       <Calendar
         view={view}
@@ -57,6 +59,8 @@ export default async function CalendarPage({ searchParams }: Props) {
         previousDate={previousDate}
         nextDate={nextDate}
         skillOptions={skillOptions}
+        publicVapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
+        eventReminderTime={calendarData.eventReminderTime}
       />
     </div>
   );

@@ -2,7 +2,7 @@
 
 **Status:** Attiva (Strategia architetturale canonica)  
 **Ultimo aggiornamento:** 2026-11-04  
-**Stato codice di riferimento:** Migrazioni `0001`–`0048`, `src/lib/brand.ts`, `src/app/manifest.ts`  
+**Stato codice di riferimento:** Migrazioni `0001`–`0049`, `src/lib/brand.ts`, `src/app/manifest.ts`
 **Sostituisce:** `docs/architecture-multitenancy-readiness.md` (eliminato), `plan/2026-06-13-white-label-multi-instance-strategy.md` (eliminato)  
 **Storico rollout FESK:** [completed/2026-06-13-fesk-rollout-implementation-plan.md](completed/2026-06-13-fesk-rollout-implementation-plan.md)
 
@@ -37,7 +37,7 @@ La strategia copre 3 livelli progressivi di adozione senza riscrivere il prodott
 
 ---
 
-## 2. Fotografia Reale dell'App Oggi (Stato `0048`)
+## 2. Fotografia Reale dell'App Oggi (Stato `0049`)
 
 ### 2.1 Lo "Scheletro Universale" già pronto (~75% del prodotto)
 
@@ -58,7 +58,7 @@ Questi moduli sono già **indipendenti dal Kung Fu** e costituiscono il core inv
 #### Accoppiamento A — Identità visiva e asset statici (oltre `brand.ts`)
 - Asset fissi in `public/`: `/icons/icon-192.png`, `/icons/icon-512.png`, `/icons/maskable-512.png`, `/icons/apple-touch-icon.png`, `/icon.svg`, `/og-image.png`, `/logo-fesk.png`.
 - `FeskLandingHero.tsx` + `src/app/layout.tsx`: presuppongono ideogramma tradizionale cinese (`lang="zh-Hant"` e font `Noto_Serif_TC`).
-- `TempleHomeIcon.tsx` usato in `AppHeader.tsx`: icona SVG a tetto di pagoda cinese.
+- `AppHeader.tsx` usa la casetta `House` Lucide, della stessa famiglia delle altre icone; nessun asset Home specifico FESK.
 - `src/app/globals.css`: palette dark/gold cablata in `:root` e font editoriali `Cormorant_Garamond` / `Spectral`.
 - `public/sw.js` (`CACHE_NAME = "fesk-practice-v6"`) e `public/offline.html` (colori dark/gold inline e testo italiano).
 - `supabase/email-templates/invite.html`: logo, colori e dicitura `"FESK Practice"` / `"Fong Ttai"` cablati nell'HTML da incollare su Supabase Dashboard.
@@ -154,7 +154,7 @@ Non anticipare mai una fase prima che si verifichi il suo trigger concreto.
   1. **Separare Schema SQL da Seed FESK:** consolidare una baseline SQL di solo schema + spostare i dati FESK in `supabase/seeds/fesk.sql` e creare `supabase/seeds/<nuova-scuola>.sql`.
   2. **Tenant Brand & Asset Pack (`NEXT_PUBLIC_TENANT`):**
      - rendere `src/lib/brand.ts` selettivo per tenant;
-     - gestire asset per tenant (icone PWA, logo, `TempleHomeIcon` sostituibile con icona/logo scuola, ideogramma landing e font `Noto_Serif_TC` opzionali);
+     - gestire asset per tenant (icone PWA, logo, ideogramma landing e font `Noto_Serif_TC` opzionali); Home conserva la casetta Lucide comune;
      - parametrizzare token colore base in `globals.css`, `CACHE_NAME` in `sw.js`, `offline.html`, fix refuso `"FESK"` in `privacy/page.tsx` e generare il template `invite.html` dal brand.
   3. **Deploy isolato:** nuovo progetto Supabase + nuovo progetto Vercel collegato allo stesso repo.
 
