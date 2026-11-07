@@ -52,7 +52,24 @@ export function CustomSelectionForm({
       return b - a;
     });
   }, [groupedSkills]);
-  const selectedCount = selected.size;
+  const currentSkillIds = useMemo(
+    () => new Set(
+      groupedSkills.flatMap(([, skills]) => skills.map((skill) => skill.id)),
+    ),
+    [groupedSkills],
+  );
+  const effectiveGrade = activeGrade === "all" || gradeOptions.includes(activeGrade)
+    ? activeGrade
+    : "all";
+  const visibleSkillIds = useMemo(
+    () => new Set(groupedSkills.flatMap(([, skills]) => skills
+      .filter((skill) => effectiveGrade === "all"
+        || skill.minimum_grade_value === effectiveGrade)
+      .map((skill) => skill.id))),
+    [groupedSkills, effectiveGrade],
+  );
+  const selectedCount = [...selected].filter((id) => currentSkillIds.has(id)).length;
+  const hadSelection = selectedSkillIds.some((id) => currentSkillIds.has(id));
 
   function updateSelected(skillId: string, checked: boolean) {
     setSelected((current) => {
@@ -67,22 +84,32 @@ export function CustomSelectionForm({
   }
 
   return (
-    <form action={action} className="app-with-fixed-action space-y-5">
+    <form
+      action={action}
+      className="app-with-fixed-action space-y-5"
+      ref={preserveSelectionOnReset}
+    >
       <input type="hidden" name="discipline" value={discipline} />
+      {/* Filtered-out checkboxes are absent from FormData. */}
+      {[...selected].filter((id) => !visibleSkillIds.has(id)).map((id) => (
+        <input key={id} type="hidden" name="skillIds" value={id} />
+      ))}
 
       {gradeOptions.length > 0 && (
         <div className="scroll-chips">
           <GradeChip
             label="Tutti"
-            active={activeGrade === "all"}
+            active={effectiveGrade === "all"}
             onClick={() => setActiveGrade("all")}
+            disabled={pending}
           />
           {gradeOptions.map((grade) => (
             <GradeChip
               key={grade}
               label={gradeLabel(grade)}
-              active={activeGrade === grade}
+              active={effectiveGrade === grade}
               onClick={() => setActiveGrade(grade)}
+              disabled={pending}
             />
           ))}
         </div>
@@ -94,15 +121,16 @@ export function CustomSelectionForm({
           category={category}
           skills={skills.filter(
             (skill) =>
-              activeGrade === "all" || skill.minimum_grade_value === activeGrade,
+              effectiveGrade === "all" || skill.minimum_grade_value === effectiveGrade,
           )}
           selected={selected}
           onSelectedChange={updateSelected}
+          disabled={pending}
         />
       ))}
 
       <DeleteCustomSelectionSection
-        disabled={selectedCount === 0}
+        disabled={pending || selected.size === 0}
         onDeleted={() => setSelected(new Set())}
       />
 
@@ -121,13 +149,21 @@ export function CustomSelectionForm({
             <strong className="text-foreground">{selectedCount}</strong>{" "}
             selezionati
           </span>
-          <Button type="submit" disabled={pending || selectedCount === 0}>
+          <Button type="submit" disabled={pending || (selectedCount === 0 && !hadSelection)}>
             {pending ? "Salvataggio..." : "Salva piano"}
           </Button>
         </div>
       </div>
     </form>
   );
+}
+
+function preserveSelectionOnReset(form: HTMLFormElement | null) {
+  if (!form) return;
+  // React resets forms during commit, while its synthetic event handlers are disabled.
+  const preventReset = (event: Event) => event.preventDefault();
+  form.addEventListener("reset", preventReset);
+  return () => form.removeEventListener("reset", preventReset);
 }
 
 function DeleteCustomSelectionSection({
@@ -177,7 +213,7 @@ function DeleteCustomSelectionSection({
           <Button
             type="button"
             variant="destructive"
-            className="h-10 gap-2"
+            className="h-auto min-h-10 max-w-full gap-2 whitespace-normal py-2"
             disabled={disabled}
           >
             <Trash2 className="h-4 w-4" />
@@ -215,16 +251,19 @@ function GradeChip({
   label,
   active,
   onClick,
+  disabled,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  disabled: boolean;
 }) {
   return (
     <ChipButton
       onClick={onClick}
       active={active}
       className="shrink-0"
+      disabled={disabled}
     >
       {label}
     </ChipButton>
@@ -236,11 +275,13 @@ function SkillGroup({
   skills,
   selected,
   onSelectedChange,
+  disabled,
 }: {
   category: SkillCategory;
   skills: SkillOption[];
   selected: Set<string>;
   onSelectedChange: (skillId: string, checked: boolean) => void;
+  disabled: boolean;
 }) {
   if (skills.length === 0) return null;
 
@@ -260,6 +301,7 @@ function SkillGroup({
               name="skillIds"
               value={skill.id}
               checked={selected.has(skill.id)}
+              disabled={disabled}
               onChange={(event) =>
                 onSelectedChange(skill.id, event.target.checked)
               }

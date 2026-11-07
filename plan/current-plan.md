@@ -549,7 +549,7 @@ Commit e push fanno parte dell'intervento; il deploy resta rinviato.
 Verificati lint, typecheck, 95 test, build e audit UI; collaudo Chromium delle
 destinazioni attive, header nascosto sul hub, target 48 px e layout 320/375/390 px.
 
-### Valutazione successiva — Editor del programma personale (non implementata)
+### Editor del programma personale — Correzione implementata il 2026-11-07
 
 Il filtro grado mantiene il Set React, ma smonta i checkbox degli altri gradi.
 `saveCustomSelectionFromForm` riceve soltanto gli input `skillIds` presenti nel
@@ -557,12 +557,24 @@ DOM; la RPC `save_custom_selection` elimina dalla disciplina modificata le voci
 assenti nel payload. Riprodotto in browser con dati fittizi: 2 selezionati tra
 due gradi, salvataggio da un grado invia 1 ID; tornando a Tutti ne invia 2.
 
-Proposta: serializzare la selezione completa indipendentemente dal filtro e
-aggiungere una sola azione Seleziona/Deseleziona visibili, additiva rispetto
-agli altri gradi. Con filtro Tutti equivale al ripasso generale del catalogo
-accessibile della disciplina. Contatore e passaggio di disciplina vanno
-verificati: gli ID iniziali provengono oggi da entrambe le discipline, mentre
-lista e RPC operano su una disciplina per volta.
+Scelta dell'utente: mantenere soltanto la selezione manuale, senza pulsanti
+Seleziona/Deseleziona visibili o altre azioni collettive. I checkbox visibili
+restano input reali; gli ID selezionati nascosti dal filtro vengono inviati come
+input hidden senza duplicati. Il contatore riguarda l'intera disciplina
+visualizzata, indipendentemente dal grado filtrato. Le selezioni delle altre
+discipline restano preservate; la RPC continua a salvare solo quella corrente.
+Il filtro ricade su Tutti se il grado attivo non esiste nella nuova disciplina.
+Durante il salvataggio filtri e spunte sono bloccati; un errore conserva le scelte
+anche dopo il reset automatico dei form React. Si può salvare la
+rimozione manuale di tutte le scelte precedentemente salvate nella disciplina.
+Regressione browser in `skill-practice/scripts/custom-selection-smoke.mjs`,
+con dipendenze di test locali già disponibili in `tools/video/`.
+Il pulsante di cancellazione va a capo sui telefoni stretti, senza uscire dallo
+schermo. Verificati lint, typecheck, 95 test, build, audit UI invariato e test
+Chromium del modulo reale con azioni simulate (nessuna scrittura al database):
+payload tra gradi senza duplicati, cambio disciplina, deselezione manuale,
+riapertura dai dati inviati, errore e blocco durante salvataggio, layout a
+320/375/390 px. Nessuna migrazione; commit e push, deploy ancora rinviato.
 
 Le forme da stage già accessibili non richiedono un nuovo tipo di programma.
 Per account limitati, contenuti oltre il livello successivo restano soggetti a

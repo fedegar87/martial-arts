@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none src/lib/youtube.test.ts src/lib/youtube-api.test.ts src/lib/skill-video.test.ts src/lib/skill-presentation.test.ts src/lib/practice-logic.test.ts src/lib/progress-logic.test.ts src/lib/session-scheduler.test.ts src/lib/calendar-logic.test.ts src/lib/landing.test.ts src/lib/onboarding-state.test.ts src/lib/auth-validation.test.ts src/lib/grades.test.ts src/lib/seed-fesk.test.ts src/lib/push-notifications.test.ts",
-    "ui:audit": "node scripts/ui-audit.mjs"
+    "ui:audit": "node scripts/ui-audit.mjs",
+    "test:custom-selection": "node scripts/custom-selection-smoke.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

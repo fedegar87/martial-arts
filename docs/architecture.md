@@ -299,9 +299,20 @@ Piano:
 - `exam`: il piano deriva da `exam_programs` + `exam_skill_requirements`;
   RPC Postgres attivano/cambiano esame in modo atomico.
 - `custom`: l'utente seleziona manualmente skill; `save_custom_selection`
-  mantiene il piano manuale per disciplina.
+  mantiene il piano manuale per disciplina. Il filtro grado non modifica la
+  selezione: `CustomSelectionForm` invia anche gli ID selezionati fuori filtro,
+  senza duplicare quelli dei checkbox visibili. Il contatore riguarda la sola
+  disciplina visualizzata; cambiare disciplina conserva le altre scelte.
+  Un listener nativo impedisce il reset automatico dei checkbox dopo un errore
+  dell'azione React. Nessun comando di selezione collettiva. La RPC continua a
+  verificare utente, scuola e scope dei contenuti.
 - Dual persistence: manuale ed esame coesistono via `source`, e il profilo
   sceglie `plan_mode`.
+
+Regressione editor personale: dopo `npm run build`, eseguire
+`npm run test:custom-selection` in `skill-practice/`. Usa esbuild e Chromium
+gia' presenti in `tools/video/`, il componente reale e azioni simulate, senza
+scritture al database; non aggiunge dipendenze all'app o alla CI.
 
 Allenamento:
 
