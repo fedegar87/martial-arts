@@ -76,7 +76,9 @@ Regole UI:
 - **Non implementare feature di Sprint 2 o 3 finché Sprint 1 non è chiuso** (vedi piano §9).
 - **Non aggiungere route, componenti, tabelle non listati nel piano** senza prima aggiornare il piano.
 - Se qualcosa che servirebbe non è nel piano: **fermati, proponi, aggiorna il piano, poi codifica.**
-- Esclusioni hard del piano §10 (no upload video, no gamification, no AI, no chat, no multi-lingua, ecc.) sono vincolanti. Non reintrodurle "tanto è facile".
+- Esclusioni hard del piano §10 (no upload video, no gamification, no AI, no chat, ecc.) sono vincolanti. Il multilingua italiano/francese è stato attivato dall'utente il 2026-11-07 per Arlon.
+
+Testi UI nuovi: chiavi semantiche in `src/lib/i18n/it.json` e `fr.json`, `useTranslations("ui")` nei componenti sincroni e `getTranslations("ui")` in componenti async/actions. Helper puri ricevono `UiTranslator`; mai stato globale della lingua o traduzione del DOM. Contenuti tecnici: `translations` nel record e resolver `content-localization.ts`; preservare nomi cinesi e identificatori. Procedura in `docs/i18n.md`.
 
 ---
 

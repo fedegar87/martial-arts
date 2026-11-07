@@ -1,12 +1,9 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import Link from "next/link";
-import { useActionState } from "react";
-import { login } from "@/lib/actions/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,8 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LegalLinks } from "@/components/legal/LegalLinks";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { login } from "@/lib/actions/auth";
 import { brand } from "@/lib/brand";
+import Link from "next/link";
+import { useActionState } from "react";
 
 export function LoginForm({
   initialError,
@@ -25,6 +26,7 @@ export function LoginForm({
   initialError?: string | null;
   next?: string;
 }) {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(login, null);
   const error =
     (state && "error" in state ? state.error : null) ?? initialError ?? null;
@@ -33,15 +35,13 @@ export function LoginForm({
     <Card className="w-full max-w-sm">
       <CardHeader>
         <CardTitle>{brand.appName}</CardTitle>
-        <CardDescription>
-          Accedi al tuo quaderno tecnico digitale.
-        </CardDescription>
+        <CardDescription>{tr("loginDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={action} className="space-y-4">
           {next && <input type="hidden" name="next" value={next} />}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{tr("email")}</Label>
             <Input
               id="email"
               name="email"
@@ -51,7 +51,7 @@ export function LoginForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{tr("password")}</Label>
             <Input
               id="password"
               name="password"
@@ -66,7 +66,7 @@ export function LoginForm({
             </Alert>
           )}
           <Button type="submit" disabled={pending} className="w-full">
-            {pending ? "Accesso in corso..." : "Accedi"}
+            {pending ? tr("signingIn") : tr("signIn")}
           </Button>
         </form>
       </CardContent>
@@ -75,7 +75,7 @@ export function LoginForm({
           href="/forgot-password"
           className="text-muted-foreground text-sm hover:underline"
         >
-          Password dimenticata?
+          {tr("forgotPasswordLink")}
         </Link>
         <LegalLinks />
       </CardFooter>

@@ -1,6 +1,8 @@
+import { disciplineLabel } from "@/lib/labels";
+
 import { SegmentedNav } from "@/components/primitives/SegmentedNav";
-import { DISCIPLINE_LABELS } from "@/lib/labels";
 import type { Discipline } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 type Props = {
   current: Discipline;
@@ -19,19 +21,21 @@ export function DisciplineToggle({
   hiddenShaolin = false,
   extraParams,
 }: Props) {
+  const tr = useTranslations("ui");
   const visible = DISCIPLINES.filter(
-    (d) => !(d === "taichi" && hiddenTaichi) && !(d === "shaolin" && hiddenShaolin),
+    (d) =>
+      !(d === "taichi" && hiddenTaichi) && !(d === "shaolin" && hiddenShaolin),
   );
 
   if (visible.length < 2) return null;
 
   return (
     <SegmentedNav
-      ariaLabel="Disciplina"
+      ariaLabel={tr("discipline")}
       fullWidth
       items={visible.map((discipline) => ({
         href: disciplineHref(basePath, discipline, extraParams),
-        label: DISCIPLINE_LABELS[discipline],
+        label: disciplineLabel(discipline, tr),
         active: current === discipline,
       }))}
     />

@@ -48,6 +48,10 @@ npm run typecheck
 npm run build
 ```
 
+Italiano/francese: configurazione, cataloghi, contenuti e migrazione da applicare
+prima del deploy in [docs/i18n.md](docs/i18n.md). Verifica del cambio lingua con
+`npm run test:i18n` dopo la build.
+
 I test unitari sono accanto alla logica in `src/lib/`. I test browser ripetibili
 sono in `tests/browser/` e usano Chromium dal tooling locale `../tools/video/`:
 

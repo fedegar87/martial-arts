@@ -1,6 +1,13 @@
 import "server-only";
+import { getLocale } from "next-intl/server";
+import { localizeSkill } from "@/lib/content-localization";
 import { createClient } from "@/lib/supabase/server";
-import type { Discipline, PlanItemSource, Skill, UserPlanItem } from "@/lib/types";
+import type {
+  Discipline,
+  PlanItemSource,
+  Skill,
+  UserPlanItem,
+} from "@/lib/types";
 
 export type UserPlanItemWithSkill = UserPlanItem & { skill: Skill };
 
@@ -23,14 +30,19 @@ export async function getUserPlanItems(
   const { data, error } = await query;
 
   if (error) {
-    throw new Error("Impossibile caricare gli esercizi del piano", { cause: error });
+    throw new Error("Impossibile caricare gli esercizi del piano", {
+      cause: error,
+    });
   }
 
-  return ((data ?? []) as UserPlanItemWithSkill[]).filter((item) => {
-    if (!item.skill) return false;
-    if (!discipline) return true;
-    return item.skill.discipline === discipline;
-  });
+  const locale = await getLocale();
+  return ((data ?? []) as UserPlanItemWithSkill[])
+    .filter((item) => {
+      if (!item.skill) return false;
+      if (!discipline) return true;
+      return item.skill.discipline === discipline;
+    })
+    .map((item) => ({ ...item, skill: localizeSkill(item.skill, locale) }));
 }
 
 export async function getUserPlanItemBySkill(
@@ -58,7 +70,9 @@ export async function getUserPlanItemsBySkill(
     .eq("user_id", userId)
     .eq("skill_id", skillId);
   if (error) {
-    throw new Error("Impossibile caricare l'esercizio nel piano", { cause: error });
+    throw new Error("Impossibile caricare l'esercizio nel piano", {
+      cause: error,
+    });
   }
   return (data as UserPlanItem[] | null) ?? [];
 }
@@ -80,7 +94,9 @@ export async function getUserPlanCount(
 
   const { count, error } = await query;
   if (error) {
-    throw new Error("Impossibile contare gli esercizi del piano", { cause: error });
+    throw new Error("Impossibile contare gli esercizi del piano", {
+      cause: error,
+    });
   }
   return count ?? 0;
 }
@@ -102,7 +118,11 @@ export async function getSelectedSkillIds(
 
   const { data, error } = await query;
   if (error) {
-    throw new Error("Impossibile caricare la selezione personale", { cause: error });
+    throw new Error("Impossibile caricare la selezione personale", {
+      cause: error,
+    });
   }
-  return new Set(((data ?? []) as Array<{ skill_id: string }>).map((r) => r.skill_id));
+  return new Set(
+    ((data ?? []) as Array<{ skill_id: string }>).map((r) => r.skill_id),
+  );
 }

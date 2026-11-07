@@ -1,11 +1,8 @@
 "use client";
+import { categoryLabel } from "@/lib/labels";
 
-import { useActionState, useMemo, useState, useTransition } from "react";
-import { Trash2 } from "lucide-react";
-import {
-  deleteCustomSelection,
-  saveCustomSelectionFromForm,
-} from "@/lib/actions/plan";
+import { useTranslations } from "next-intl";
+
 import { ChipButton } from "@/components/primitives/Chip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -20,9 +17,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
+import {
+  deleteCustomSelection,
+  saveCustomSelectionFromForm,
+} from "@/lib/actions/plan";
 import { EXTRA_GRADE_VALUE, gradeLabel } from "@/lib/grades";
 import type { Discipline, SkillCategory, SkillOption } from "@/lib/types";
+import { Trash2 } from "lucide-react";
+import { useActionState, useMemo, useState, useTransition } from "react";
 
 type Props = {
   discipline: Discipline;
@@ -35,6 +37,7 @@ export function CustomSelectionForm({
   groupedSkills,
   selectedSkillIds,
 }: Props) {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(
     saveCustomSelectionFromForm,
     null,
@@ -53,22 +56,34 @@ export function CustomSelectionForm({
     });
   }, [groupedSkills]);
   const currentSkillIds = useMemo(
-    () => new Set(
-      groupedSkills.flatMap(([, skills]) => skills.map((skill) => skill.id)),
-    ),
+    () =>
+      new Set(
+        groupedSkills.flatMap(([, skills]) => skills.map((skill) => skill.id)),
+      ),
     [groupedSkills],
   );
-  const effectiveGrade = activeGrade === "all" || gradeOptions.includes(activeGrade)
-    ? activeGrade
-    : "all";
+  const effectiveGrade =
+    activeGrade === "all" || gradeOptions.includes(activeGrade)
+      ? activeGrade
+      : "all";
   const visibleSkillIds = useMemo(
-    () => new Set(groupedSkills.flatMap(([, skills]) => skills
-      .filter((skill) => effectiveGrade === "all"
-        || skill.minimum_grade_value === effectiveGrade)
-      .map((skill) => skill.id))),
+    () =>
+      new Set(
+        groupedSkills.flatMap(([, skills]) =>
+          skills
+            .filter(
+              (skill) =>
+                effectiveGrade === "all" ||
+                skill.minimum_grade_value === effectiveGrade,
+            )
+            .map((skill) => skill.id),
+        ),
+      ),
     [groupedSkills, effectiveGrade],
   );
-  const selectedCount = [...selected].filter((id) => currentSkillIds.has(id)).length;
+  const selectedCount = [...selected].filter((id) =>
+    currentSkillIds.has(id),
+  ).length;
   const hadSelection = selectedSkillIds.some((id) => currentSkillIds.has(id));
 
   function updateSelected(skillId: string, checked: boolean) {
@@ -91,14 +106,16 @@ export function CustomSelectionForm({
     >
       <input type="hidden" name="discipline" value={discipline} />
       {/* Filtered-out checkboxes are absent from FormData. */}
-      {[...selected].filter((id) => !visibleSkillIds.has(id)).map((id) => (
-        <input key={id} type="hidden" name="skillIds" value={id} />
-      ))}
+      {[...selected]
+        .filter((id) => !visibleSkillIds.has(id))
+        .map((id) => (
+          <input key={id} type="hidden" name="skillIds" value={id} />
+        ))}
 
       {gradeOptions.length > 0 && (
         <div className="scroll-chips">
           <GradeChip
-            label="Tutti"
+            label={tr("all")}
             active={effectiveGrade === "all"}
             onClick={() => setActiveGrade("all")}
             disabled={pending}
@@ -106,7 +123,7 @@ export function CustomSelectionForm({
           {gradeOptions.map((grade) => (
             <GradeChip
               key={grade}
-              label={gradeLabel(grade)}
+              label={gradeLabel(grade, tr)}
               active={effectiveGrade === grade}
               onClick={() => setActiveGrade(grade)}
               disabled={pending}
@@ -121,7 +138,8 @@ export function CustomSelectionForm({
           category={category}
           skills={skills.filter(
             (skill) =>
-              effectiveGrade === "all" || skill.minimum_grade_value === effectiveGrade,
+              effectiveGrade === "all" ||
+              skill.minimum_grade_value === effectiveGrade,
           )}
           selected={selected}
           onSelectedChange={updateSelected}
@@ -140,17 +158,20 @@ export function CustomSelectionForm({
         </Alert>
       )}
       {state && "success" in state && (
-        <p className="text-muted-foreground text-sm">Selezione salvata.</p>
+        <p className="text-muted-foreground text-sm">{tr("selectionSaved")}</p>
       )}
 
       <div className="app-fixed-action material-bar">
         <div className="app-fixed-action__inner grid grid-cols-[1fr_auto] items-center gap-3">
           <span className="text-muted-foreground text-sm">
             <strong className="text-foreground">{selectedCount}</strong>{" "}
-            selezionati
+            {tr("selected")}
           </span>
-          <Button type="submit" disabled={pending || (selectedCount === 0 && !hadSelection)}>
-            {pending ? "Salvataggio..." : "Salva piano"}
+          <Button
+            type="submit"
+            disabled={pending || (selectedCount === 0 && !hadSelection)}
+          >
+            {pending ? tr("saving") : tr("savePlan")}
           </Button>
         </div>
       </div>
@@ -173,6 +194,7 @@ function DeleteCustomSelectionSection({
   disabled: boolean;
   onDeleted: () => void;
 }) {
+  const tr = useTranslations("ui");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -193,12 +215,9 @@ function DeleteCustomSelectionSection({
   return (
     <section className="space-y-3 border-t border-border pt-5">
       <div className="space-y-1">
-        <h2 className="section-label">
-          Gestione selezione
-        </h2>
+        <h2 className="section-label">{tr("manageSelection")}</h2>
         <p className="text-sm text-muted-foreground">
-          Cancella il programma personale senza eliminare storico, note o
-          programma esame.
+          {tr("clearCustomDescription")}
         </p>
       </div>
 
@@ -217,19 +236,20 @@ function DeleteCustomSelectionSection({
             disabled={disabled}
           >
             <Trash2 className="h-4 w-4" />
-            Cancella programma personale
+            {tr("clearCustomPlan")}
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancellare il programma personale?</AlertDialogTitle>
+            <AlertDialogTitle>{tr("clearCustomConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Rimuoverai tutte le tecniche dalla selezione personale. Lo storico
-              delle pratiche, le note e il programma esame restano invariati.
+              {tr("clearCustomWarning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>Annulla</AlertDialogCancel>
+            <AlertDialogCancel disabled={pending}>
+              {tr("cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={(event) => {
                 event.preventDefault();
@@ -238,7 +258,7 @@ function DeleteCustomSelectionSection({
               disabled={pending}
               className="border border-destructive bg-transparent text-destructive shadow-none hover:bg-destructive/10"
             >
-              {pending ? "Cancellazione..." : "Cancella"}
+              {pending ? tr("deleting") : tr("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -283,13 +303,12 @@ function SkillGroup({
   onSelectedChange: (skillId: string, checked: boolean) => void;
   disabled: boolean;
 }) {
+  const tr = useTranslations("ui");
   if (skills.length === 0) return null;
 
   return (
     <section className="space-y-2">
-      <h2 className="section-label">
-        {SKILL_CATEGORY_LABELS[category]}
-      </h2>
+      <h2 className="section-label">{categoryLabel(category, tr)}</h2>
       <div className="divide-border overflow-hidden rounded-lg border">
         {skills.map((skill) => (
           <label
@@ -309,9 +328,9 @@ function SkillGroup({
             />
             <span className="min-w-0 flex-1">
               <span className="block font-medium">{skill.name}</span>
-              {skill.name_italian && (
+              {(skill.subtitle ?? skill.name_italian) && (
                 <span className="text-muted-foreground block">
-                  {skill.name_italian}
+                  {skill.subtitle ?? skill.name_italian}
                 </span>
               )}
             </span>

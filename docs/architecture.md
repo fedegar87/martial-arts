@@ -504,6 +504,7 @@ Sequenza presente nel repo:
 Stato applicazione DB:
 
 - Le migrazioni `0001`–`0049` rappresentano lo schema e il seed FESK correnti.
+- La migration `0050_i18n_content_and_notifications.sql` aggiunge traduzioni dei contenuti e lingua dei promemoria; applicazione in Supabase confermata dall'utente il 2026-11-07, senza verifica diretta autenticata.
 - Ogni nuova modifica schema deve avere una migration numerata; niente cambio
   manuale da dashboard senza file corrispondente.
 
@@ -687,7 +688,7 @@ Design:
 Service worker:
 
 - File: [../skill-practice/public/sw.js](../skill-practice/public/sw.js).
-- Cache name attuale: `fesk-practice-v6`.
+- Cache name attuale: `fesk-practice-v7` (aggiornamento della pagina offline bilingue).
 - Precache: `/offline.html`, `/manifest.webmanifest`, `/icon.svg`.
 - `install`: cache asset + `skipWaiting`.
 - `activate`: elimina cache con nome diverso + `clients.claim`.
@@ -867,7 +868,7 @@ Debito architetturale consapevole (gestito a trigger in `plan/white-label-strate
 - `types.ts` e' manuale, puo divergere dallo schema DB.
 - Nessun admin panel web per contenuti/utenti (operativita tramite script CLI in
   `skill-practice/scripts/`).
-- No i18n/terminology layer finche non si attiva una scuola non-Chang.
+- i18n italiano/francese attivata per Arlon con `next-intl`: cataloghi UI in `src/lib/i18n/`, cookie/browser, date localizzate, brand con testi per lingua e resolver di contenuti authored. Migration `0050_i18n_content_and_notifications.sql`: traduzioni JSONB di skills/esami/news e lingua dei promemoria; applicazione in Supabase confermata dall'utente il 2026-11-07. Restano da inserire/validare i contenuti tecnici francesi e da tradurre/rivedere i testi legali. Procedura: `skill-practice/docs/i18n.md`.
 - Nessuna suite E2E autenticata/RLS persistente; procedure manuali in
   `skill-practice/docs/access-control-checks.md`.
 

@@ -1,5 +1,6 @@
-import { extractYouTubeId, hasPlayableVideo } from "./youtube.ts";
+import type { UiTranslator } from "./i18n/config";
 import type { Skill } from "./types.ts";
+import { extractYouTubeId, hasPlayableVideo } from "./youtube.ts";
 
 type SkillVideos = Pick<
   Skill,
@@ -18,19 +19,30 @@ export type SkillVideoVariant = {
   thumbnailUrl: string | null;
 };
 
-export function hasSkillVideo(skill: Pick<Skill, "video_url" | "secondary_video_url">): boolean {
-  return hasPlayableVideo(skill.video_url) || hasPlayableVideo(skill.secondary_video_url);
+export function hasSkillVideo(
+  skill: Pick<Skill, "video_url" | "secondary_video_url">,
+): boolean {
+  return (
+    hasPlayableVideo(skill.video_url) ||
+    hasPlayableVideo(skill.secondary_video_url)
+  );
 }
 
 export function localVideoThumbnailUrl(
   url: string | null | undefined,
 ): string | null {
-  return url && /^\/video-thumbnails\/[a-zA-Z0-9][a-zA-Z0-9_-]*\.(?:avif|jpe?g|png|webp)$/i.test(url)
+  return url &&
+    /^\/video-thumbnails\/[a-zA-Z0-9][a-zA-Z0-9_-]*\.(?:avif|jpe?g|png|webp)$/i.test(
+      url,
+    )
     ? url
     : null;
 }
 
-export function getSkillVideoVariants(skill: SkillVideos): SkillVideoVariant[] {
+export function getSkillVideoVariants(
+  skill: SkillVideos,
+  tr?: UiTranslator,
+): SkillVideoVariant[] {
   const variants: SkillVideoVariant[] = [];
   const primaryId = extractYouTubeId(skill.video_url);
   const secondaryUrl = skill.secondary_video_url ?? "";
@@ -41,7 +53,9 @@ export function getSkillVideoVariants(skill: SkillVideos): SkillVideoVariant[] {
       value: "1",
       videoId: primaryId,
       url: skill.video_url,
-      label: skill.video_label?.trim() || "Video principale",
+      label:
+        skill.video_label?.trim() ||
+        (tr ? tr("primaryVideo") : "Video principale"),
       thumbnailUrl: localVideoThumbnailUrl(skill.thumbnail_url),
     });
   }
@@ -50,7 +64,9 @@ export function getSkillVideoVariants(skill: SkillVideos): SkillVideoVariant[] {
       value: "2",
       videoId: secondaryId,
       url: secondaryUrl,
-      label: skill.secondary_video_label?.trim() || "Secondo video",
+      label:
+        skill.secondary_video_label?.trim() ||
+        (tr ? tr("secondaryVideo") : "Secondo video"),
       thumbnailUrl: null,
     });
   }
@@ -62,6 +78,8 @@ export function selectSkillVideo(
   requested: string | string[] | undefined,
 ): SkillVideoVariant | null {
   return (
-    variants.find((variant) => variant.value === requested) ?? variants[0] ?? null
+    variants.find((variant) => variant.value === requested) ??
+    variants[0] ??
+    null
   );
 }

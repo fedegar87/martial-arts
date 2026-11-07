@@ -1,5 +1,6 @@
-import { Lock } from "lucide-react";
 import type { SkillOption } from "@/lib/types";
+import { Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   title: string;
@@ -7,13 +8,20 @@ type Props = {
 };
 
 export function LockedGradeSection({ title, skills }: Props) {
+  const tr = useTranslations("ui");
   if (skills.length === 0) return null;
 
   return (
-    <section className="space-y-2" aria-label={`${title} - bloccato`}>
+    <section
+      className="space-y-2"
+      aria-label={tr("lockedLabel", { p0: title })}
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-muted-foreground text-sm font-medium">{title}</h2>
-        <Lock className="text-muted-foreground/70 h-3.5 w-3.5" aria-hidden="true" />
+        <Lock
+          className="text-muted-foreground/70 h-3.5 w-3.5"
+          aria-hidden="true"
+        />
       </div>
       <div className="border-border/60 rounded-lg border border-dashed p-1 opacity-65">
         {skills.map((skill) => (
@@ -27,9 +35,9 @@ export function LockedGradeSection({ title, skills }: Props) {
               <span className="text-muted-foreground block truncate font-medium">
                 {skill.name}
               </span>
-              {skill.name_italian && (
+              {(skill.subtitle ?? skill.name_italian) && (
                 <span className="text-muted-foreground/80 block truncate text-xs">
-                  {skill.name_italian}
+                  {skill.subtitle ?? skill.name_italian}
                 </span>
               )}
             </span>

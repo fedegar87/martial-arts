@@ -1,5 +1,7 @@
-import Link from "next/link";
 import { LegalLinks } from "@/components/legal/LegalLinks";
+import { LocaleSwitcher } from "@/components/shared/LocaleSwitcher";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Section = {
   title: string;
@@ -13,31 +15,39 @@ type Props = {
 };
 
 export function LegalPage({ title, description, sections }: Props) {
+  const tr = useTranslations("ui");
   return (
     <main className="bg-background min-h-dvh px-4 py-8 text-foreground">
       <article className="mx-auto max-w-3xl space-y-8">
         <header className="space-y-3">
-          <Link href="/" className="text-muted-foreground text-sm hover:underline">
-            Torna all&apos;app
+          <div className="flex justify-end">
+            <LocaleSwitcher />
+          </div>
+          <Link
+            href="/"
+            className="text-muted-foreground text-sm hover:underline"
+          >
+            {tr("backApp")}
           </Link>
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold">{title}</h1>
-            <p className="text-muted-foreground text-sm">{description}</p>
-            <p className="text-muted-foreground text-xs">
-              Bozza aggiornata al 6 novembre 2026. I dati del gestore e le
-              verifiche ancora indicate devono essere completati prima
-              dell&apos;apertura a utenti esterni.
+            <p lang="it" className="text-muted-foreground text-sm">
+              {description}
             </p>
+            {tr("locale").startsWith("fr") && (
+              <p className="rounded-md border border-border p-3 text-sm">
+                {tr("legalOriginalLanguage")}
+              </p>
+            )}
+            <p className="text-muted-foreground text-xs">{tr("legalDraft")}</p>
             <p className="text-muted-foreground text-xs">
-              Questo testo non costituisce una dichiarazione di conformità del
-              servizio: le informazioni devono corrispondere ai trattamenti e
-              alle condizioni effettivamente adottati.
+              {tr("legalDraftNotice")}
             </p>
           </div>
           <LegalLinks />
         </header>
 
-        <div className="space-y-6">
+        <div lang="it" className="space-y-6">
           {sections.map((section) => (
             <section key={section.title} className="space-y-2">
               <h2 className="text-lg font-medium">{section.title}</h2>

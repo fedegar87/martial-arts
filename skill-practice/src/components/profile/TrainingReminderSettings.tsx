@@ -1,7 +1,11 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useState, useTransition } from "react";
-import { Bell, BellOff, Save } from "lucide-react";
+import { Disclosure } from "@/components/primitives/Disclosure";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   disableTrainingReminders,
   enableTrainingReminders,
@@ -13,11 +17,8 @@ import {
   subscribeToPushNotifications,
 } from "@/lib/push-client";
 import type { TrainingReminderSettings as TrainingReminderSettingsModel } from "@/lib/push-notifications";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Disclosure } from "@/components/primitives/Disclosure";
+import { Bell, BellOff, Save } from "lucide-react";
+import { useState, useTransition } from "react";
 
 type Props = {
   settings: TrainingReminderSettingsModel;
@@ -30,11 +31,14 @@ export function TrainingReminderSettings({
   hasSchedule,
   publicVapidKey,
 }: Props) {
+  const tr = useTranslations("ui");
   const [enabled, setEnabled] = useState(
     settings.enabled && settings.activeSubscriptionCount > 0,
   );
   const [reminderTime, setReminderTime] = useState(settings.reminderTime);
-  const [savedReminderTime, setSavedReminderTime] = useState(settings.reminderTime);
+  const [savedReminderTime, setSavedReminderTime] = useState(
+    settings.reminderTime,
+  );
   const [savedTimeZone, setSavedTimeZone] = useState(settings.timeZone);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -48,13 +52,16 @@ export function TrainingReminderSettings({
     setMessage(null);
     const support = getPushSupportState(publicVapidKey);
     if (support !== "supported") {
-      setMessage(pushSupportErrorMessage(support));
+      setMessage(pushSupportErrorMessage(support, tr));
       return;
     }
 
     startTransition(async () => {
       try {
-        const subscription = await subscribeToPushNotifications(publicVapidKey);
+        const subscription = await subscribeToPushNotifications(
+          publicVapidKey,
+          tr,
+        );
         const result = await enableTrainingReminders({
           subscription,
           reminderTime,
@@ -70,9 +77,11 @@ export function TrainingReminderSettings({
         setEnabled(true);
         setSavedReminderTime(reminderTime);
         setSavedTimeZone(localTimeZone);
-        setMessage("Promemoria allenamenti attivati.");
+        setMessage(tr("trainingRemindersEnabled"));
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Attivazione non riuscita.");
+        setMessage(
+          error instanceof Error ? error.message : tr("activationFailed"),
+        );
       }
     });
   };
@@ -89,9 +98,11 @@ export function TrainingReminderSettings({
         }
 
         setEnabled(false);
-        setMessage("Promemoria allenamenti disattivati.");
+        setMessage(tr("trainingRemindersDisabled"));
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Disattivazione non riuscita.");
+        setMessage(
+          error instanceof Error ? error.message : tr("deactivationFailed"),
+        );
       }
     });
   };
@@ -112,17 +123,17 @@ export function TrainingReminderSettings({
 
         setSavedReminderTime(reminderTime);
         setSavedTimeZone(localTimeZone);
-        setMessage("Orario aggiornato.");
+        setMessage(tr("timeUpdated"));
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Salvataggio non riuscito.");
+        setMessage(error instanceof Error ? error.message : tr("saveFailed"));
       }
     });
   };
 
   return (
     <Disclosure
-      title="Promemoria"
-      summary={`${enabled ? "Allenamento attivo" : "Allenamento disattivato"} · ${savedReminderTime}`}
+      title={tr("reminders")}
+      summary={`${enabled ? tr("trainingEnabled") : tr("trainingDisabled")} · ${savedReminderTime}`}
       revealKey={message}
     >
       <div className="space-y-3">
@@ -130,8 +141,8 @@ export function TrainingReminderSettings({
           <div>
             <p className="text-muted-foreground text-xs">
               {enabled
-              ? "Allenamenti: attivi nei giorni con esercizi ancora da fare."
-              : "Allenamenti: disattivati."}
+                ? tr("trainingEnabledDescription")
+                : tr("trainingDisabledDescription")}
             </p>
           </div>
           {enabled ? (
@@ -143,7 +154,7 @@ export function TrainingReminderSettings({
               onClick={handleDisable}
             >
               <BellOff className="h-3.5 w-3.5" aria-hidden />
-              Disattiva
+              {tr("disable")}
             </Button>
           ) : (
             <Button
@@ -154,13 +165,13 @@ export function TrainingReminderSettings({
               onClick={handleEnable}
             >
               <Bell className="h-3.5 w-3.5" aria-hidden />
-              Attiva
+              {tr("enable")}
             </Button>
           )}
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="training-reminder-time">Orario</Label>
+          <Label htmlFor="training-reminder-time">{tr("time")}</Label>
           <div className="flex gap-2">
             <Input
               id="training-reminder-time"
@@ -176,20 +187,19 @@ export function TrainingReminderSettings({
               size="icon"
               disabled={isPending}
               onClick={handleSave}
-              aria-label="Salva orario promemoria"
+              aria-label={tr("saveReminderTime")}
             >
               <Save className="h-4 w-4" aria-hidden />
             </Button>
           </div>
           <p className="text-muted-foreground text-xs">
-            L&apos;orario vale anche per gli eventi scelti nel Calendario.
-            {" "}Fuso orario: {savedTimeZone}.
+            {tr("sharedReminderTime")} {tr("timeZone")} {savedTimeZone}.
           </p>
         </div>
 
         {!hasSchedule && (
           <p className="text-muted-foreground text-xs">
-            Per attivare gli avvisi degli allenamenti, imposta una cadenza.
+            {tr("scheduleForReminders")}
           </p>
         )}
 

@@ -1,7 +1,8 @@
-import { TodaySkillCard } from "@/components/today/TodaySkillCard";
 import { TodayEmptyState } from "@/components/today/TodayEmptyState";
+import { TodaySkillCard } from "@/components/today/TodaySkillCard";
 import type { ScheduledSession } from "@/lib/session-scheduler";
 import type { PracticeLog } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 type TrainingSession = Extract<ScheduledSession, { kind: "training" }>;
 
@@ -16,6 +17,7 @@ export function TodayPracticeSections({
   todayLogs,
   repsPerForm,
 }: Props) {
+  const tr = useTranslations("ui");
   const dailyItems = [...session.focus, ...session.maintenance];
 
   if (dailyItems.length === 0) {
@@ -29,7 +31,7 @@ export function TodayPracticeSections({
   const repsByLog = new Map(todayLogs.map((log) => [log.skill_id, log]));
 
   return (
-    <div className="space-y-4" aria-label="Forme di oggi">
+    <div className="space-y-4" aria-label={tr("todayForms")}>
       {dailyItems.map((item) => (
         <TodaySkillCard
           key={item.id}

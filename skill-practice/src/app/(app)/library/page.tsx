@@ -1,27 +1,23 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { SearchX } from "lucide-react";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
+import { localizedBrand } from "@/lib/brand";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { categoryLabel, disciplineLabel } from "@/lib/labels";
+
+import { CatalogMarkerLegend } from "@/components/library/CatalogMarkerLegend";
+import { DisciplineToggle } from "@/components/library/DisciplineToggle";
+import { GradeSection } from "@/components/library/GradeSection";
+import { LibraryFilters } from "@/components/library/LibraryFilters";
+import { LockedGradeSection } from "@/components/library/LockedGradeSection";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Button } from "@/components/ui/button";
+import { EXTRA_GRADE_VALUE, gradesForDiscipline } from "@/lib/grades";
+import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
+import { getUserPlanItems } from "@/lib/queries/plan";
 import {
   listLockedSkillOutlineForDiscipline,
   listVisibleSkillsForDiscipline,
 } from "@/lib/queries/skills";
-import { getUserPlanItems } from "@/lib/queries/plan";
-import { DisciplineToggle } from "@/components/library/DisciplineToggle";
-import { GradeSection } from "@/components/library/GradeSection";
-import { LockedGradeSection } from "@/components/library/LockedGradeSection";
-import { LibraryFilters } from "@/components/library/LibraryFilters";
-import { CatalogMarkerLegend } from "@/components/library/CatalogMarkerLegend";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { Button } from "@/components/ui/button";
-import { DISCIPLINE_LABELS, SKILL_CATEGORY_LABELS } from "@/lib/labels";
-import {
-  EXTRA_GRADE_LABEL,
-  EXTRA_GRADE_VALUE,
-  gradesForDiscipline,
-} from "@/lib/grades";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { hasSkillVideo } from "@/lib/skill-video";
-import { brand } from "@/lib/brand";
 import type {
   Discipline,
   PlanStatus,
@@ -29,6 +25,10 @@ import type {
   SkillCategory,
   SkillOption,
 } from "@/lib/types";
+import { SearchX } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 type Props = {
   searchParams: Promise<{
@@ -40,6 +40,7 @@ type Props = {
 };
 
 export default async function ScuolaChangPage({ searchParams }: Props) {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -62,8 +63,8 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   // dell'utente). In modalita esame lo stato e' il default uniforme del programma:
   // niente pallini, niente legenda. Coerente con /programma.
   const showPlanStatus = profile.plan_mode === "custom";
-  const planStatusLabelPrefix = "Nella selezione personale";
-  const emptyPlanStatusLabel = "Fuori dalla selezione personale";
+  const planStatusLabelPrefix = tr("inCustomSelection");
+  const emptyPlanStatusLabel = tr("outsideCustomSelection");
 
   const [allSkills, lockedOutline, activePlanItems] = await Promise.all([
     listVisibleSkillsForDiscipline(discipline, profile),
@@ -78,7 +79,9 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   ).filter((cat) => allSkills.some((s) => s.category === cat));
 
   const searchMatchedSkills = query
-    ? allSkills.filter((skill) => matchesSkillSearch(skill, query, discipline))
+    ? allSkills.filter((skill) =>
+        matchesSkillSearch(tr, skill, query, discipline),
+      )
     : allSkills;
 
   // Skill bloccate (gradi oltre il livello in preparazione): mostrate come anteprima
@@ -87,7 +90,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   const filteredLockedSkills = (
     query
       ? lockedOutline.filter((skill) =>
-          matchesSkillSearch(skill, query, discipline),
+          matchesSkillSearch(tr, skill, query, discipline),
         )
       : lockedOutline
   ).filter((s) =>
@@ -137,9 +140,11 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">{brand.lineageLabel}</h1>
+        <h1 className="text-2xl font-semibold">
+          {localizedBrand(tr("locale")).lineageLabel}
+        </h1>
         <p className="text-muted-foreground text-sm">
-          {DISCIPLINE_LABELS[discipline]} - catalogo per grado, categoria e video.
+          {disciplineLabel(discipline, tr)} {tr("catalogDescription")}
         </p>
       </header>
 
@@ -177,17 +182,17 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
       {filteredSkills.length === 0 && !hasLockedSections ? (
         <EmptyState
           icon={<SearchX className="h-6 w-6" />}
-          title="Nessun contenuto trovato"
-          description="Prova a togliere un filtro o a cercare un altro nome."
+          title={tr("noContent")}
+          description={tr("adjustFilters")}
           action={
             <Button asChild variant="outline" size="sm">
-              <Link href={resetHref}>Azzera filtri</Link>
+              <Link href={resetHref}>{tr("resetFilters")}</Link>
             </Button>
           }
         />
       ) : (
         <div className="space-y-6">
-          {gradesForDiscipline(discipline)
+          {gradesForDiscipline(discipline, tr)
             .filter((grade) => grade.value !== 0)
             .map((grade) => (
               <GradeSection
@@ -199,7 +204,7 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
               />
             ))}
           <GradeSection
-            title={EXTRA_GRADE_LABEL}
+            title={tr("other")}
             skills={byGrade[EXTRA_GRADE_VALUE] ?? []}
             planStatusBySkillId={planStatusBySkillId}
             planStatusLabelPrefix={planStatusLabelPrefix}
@@ -210,15 +215,15 @@ export default async function ScuolaChangPage({ searchParams }: Props) {
               <div className="pt-2">
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                    Livelli successivi
+                    {tr("nextLevels")}
                   </span>
                   <div className="bg-border h-px flex-1" />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  Si sbloccano avanzando di grado.
+                  {tr("unlockLevels")}
                 </p>
               </div>
-              {gradesForDiscipline(discipline)
+              {gradesForDiscipline(discipline, tr)
                 .filter((grade) => grade.value !== 0)
                 .map((grade) => (
                   <LockedGradeSection
@@ -247,7 +252,8 @@ function normalizeQuery(value?: string): string {
 }
 
 function matchesSkillSearch(
-  skill: Pick<Skill, "name" | "name_italian" | "category">,
+  tr: UiTranslator,
+  skill: Pick<Skill, "name" | "name_italian" | "subtitle" | "category">,
   query: string,
   discipline: Discipline,
 ): boolean {
@@ -255,9 +261,9 @@ function matchesSkillSearch(
   const haystack = searchableText(
     [
       skill.name,
-      skill.name_italian,
-      SKILL_CATEGORY_LABELS[skill.category],
-      DISCIPLINE_LABELS[discipline],
+      skill.subtitle ?? skill.name_italian,
+      categoryLabel(skill.category, tr),
+      disciplineLabel(discipline, tr),
     ]
       .filter(Boolean)
       .join(" "),

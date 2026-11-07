@@ -1,4 +1,6 @@
 import "server-only";
+import { getLocale } from "next-intl/server";
+import { localizeContent } from "@/lib/content-localization";
 import { createClient } from "@/lib/supabase/server";
 import type { NewsItem, UserProfile } from "@/lib/types";
 
@@ -16,7 +18,10 @@ export async function listNewsForSchool(
     .order("published_at", { ascending: false })
     .limit(limit);
 
-  return (data as NewsItem[] | null) ?? [];
+  const locale = await getLocale();
+  return ((data as NewsItem[] | null) ?? []).map((row) =>
+    localizeContent(row, locale, ["title", "body"]),
+  );
 }
 
 export async function getUnreadNewsCount(

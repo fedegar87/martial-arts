@@ -1,50 +1,61 @@
-import Link from "next/link";
-import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { CalendarDays, CalendarPlus, ShieldCheck } from "lucide-react";
-import { getCurrentProfileAccount } from "@/lib/queries/user-profile";
-import { getTrainingSchedule } from "@/lib/queries/training-schedule";
-import { getPendingAccountDeletionRequest } from "@/lib/queries/account";
-import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
-import { SignOutButton } from "@/components/profile/SignOutButton";
-import { GradeEditor } from "@/components/profile/GradeEditor";
+import { Disclosure } from "@/components/primitives/Disclosure";
 import { ChangePasswordSection } from "@/components/profile/ChangePasswordSection";
+import { GradeEditor } from "@/components/profile/GradeEditor";
 import { PlanModeSection } from "@/components/profile/PlanModeSection";
 import { PrivacyDataSection } from "@/components/profile/PrivacyDataSection";
+import { SignOutButton } from "@/components/profile/SignOutButton";
 import { TrainingReminderSettings } from "@/components/profile/TrainingReminderSettings";
-import { Disclosure } from "@/components/primitives/Disclosure";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { getPendingAccountDeletionRequest } from "@/lib/queries/account";
+import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
+import { getTrainingSchedule } from "@/lib/queries/training-schedule";
+import { getCurrentProfileAccount } from "@/lib/queries/user-profile";
 import type { TrainingSchedule, UserRole } from "@/lib/types";
+import { CalendarDays, CalendarPlus, ShieldCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 export default async function ProfilePage() {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfileAccount();
   if (!profile) redirect("/login");
 
   const pushVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const pushEnabled = Boolean(pushVapidKey);
-  const [schedule, reminderSettings, pendingDeletionRequest] = await Promise.all([
-    getTrainingSchedule(profile.id),
-    pushEnabled
-      ? getTrainingReminderSettings(profile.id)
-      : Promise.resolve(null),
-    getPendingAccountDeletionRequest(profile.id),
-  ]);
+  const [schedule, reminderSettings, pendingDeletionRequest] =
+    await Promise.all([
+      getTrainingSchedule(profile.id),
+      pushEnabled
+        ? getTrainingReminderSettings(profile.id)
+        : Promise.resolve(null),
+      getPendingAccountDeletionRequest(profile.id),
+    ]);
 
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold wrap-anywhere">{profile.display_name}</h1>
+        <h1 className="text-2xl font-semibold wrap-anywhere">
+          {profile.display_name}
+        </h1>
         <p className="text-muted-foreground text-sm">
-          <span className="block wrap-anywhere">{profile.email ?? "Email non disponibile"}</span>
-          <span className="block wrap-anywhere">{profile.school_name ?? "Scuola non assegnata"}</span>
+          <span className="block wrap-anywhere">
+            {profile.email ?? tr("emailUnavailable")}
+          </span>
+          <span className="block wrap-anywhere">
+            {profile.school_name ?? tr("schoolUnassigned")}
+          </span>
         </p>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">I tuoi gradi</CardTitle>
+          <CardTitle className="text-base">{tr("yourGrades")}</CardTitle>
         </CardHeader>
         <CardContent>
           <GradeEditor
@@ -55,42 +66,52 @@ export default async function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Disclosure title="Dettagli account">
+      <Disclosure title={tr("accountDetails")}>
         <dl className="divide-border divide-y text-sm">
-          <InfoRow label="Ruolo" value={<RoleBadge role={profile.role} />} />
-          <InfoRow label="Membro dal" value={formatDate(profile.created_at)} />
+          <InfoRow
+            label={tr("role")}
+            value={<RoleBadge role={profile.role} />}
+          />
+          <InfoRow
+            label={tr("memberSince")}
+            value={formatDate(tr, profile.created_at)}
+          />
         </dl>
         <p className="text-muted-foreground mt-3 flex gap-2 text-xs">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-          Ruolo e scuola sono gestiti dagli amministratori.
+          {tr("managedAccount")}
         </p>
       </Disclosure>
 
       <Disclosure
-        title="Programma"
-        summary={profile.plan_mode === "custom" ? "Selezione personale" : "Programma esame"}
+        title={tr("program")}
+        summary={
+          profile.plan_mode === "custom"
+            ? tr("customSelection")
+            : tr("examProgram")
+        }
       >
         <PlanModeSection planMode={profile.plan_mode} />
       </Disclosure>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Allenamento</CardTitle>
+          <CardTitle className="text-base">{tr("training")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-muted-foreground text-sm">
-            {scheduleSummary(schedule)}
+            {scheduleSummary(tr, schedule)}
           </div>
           <Button asChild variant="outline" className="w-full justify-start">
             <Link href="/sessions/setup">
               <CalendarPlus className="mr-2 h-4 w-4" />
-              {schedule ? "Modifica allenamento" : "Imposta allenamento"}
+              {schedule ? tr("editTraining") : tr("setupTraining")}
             </Link>
           </Button>
           <Button asChild variant="outline" className="w-full justify-start">
             <Link href="/calendar">
               <CalendarDays className="mr-2 h-4 w-4" />
-              Calendario
+              {tr("calendar")}
             </Link>
           </Button>
         </CardContent>
@@ -107,7 +128,9 @@ export default async function ProfilePage() {
       <ChangePasswordSection />
 
       <PrivacyDataSection
-        pendingDeletionRequestedAt={pendingDeletionRequest?.requested_at ?? null}
+        pendingDeletionRequestedAt={
+          pendingDeletionRequest?.requested_at ?? null
+        }
       />
 
       <SignOutButton />
@@ -115,13 +138,7 @@ export default async function ProfilePage() {
   );
 }
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: ReactNode;
-}) {
+function InfoRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
       <dt className="text-muted-foreground">{label}</dt>
@@ -131,48 +148,51 @@ function InfoRow({
 }
 
 function RoleBadge({ role }: { role: UserRole }) {
+  const tr = useTranslations("ui");
   return (
     <Badge variant={role === "student" ? "outline" : "secondary"}>
-      {roleLabel(role)}
+      {roleLabel(tr, role)}
     </Badge>
   );
 }
 
-function roleLabel(role: UserRole): string {
-  if (role === "admin") return "Admin";
-  if (role === "instructor") return "Istruttore";
-  return "Studente";
+function roleLabel(tr: UiTranslator, role: UserRole): string {
+  if (role === "admin") return tr("admin");
+  if (role === "instructor") return tr("instructor");
+  return tr("student");
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("it-IT", {
+function formatDate(tr: UiTranslator, value: string): string {
+  return new Intl.DateTimeFormat(tr("locale"), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   }).format(new Date(value));
 }
 
-function scheduleSummary(schedule: TrainingSchedule | null): string {
-  if (!schedule) return "Nessuna cadenza di allenamento configurata.";
+function scheduleSummary(
+  tr: UiTranslator,
+  schedule: TrainingSchedule | null,
+): string {
+  if (!schedule) return tr("noTrainingSchedule");
 
   const days = [...schedule.weekdays]
     .sort((a, b) => a - b)
-    .map((day) => WEEKDAYS[day] ?? String(day))
+    .map((day) =>
+      new Intl.DateTimeFormat(tr("locale"), {
+        weekday: "short",
+        timeZone: "UTC",
+      }).format(new Date(Date.UTC(2026, 0, 4 + day))),
+    )
     .join(", ");
   const cadence =
     schedule.cadence_weeks === 1
-      ? "ogni settimana"
-      : `ogni ${schedule.cadence_weeks} settimane`;
+      ? tr("everyWeek")
+      : tr("everyWeeks", { p0: schedule.cadence_weeks });
 
-  return `${days} - ${cadence} - ${schedule.reps_per_form} ripetizioni per forma`;
+  return tr("scheduleSummary", {
+    p0: days,
+    p1: cadence,
+    p2: schedule.reps_per_form,
+  });
 }
-
-const WEEKDAYS: Record<number, string> = {
-  1: "lun",
-  2: "mar",
-  3: "mer",
-  4: "gio",
-  5: "ven",
-  6: "sab",
-  7: "dom",
-};

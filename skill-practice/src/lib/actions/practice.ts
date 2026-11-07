@@ -1,7 +1,8 @@
 "use server";
+import { getTranslations } from "next-intl/server";
 
-import { createClient } from "@/lib/supabase/server";
 import { localDateKey } from "@/lib/date";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export type PracticeFormState = { error: string } | { success: true } | null;
@@ -10,11 +11,12 @@ export async function markPracticeDone(
   skillId: string,
   note?: string,
 ): Promise<PracticeFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const today = localDateKey();
   const now = new Date().toISOString();
@@ -52,11 +54,12 @@ export async function savePracticeNote(
   skillId: string,
   note: string,
 ): Promise<PracticeFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const today = localDateKey();
   const normalizedNote = normalizeNote(note);
@@ -114,12 +117,15 @@ export async function savePracticeNote(
   return { success: true };
 }
 
-export async function incrementRep(skillId: string): Promise<PracticeFormState> {
+export async function incrementRep(
+  skillId: string,
+): Promise<PracticeFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const dateKey = localDateKey();
 
@@ -130,10 +136,11 @@ export async function incrementRep(skillId: string): Promise<PracticeFormState> 
     .maybeSingle();
   if (scheduleError) {
     return {
-      error: "Non è stato possibile caricare l'obiettivo delle ripetizioni. Riprova.",
+      error: tr("repsTargetLoadFailed"),
     };
   }
-  const target = (scheduleRow as { reps_per_form: number } | null)?.reps_per_form ?? 1;
+  const target =
+    (scheduleRow as { reps_per_form: number } | null)?.reps_per_form ?? 1;
 
   const { data: existing, error: selectError } = await supabase
     .from("practice_logs")
@@ -187,12 +194,15 @@ export async function incrementRep(skillId: string): Promise<PracticeFormState> 
   return { success: true };
 }
 
-export async function decrementRep(skillId: string): Promise<PracticeFormState> {
+export async function decrementRep(
+  skillId: string,
+): Promise<PracticeFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const dateKey = localDateKey();
 
@@ -211,7 +221,11 @@ export async function decrementRep(skillId: string): Promise<PracticeFormState> 
     return { success: true };
   }
 
-  const row = existing as { id: string; reps_done: number; reps_target: number | null };
+  const row = existing as {
+    id: string;
+    reps_done: number;
+    reps_target: number | null;
+  };
   const newDone = Math.max(0, row.reps_done - 1);
   const { error } = await supabase
     .from("practice_logs")

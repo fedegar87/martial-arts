@@ -1,18 +1,17 @@
-import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { dateKeyDaysAgo, localDateKey } from "@/lib/date";
 import {
   buildPracticeCalendar,
   countRespectedSessionsUpTo,
   countSessionsUpTo,
   type PracticeDay,
 } from "@/lib/progress-logic";
+import { buildSessionPeriodProgress } from "@/lib/session-progress";
 import {
   getScheduledPlanItems,
   listSessionsInRange,
   type ItemWithSkill,
 } from "@/lib/session-scheduler";
-import { buildSessionPeriodProgress } from "@/lib/session-progress";
-import { dateKeyDaysAgo, localDateKey } from "@/lib/date";
+import { createClient } from "@/lib/supabase/server";
 import type {
   Discipline,
   PracticeLog,
@@ -20,6 +19,12 @@ import type {
   TrainingSchedule,
   UserProfile,
 } from "@/lib/types";
+import { getLocale } from "next-intl/server";
+import {
+  localizeSkill,
+  type ContentTranslations,
+} from "@/lib/content-localization";
+import "server-only";
 
 export type { PracticeDay } from "@/lib/progress-logic";
 
@@ -46,7 +51,9 @@ export type TopPracticedSkill = {
   lastPracticedDate: string;
 };
 
-export async function getGeneralProgress(userId: string): Promise<GeneralProgress> {
+export async function getGeneralProgress(
+  userId: string,
+): Promise<GeneralProgress> {
   const supabase = await createClient();
   const [daysResult, streakResult] = await Promise.all([
     supabase.rpc("count_practice_days", { p_user_id: userId }),
@@ -57,10 +64,14 @@ export async function getGeneralProgress(userId: string): Promise<GeneralProgres
   ]);
 
   if (daysResult.error) {
-    throw new Error(`Errore in count_practice_days: ${daysResult.error.message}`);
+    throw new Error(
+      `Errore in count_practice_days: ${daysResult.error.message}`,
+    );
   }
   if (streakResult.error) {
-    throw new Error(`Errore in current_practice_streak: ${streakResult.error.message}`);
+    throw new Error(
+      `Errore in current_practice_streak: ${streakResult.error.message}`,
+    );
   }
 
   return {
@@ -69,7 +80,9 @@ export async function getGeneralProgress(userId: string): Promise<GeneralProgres
   };
 }
 
-export async function getPracticeCalendarDays(userId: string): Promise<PracticeDay[]> {
+export async function getPracticeCalendarDays(
+  userId: string,
+): Promise<PracticeDay[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("practice_logs")
@@ -79,7 +92,9 @@ export async function getPracticeCalendarDays(userId: string): Promise<PracticeD
     .order("date", { ascending: true });
 
   if (error) {
-    throw new Error(`Errore nel caricamento di practice_logs recenti: ${error.message}`);
+    throw new Error(
+      `Errore nel caricamento di practice_logs recenti: ${error.message}`,
+    );
   }
 
   return buildPracticeCalendar((data as PracticeLog[] | null) ?? []);
@@ -98,7 +113,11 @@ export async function getActiveCycleProgress(
 
   const schedule = scheduleRow as TrainingSchedule | null;
   const todayKey = localDateKey();
-  if (!schedule || todayKey < schedule.start_date || todayKey > schedule.end_date) {
+  if (
+    !schedule ||
+    todayKey < schedule.start_date ||
+    todayKey > schedule.end_date
+  ) {
     return null;
   }
 
@@ -120,17 +139,25 @@ export async function getActiveCycleProgress(
   ]);
 
   if (logsResult.error) {
-    throw new Error(`Errore nel caricamento di practice_logs ciclo: ${logsResult.error.message}`);
+    throw new Error(
+      `Errore nel caricamento di practice_logs ciclo: ${logsResult.error.message}`,
+    );
   }
   if (planItemsResult.error) {
-    throw new Error(`Errore nel caricamento di user_plan_items: ${planItemsResult.error.message}`);
+    throw new Error(
+      `Errore nel caricamento di user_plan_items: ${planItemsResult.error.message}`,
+    );
   }
 
   const logs = (logsResult.data as PracticeLog[] | null) ?? [];
-  const planItems = ((planItemsResult.data as ItemWithSkill[] | null) ?? []).filter(
-    (item) => item.skill,
+  const planItems = (
+    (planItemsResult.data as ItemWithSkill[] | null) ?? []
+  ).filter((item) => item.skill);
+  const scheduledItems = getScheduledPlanItems(
+    planItems,
+    schedule,
+    profile.plan_mode,
   );
-  const scheduledItems = getScheduledPlanItems(planItems, schedule, profile.plan_mode);
   const rows = listSessionsInRange(
     schedule.start_date,
     schedule.end_date,
@@ -146,7 +173,7 @@ export async function getActiveCycleProgress(
   });
 
   return {
-    periodLabel: `${fmtDate(schedule.start_date)} - ${fmtDate(schedule.end_date)}`,
+    periodLabel: `${fmtDate(schedule.start_date, await getLocale())} - ${fmtDate(schedule.end_date, await getLocale())}`,
     respectedUntilToday: countRespectedSessionsUpTo(summary.rows, todayKey),
     dueUntilToday: countSessionsUpTo(summary.rows, todayKey),
     respectedTotal: summary.sessionCompleted,
@@ -178,10 +205,35 @@ export async function getTopPracticedSkills(
     throw new Error(`Errore in top_practiced_skills: ${error.message}`);
   }
 
-  return ((data ?? []) as TopPracticedSkillRow[]).map((row) => ({
+  const locale = await getLocale();
+  const rows = (data ?? []) as TopPracticedSkillRow[];
+  const { data: subtitles, error: subtitleError } =
+    locale !== "it" && rows.length
+      ? await supabase
+          .from("skills")
+          .select("id, name_italian, translations")
+          .in(
+            "id",
+            rows.map((row) => row.skill_id),
+          )
+      : { data: null, error: null };
+  if (subtitleError)
+    throw new Error("Impossibile caricare le traduzioni degli esercizi", {
+      cause: subtitleError,
+    });
+  const translated = new Map(
+    (subtitles ?? []).map(
+      (row: {
+        id: string;
+        name_italian: string | null;
+        translations?: ContentTranslations;
+      }) => [row.id, localizeSkill(row, locale).subtitle],
+    ),
+  );
+  return rows.map((row) => ({
     skillId: row.skill_id,
     skillName: row.skill_name,
-    skillNameItalian: row.skill_name_italian,
+    skillNameItalian: translated.get(row.skill_id) ?? row.skill_name_italian,
     discipline: row.discipline,
     category: row.category,
     practiceDays: row.practice_days,
@@ -189,8 +241,8 @@ export async function getTopPracticedSkills(
   }));
 }
 
-function fmtDate(date: string): string {
-  return new Date(`${date}T00:00:00Z`).toLocaleDateString("it-IT", {
+function fmtDate(date: string, locale: string): string {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
   });

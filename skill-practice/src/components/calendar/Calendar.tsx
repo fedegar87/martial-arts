@@ -1,16 +1,18 @@
-import Link from "next/link";
+import { CalendarDayPanel } from "@/components/calendar/CalendarDayPanel";
+import { SegmentedNav } from "@/components/primitives/SegmentedNav";
+import type { UiTranslator } from "@/lib/i18n/config";
+import type { CalendarDayView, CalendarSkill } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import {
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
-  CalendarDays,
   Circle,
   Dumbbell,
   Moon,
 } from "lucide-react";
-import { CalendarDayPanel } from "@/components/calendar/CalendarDayPanel";
-import { SegmentedNav } from "@/components/primitives/SegmentedNav";
-import { cn } from "@/lib/utils";
-import type { CalendarDayView, CalendarSkill } from "@/lib/types";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 export type CalendarView = "week" | "month";
 
@@ -25,8 +27,6 @@ type Props = {
   publicVapidKey?: string;
   eventReminderTime?: string;
 };
-
-const WEEKDAY_LABELS = ["L", "M", "M", "G", "V", "S", "D"];
 
 export function Calendar({
   view,
@@ -57,7 +57,12 @@ export function Calendar({
         <MonthCalendar days={days} selectedDate={selectedDate} />
       )}
 
-      <CalendarDayPanel day={selectedDay} skillOptions={skillOptions} publicVapidKey={publicVapidKey} eventReminderTime={eventReminderTime} />
+      <CalendarDayPanel
+        day={selectedDay}
+        skillOptions={skillOptions}
+        publicVapidKey={publicVapidKey}
+        eventReminderTime={eventReminderTime}
+      />
     </div>
   );
 }
@@ -75,32 +80,29 @@ function CalendarToolbar({
   previousDate: string;
   nextDate: string;
 }) {
+  const tr = useTranslations("ui");
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold capitalize">{periodLabel}</h2>
         <div className="flex items-center gap-2">
-          <PeriodButton
-            direction="previous"
-            view={view}
-            date={previousDate}
-          />
+          <PeriodButton direction="previous" view={view} date={previousDate} />
           <PeriodButton direction="next" view={view} date={nextDate} />
         </div>
       </div>
 
       <SegmentedNav
-        ariaLabel="Vista calendario"
+        ariaLabel={tr("calendarView")}
         fullWidth
         items={[
           {
             href: calendarHref("week", selectedDate),
-            label: "Settimana",
+            label: tr("week"),
             active: view === "week",
           },
           {
             href: calendarHref("month", selectedDate),
-            label: "Mese",
+            label: tr("month"),
             active: view === "month",
           },
         ]}
@@ -118,8 +120,10 @@ function PeriodButton({
   view: CalendarView;
   date: string;
 }) {
+  const tr = useTranslations("ui");
   const Icon = direction === "previous" ? ChevronLeft : ChevronRight;
-  const label = direction === "previous" ? "Periodo precedente" : "Periodo successivo";
+  const label =
+    direction === "previous" ? tr("previousPeriod") : tr("nextPeriod");
   const className =
     "inline-flex h-11 w-11 items-center justify-center rounded-md border border-border";
 
@@ -141,8 +145,9 @@ function WeekCalendar({
   days: CalendarDayView[];
   selectedDate: string;
 }) {
+  const tr = useTranslations("ui");
   return (
-    <section aria-label="Settimana" className="space-y-2">
+    <section aria-label={tr("week")} className="space-y-2">
       <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {days.map((day) => (
           <DayCell
@@ -165,12 +170,19 @@ function MonthCalendar({
   days: CalendarDayView[];
   selectedDate: string;
 }) {
+  const tr = useTranslations("ui");
   const selectedMonth = selectedDate.slice(0, 7);
+  const weekdayLabels = Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(tr("locale"), {
+      weekday: "narrow",
+      timeZone: "UTC",
+    }).format(new Date(Date.UTC(2026, 0, 5 + index))),
+  );
 
   return (
-    <section aria-label="Mese" className="space-y-2">
+    <section aria-label={tr("month")} className="space-y-2">
       <div className="grid grid-cols-7 gap-1 text-center text-[0.68rem] font-medium text-muted-foreground">
-        {WEEKDAY_LABELS.map((label, index) => (
+        {weekdayLabels.map((label, index) => (
           <span key={`${label}-${index}`}>{label}</span>
         ))}
       </div>
@@ -200,10 +212,13 @@ function DayCell({
   selected: boolean;
   inCurrentMonth: boolean;
 }) {
+  const tr = useTranslations("ui");
   const date = new Date(`${day.date}T00:00:00Z`);
   const dayNumber = date.getUTCDate();
-  const weekdayLabel = date.toLocaleDateString("it-IT", { weekday: "short" });
-  const cellLabel = dayCellLabel(date, day);
+  const weekdayLabel = date.toLocaleDateString(tr("locale"), {
+    weekday: "short",
+  });
+  const cellLabel = dayCellLabel(tr, date, day);
   const content = (
     <>
       <span className="flex items-center justify-between gap-1">
@@ -222,7 +237,9 @@ function DayCell({
         )}
       </span>
       <DayCellBody day={day} />
-      {day.events.length > 0 && <CalendarDays className="text-muted-foreground h-3 w-3" aria-hidden />}
+      {day.events.length > 0 && (
+        <CalendarDays className="text-muted-foreground h-3 w-3" aria-hidden />
+      )}
     </>
   );
   const className = cn(
@@ -279,22 +296,30 @@ function DayCellBody({ day }: { day: CalendarDayView }) {
   );
 }
 
-function dayCellLabel(date: Date, day: CalendarDayView): string {
-  const formattedDate = date.toLocaleDateString("it-IT", {
+function dayCellLabel(
+  tr: UiTranslator,
+  date: Date,
+  day: CalendarDayView,
+): string {
+  const formattedDate = date.toLocaleDateString(tr("locale"), {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
 
-  const eventLabel = day.events.length ? `, ${day.events.length} ${day.events.length === 1 ? "evento federale" : "eventi federali"}` : "";
+  const eventLabel = day.events.length
+    ? `, ${day.events.length} ${day.events.length === 1 ? tr("federationEventSingular") : tr("federationEventPlural")}`
+    : "";
   if (day.sessionKind === "training") {
     return `${formattedDate}: ${day.scheduled.length} ${
-      day.scheduled.length === 1 ? "esercizio" : "esercizi"
+      day.scheduled.length === 1 ? "esercizio" : tr("exercisesLowercase")
     }${eventLabel}`;
   }
-  if (day.freePractice.length > 0) return `${formattedDate}: pratica registrata${eventLabel}`;
-  if (day.sessionKind === "rest_day") return `${formattedDate}: riposo${eventLabel}`;
-  return `${formattedDate}: nessuna sessione${eventLabel}`;
+  if (day.freePractice.length > 0)
+    return tr("dayPracticed", { p0: formattedDate, p1: eventLabel });
+  if (day.sessionKind === "rest_day")
+    return tr("dayRest", { p0: formattedDate, p1: eventLabel });
+  return tr("dayNoSession", { p0: formattedDate, p1: eventLabel });
 }
 
 function calendarHref(view: CalendarView, date: string): string {

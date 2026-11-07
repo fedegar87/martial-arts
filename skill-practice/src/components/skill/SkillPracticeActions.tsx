@@ -1,12 +1,13 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useState, useTransition } from "react";
-import { Dumbbell } from "lucide-react";
+import { AddToPlanButton } from "@/components/skill/AddToPlanButton";
+import { PracticeNoteButton } from "@/components/today/PracticeNoteButton";
 import { Button } from "@/components/ui/button";
 import { markPracticeDone } from "@/lib/actions/practice";
 import { completedButtonClassName } from "@/lib/ui-classes";
-import { AddToPlanButton } from "@/components/skill/AddToPlanButton";
-import { PracticeNoteButton } from "@/components/today/PracticeNoteButton";
+import { Dumbbell } from "lucide-react";
+import { useState, useTransition } from "react";
 
 type Props = {
   skillId: string;
@@ -21,6 +22,7 @@ export function SkillPracticeActions({
   practicedToday,
   todayNote,
 }: Props) {
+  const tr = useTranslations("ui");
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(practicedToday);
   const [message, setMessage] = useState<string | null>(null);
@@ -31,12 +33,12 @@ export function SkillPracticeActions({
       try {
         const result = await markPracticeDone(skillId);
         if (!result || "error" in result) {
-          setMessage(result?.error ?? "Salvataggio non confermato. Riprova.");
+          setMessage(result?.error ?? tr("saveUnconfirmed"));
           return;
         }
         setDone(true);
       } catch {
-        setMessage("Non è stato possibile confermare il salvataggio. Riprova.");
+        setMessage(tr("saveConfirmationFailed"));
       }
     });
   }
@@ -49,10 +51,16 @@ export function SkillPracticeActions({
         disabled={pending || done}
         aria-busy={pending}
         variant={done ? "outline" : "default"}
-        className={done ? `h-12 w-full ${completedButtonClassName}` : "h-12 w-full"}
+        className={
+          done ? `h-12 w-full ${completedButtonClassName}` : "h-12 w-full"
+        }
       >
         <Dumbbell className="mr-2 h-4 w-4" />
-        {pending ? "Salvataggio…" : done ? "Praticato oggi" : "Segna praticato"}
+        {pending
+          ? tr("savingEllipsis")
+          : done
+            ? tr("practicedToday")
+            : tr("markPracticed")}
       </Button>
 
       <div className="grid grid-cols-2 gap-2">

@@ -1,4 +1,5 @@
 import { Lightbulb } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   note: string | null;
@@ -6,6 +7,7 @@ type Props = {
 };
 
 export function TeacherNote({ note, compact = false }: Props) {
+  const tr = useTranslations("ui");
   if (!note) return null;
 
   if (compact) {
@@ -14,7 +16,7 @@ export function TeacherNote({ note, compact = false }: Props) {
         <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0 space-y-1">
           <div className="label-font text-primary text-[0.68rem] tracking-wider">
-            Nota maestro
+            {tr("teacherNoteShort")}
           </div>
           <p className="text-muted-foreground italic leading-relaxed">{note}</p>
         </div>
@@ -27,7 +29,9 @@ export function TeacherNote({ note, compact = false }: Props) {
       <div className="flex gap-3">
         <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="min-w-0 space-y-1">
-          <div className="label-font text-primary text-xs tracking-wider">Nota del maestro</div>
+          <div className="label-font text-primary text-xs tracking-wider">
+            {tr("teacherNote")}
+          </div>
           <p className="text-sm leading-relaxed text-muted-foreground italic">
             {note}
           </p>

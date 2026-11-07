@@ -1,4 +1,6 @@
 import "server-only";
+import { getLocale } from "next-intl/server";
+import { localizeSkill, localizeSkills } from "@/lib/content-localization";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
@@ -47,7 +49,8 @@ export async function getCalendarDataInRange({
   to: string;
 }): Promise<CalendarData> {
   const supabase = await createClient();
-  const sourceFilter = profile.plan_mode === "custom" ? "manual" : "exam_program";
+  const sourceFilter =
+    profile.plan_mode === "custom" ? "manual" : "exam_program";
   const [schedule, items, logsWithSkill, federation] = await Promise.all([
     getTrainingSchedule(userId),
     getUserPlanItems(userId, undefined, sourceFilter),
@@ -66,11 +69,13 @@ export async function getCalendarDataInRange({
   }
 
   const logs: PracticeLog[] = [];
+  const locale = await getLocale();
   for (const row of logsWithSkill) {
     const { skill, ...log } = row;
     logs.push(log);
     const normalizedSkill = normalizeJoinedSkill(skill);
-    if (normalizedSkill) skillById.set(normalizedSkill.id, normalizedSkill);
+    if (normalizedSkill)
+      skillById.set(normalizedSkill.id, localizeSkill(normalizedSkill, locale));
   }
 
   const repsPerForm = schedule?.reps_per_form ?? 1;
@@ -87,7 +92,9 @@ export async function getCalendarDataInRange({
       scheduleEnd: schedule?.end_date ?? null,
     }).map((day) => ({
       ...day,
-      events: federation.events.filter((event) => event.starts_on <= day.date && event.ends_on >= day.date),
+      events: federation.events.filter(
+        (event) => event.starts_on <= day.date && event.ends_on >= day.date,
+      ),
     })),
     rows,
     logs,
@@ -107,6 +114,7 @@ export async function getCalendarSkillOptions(): Promise<CalendarSkill[]> {
         id,
         name,
         name_italian,
+        translations,
         discipline,
         category,
         practice_mode,
@@ -119,7 +127,10 @@ export async function getCalendarSkillOptions(): Promise<CalendarSkill[]> {
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
 
-  return (data as CalendarSkill[] | null) ?? [];
+  return localizeSkills(
+    (data as CalendarSkill[] | null) ?? [],
+    await getLocale(),
+  );
 }
 
 async function fetchMeaningfulLogsWithSkill(
@@ -137,6 +148,7 @@ async function fetchMeaningfulLogsWithSkill(
           id,
           name,
           name_italian,
+        translations,
           discipline,
           category,
           practice_mode,
@@ -153,7 +165,9 @@ async function fetchMeaningfulLogsWithSkill(
     .order("created_at", { ascending: true });
 
   if (error) {
-    throw new Error("Impossibile caricare la pratica nel calendario", { cause: error });
+    throw new Error("Impossibile caricare la pratica nel calendario", {
+      cause: error,
+    });
   }
   return (data as PracticeLogWithSkill[] | null) ?? [];
 }
@@ -170,6 +184,7 @@ function toCalendarSkill(skill: Skill): CalendarSkill {
     id: skill.id,
     name: skill.name,
     name_italian: skill.name_italian,
+    subtitle: skill.subtitle,
     discipline: skill.discipline,
     category: skill.category,
     practice_mode: skill.practice_mode,

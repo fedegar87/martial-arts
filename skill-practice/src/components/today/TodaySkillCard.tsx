@@ -1,13 +1,14 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { TeacherNote } from "@/components/skill/TeacherNote";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { PlanStatus, Skill } from "@/lib/types";
+import { ArrowUpRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { PracticeCheckButton } from "./PracticeCheckButton";
 import { RepsCounter } from "./RepsCounter";
 import { TodayVideoDisclosure } from "./TodayVideoDisclosure";
-import type { PlanStatus, Skill } from "@/lib/types";
 
 type Props = {
   skill: Skill;
@@ -26,6 +27,7 @@ export function TodaySkillCard({
   repsDone,
   todayNote,
 }: Props) {
+  const tr = useTranslations("ui");
   const completedToday =
     alreadyDoneToday ||
     (typeof repsTarget === "number" &&
@@ -52,9 +54,9 @@ export function TodaySkillCard({
                 aria-hidden
               />
             </CardTitle>
-            {skill.name_italian && (
+            {(skill.subtitle ?? skill.name_italian) && (
               <p className="text-muted-foreground text-xs">
-                {skill.name_italian}
+                {skill.subtitle ?? skill.name_italian}
               </p>
             )}
           </Link>
@@ -63,7 +65,7 @@ export function TodaySkillCard({
             <SkillStatusMenu
               skillId={skill.id}
               currentStatus={status}
-              hideLabel="Nascondi da Allenamento"
+              hideLabel={tr("hideFromTraining")}
             />
           </div>
         </div>

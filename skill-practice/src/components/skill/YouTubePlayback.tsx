@@ -1,16 +1,24 @@
 "use client";
+import type { UiTranslator } from "@/lib/i18n/config";
 
-import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
 import { ChipButton } from "@/components/primitives/Chip";
-import { loadYouTubeApi, supportedPlaybackRates, type YouTubePlayer } from "@/lib/youtube-api";
+import {
+  loadYouTubeApi,
+  supportedPlaybackRates,
+  type YouTubePlayer,
+} from "@/lib/youtube-api";
+import { useEffect, useRef, useState } from "react";
 
 type Props = { videoId: string; title: string };
 
-function rateLabel(rate: number): string {
-  return `${rate.toLocaleString("it-IT")}×`;
+function rateLabel(tr: UiTranslator, rate: number): string {
+  return `${rate.toLocaleString(tr("locale"))}×`;
 }
 
 export function YouTubePlayback({ videoId, title }: Props) {
+  const tr = useTranslations("ui");
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [rates, setRates] = useState<number[]>([]);
@@ -24,7 +32,10 @@ export function YouTubePlayback({ videoId, title }: Props) {
     // The API owns the iframe; React only owns its container.
     const frame = document.createElement("iframe");
     const params = new URLSearchParams({
-      autoplay: "1", rel: "0", playsinline: "1", enablejsapi: "1",
+      autoplay: "1",
+      rel: "0",
+      playsinline: "1",
+      enablejsapi: "1",
       origin: window.location.origin,
     });
     frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?${params}`;
@@ -36,28 +47,34 @@ export function YouTubePlayback({ videoId, title }: Props) {
     host.append(frame);
     frame.focus({ preventScroll: true });
 
-    void loadYouTubeApi().then((api) => {
-      if (disposed) return;
-      connectedPlayer = new api.Player(frame, {
-        events: {
-          onReady(event) {
-            if (disposed) return;
-            playerRef.current = event.target;
-            setRates(supportedPlaybackRates(event.target.getAvailablePlaybackRates()));
-            event.target.setPlaybackRate(1);
-            setRate(event.target.getPlaybackRate());
+    void loadYouTubeApi()
+      .then((api) => {
+        if (disposed) return;
+        connectedPlayer = new api.Player(frame, {
+          events: {
+            onReady(event) {
+              if (disposed) return;
+              playerRef.current = event.target;
+              setRates(
+                supportedPlaybackRates(
+                  event.target.getAvailablePlaybackRates(),
+                ),
+              );
+              event.target.setPlaybackRate(1);
+              setRate(event.target.getPlaybackRate());
+            },
+            onPlaybackRateChange(event) {
+              if (!disposed && Number.isFinite(event.data)) setRate(event.data);
+            },
+            onError() {
+              if (!disposed) setRates([]);
+            },
           },
-          onPlaybackRateChange(event) {
-            if (!disposed && Number.isFinite(event.data)) setRate(event.data);
-          },
-          onError() {
-            if (!disposed) setRates([]);
-          },
-        },
+        });
+      })
+      .catch(() => {
+        if (!disposed && !host.querySelector("iframe")) host.append(frame);
       });
-    }).catch(() => {
-      if (!disposed && !host.querySelector("iframe")) host.append(frame);
-    });
 
     return () => {
       disposed = true;
@@ -73,11 +90,19 @@ export function YouTubePlayback({ videoId, title }: Props) {
 
   return (
     <div className="space-y-2">
-      <div ref={hostRef} className="relative aspect-video min-h-[200px] w-full overflow-hidden rounded-md bg-black" />
+      <div
+        ref={hostRef}
+        className="relative aspect-video min-h-[200px] w-full overflow-hidden rounded-md bg-black"
+      />
       {rates.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Velocità video">
+        <div
+          className="flex flex-wrap items-center gap-2"
+          role="group"
+          aria-label={tr("videoSpeed")}
+        >
           <span className="text-muted-foreground text-xs">
-            Velocità{rates.includes(rate) ? "" : ` (${rateLabel(rate)})`}
+            {tr("speed")}
+            {rates.includes(rate) ? "" : ` (${rateLabel(tr, rate)})`}
           </span>
           {rates.map((value) => (
             <ChipButton
@@ -86,7 +111,7 @@ export function YouTubePlayback({ videoId, title }: Props) {
               tone="neutral"
               className="min-h-11 min-w-11"
               active={rate === value}
-              aria-label={`Velocità ${rateLabel(value)}`}
+              aria-label={tr("speedValue", { p0: rateLabel(tr, value) })}
               onClick={() => {
                 try {
                   playerRef.current?.setPlaybackRate(value);
@@ -95,7 +120,7 @@ export function YouTubePlayback({ videoId, title }: Props) {
                 }
               }}
             >
-              {rateLabel(value)}
+              {rateLabel(tr, value)}
             </ChipButton>
           ))}
         </div>

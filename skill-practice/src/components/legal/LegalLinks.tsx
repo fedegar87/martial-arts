@@ -1,23 +1,28 @@
-import Link from "next/link";
+import type { UiTranslator } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
-const LINKS = [
-  { href: "/privacy", label: "Privacy" },
-  { href: "/terms", label: "Termini" },
-  { href: "/cookies", label: "Cookie" },
-  { href: "/disclaimer", label: "Disclaimer" },
-];
+function LINKS(tr: UiTranslator) {
+  return [
+    { href: "/privacy", label: tr("privacy") },
+    { href: "/terms", label: tr("terms") },
+    { href: "/cookies", label: tr("cookies") },
+    { href: "/disclaimer", label: tr("disclaimer") },
+  ];
+}
 
 export function LegalLinks({ className }: { className?: string }) {
+  const tr = useTranslations("ui");
   return (
     <nav
-      aria-label="Documenti legali"
+      aria-label={tr("legalDocuments")}
       className={cn(
         "text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-xs",
         className,
       )}
     >
-      {LINKS.map((link) => (
+      {LINKS(tr).map((link) => (
         <Link key={link.href} href={link.href} className="hover:underline">
           {link.label}
         </Link>

@@ -1,5 +1,6 @@
-import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type HubTileProps = {
   href: string;
@@ -16,6 +17,7 @@ export function HubTile({
   subtitle,
   animClassName,
 }: HubTileProps) {
+  const tr = useTranslations("ui");
   const isPrimary = href === "/today";
 
   return (
@@ -37,7 +39,7 @@ export function HubTile({
           </span>
           {isPrimary && (
             <span className="label-font rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
-              Oggi
+              {tr("today")}
             </span>
           )}
         </div>

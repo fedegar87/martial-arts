@@ -1,19 +1,20 @@
-import { notFound, redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { getSkillById } from "@/lib/queries/skills";
+import { SegmentedNav } from "@/components/primitives/SegmentedNav";
+import { BackButton } from "@/components/skill/BackButton";
+import { PersonalNotesPanel } from "@/components/skill/PersonalNotesPanel";
+import { SkillPracticeActions } from "@/components/skill/SkillPracticeActions";
+import { TeacherNote } from "@/components/skill/TeacherNote";
+import { VideoPlayer } from "@/components/skill/VideoPlayer";
+import { gradeLabelForDiscipline, isSkillWithinLevelScope } from "@/lib/grades";
 import { getUserPlanItemsBySkill } from "@/lib/queries/plan";
 import {
   getPersonalNotesForSkill,
   getTodayLogForSkill,
 } from "@/lib/queries/practice-log";
-import { VideoPlayer } from "@/components/skill/VideoPlayer";
-import { BackButton } from "@/components/skill/BackButton";
-import { PersonalNotesPanel } from "@/components/skill/PersonalNotesPanel";
-import { SkillPracticeActions } from "@/components/skill/SkillPracticeActions";
-import { TeacherNote } from "@/components/skill/TeacherNote";
-import { SegmentedNav } from "@/components/primitives/SegmentedNav";
+import { getSkillById } from "@/lib/queries/skills";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
 import { getSkillVideoVariants, selectSkillVideo } from "@/lib/skill-video";
-import { gradeLabelForDiscipline, isSkillWithinLevelScope } from "@/lib/grades";
+import { getTranslations } from "next-intl/server";
+import { notFound, redirect } from "next/navigation";
 
 type Props = {
   params: Promise<{ skillId: string }>;
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export default async function SkillDetailPage({ params, searchParams }: Props) {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -43,7 +45,7 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
     null;
   const inPersonalSelection = manualPlanItem !== null;
   const practicedToday = todayLog?.completed ?? false;
-  const variants = getSkillVideoVariants(skill);
+  const variants = getSkillVideoVariants(skill, tr);
   const activeVideo = selectSkillVideo(variants, (await searchParams).v);
 
   return (
@@ -53,18 +55,22 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
         <h1 className="text-2xl font-semibold">{skill.name}</h1>
         <p className="text-muted-foreground text-sm">
           {[
-            skill.name_italian,
-            gradeLabelForDiscipline(skill.discipline, skill.minimum_grade_value),
+            skill.subtitle ?? skill.name_italian,
+            gradeLabelForDiscipline(
+              skill.discipline,
+              skill.minimum_grade_value,
+              tr,
+            ),
           ]
             .filter(Boolean)
             .join(" · ")}
         </p>
       </header>
 
-      <section aria-label="Video della tecnica" className="space-y-3">
+      <section aria-label={tr("techniqueVideo")} className="space-y-3">
         {variants.length > 1 && (
           <SegmentedNav
-            ariaLabel="Variante video"
+            ariaLabel={tr("videoVariant")}
             fullWidth
             wrapLabels
             replace
@@ -79,7 +85,9 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
         <VideoPlayer
           key={activeVideo?.videoId ?? "unavailable"}
           videoUrl={activeVideo?.url ?? ""}
-          title={activeVideo ? `${skill.name} — ${activeVideo.label}` : skill.name}
+          title={
+            activeVideo ? `${skill.name} — ${activeVideo.label}` : skill.name
+          }
           thumbnailUrl={activeVideo?.thumbnailUrl}
         />
       </section>

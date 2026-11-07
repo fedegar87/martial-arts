@@ -1,9 +1,10 @@
 "use server";
+import { getTranslations } from "next-intl/server";
 
-import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { SHAOLIN_GRADES, TAICHI_GRADES, nextGradeValue } from "@/lib/grades";
+import { createClient } from "@/lib/supabase/server";
 import type { Discipline } from "@/lib/types";
+import { revalidatePath } from "next/cache";
 
 export type ProfileFormState = { error: string } | { success: true } | null;
 
@@ -11,36 +12,39 @@ export async function updateProfileGrade(
   _prev: ProfileFormState,
   formData: FormData,
 ): Promise<ProfileFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const discipline = String(formData.get("discipline") ?? "") as Discipline;
   const assignedLevel = Number(formData.get("assignedLevel"));
 
   if (discipline !== "shaolin" && discipline !== "taichi") {
-    return { error: "Disciplina non valida" };
+    return { error: tr("invalidDiscipline") };
   }
 
   if (!Number.isFinite(assignedLevel)) {
-    return { error: "Grado non valido" };
+    return { error: tr("invalidGrade") };
   }
 
   const validGrades = discipline === "shaolin" ? SHAOLIN_GRADES : TAICHI_GRADES;
   if (!validGrades.some((grade) => grade.value === assignedLevel)) {
-    return { error: "Grado non valido" };
+    return { error: tr("invalidGrade") };
   }
 
   const { data: profileData, error: profileError } = await supabase
     .from("user_profiles")
-    .select("assigned_level_shaolin, assigned_level_taichi, school_id, profile_locked")
+    .select(
+      "assigned_level_shaolin, assigned_level_taichi, school_id, profile_locked",
+    )
     .eq("id", user.id)
     .maybeSingle();
 
   if (profileError) return { error: profileError.message };
-  if (!profileData) return { error: "Profilo non trovato" };
+  if (!profileData) return { error: tr("profileNotFound") };
 
   const profileRow = profileData as {
     assigned_level_shaolin: number;
@@ -50,7 +54,7 @@ export async function updateProfileGrade(
   };
 
   if (profileRow.profile_locked) {
-    return { error: "Il tuo profilo e gestito dagli amministratori." };
+    return { error: tr("profileManaged") };
   }
   const currentLevel =
     discipline === "shaolin"
@@ -92,7 +96,9 @@ export async function updateProfileGrade(
       supabase,
       user.id,
       discipline,
-      discipline === "taichi" && assignedLevel === 0 ? undefined : "exam_program",
+      discipline === "taichi" && assignedLevel === 0
+        ? undefined
+        : "exam_program",
     );
   }
 
@@ -122,7 +128,7 @@ async function findExamForNextGrade(
     .eq("grade_value", next)
     .maybeSingle();
 
-  return ((data as { id: string } | null)?.id) ?? null;
+  return (data as { id: string } | null)?.id ?? null;
 }
 
 async function removePlanItemsForDiscipline(

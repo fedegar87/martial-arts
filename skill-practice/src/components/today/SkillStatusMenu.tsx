@@ -1,7 +1,6 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useState, useTransition } from "react";
-import { CheckCircle2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,6 +12,8 @@ import {
 import { hidePlanItem, updatePlanItemStatus } from "@/lib/actions/plan";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
 import type { PlanStatus } from "@/lib/types";
+import { CheckCircle2, MoreVertical } from "lucide-react";
+import { useState, useTransition } from "react";
 
 type Props = {
   skillId: string;
@@ -26,9 +27,10 @@ const STATUS_OPTIONS: PlanStatus[] = ["focus", "maintenance"];
 export function SkillStatusMenu({
   skillId,
   currentStatus,
-  hideLabel = "Nascondi dal piano attivo",
+  hideLabel,
   showHide = true,
 }: Props) {
+  const tr = useTranslations("ui");
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function SkillStatusMenu({
         }
         setOpen(false);
       } catch {
-        setError("Connessione assente, riprova.");
+        setError(tr("offlineRetry"));
       }
     });
   }
@@ -52,13 +54,18 @@ export function SkillStatusMenu({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-11" aria-label="Modifica stato">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-11"
+          aria-label={tr("editStatus")}
+        >
           <MoreVertical className="h-4 w-4" />
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="pb-[env(safe-area-inset-bottom)]">
         <SheetHeader>
-          <SheetTitle>Stato nel piano attivo</SheetTitle>
+          <SheetTitle>{tr("activePlanStatus")}</SheetTitle>
         </SheetHeader>
         <div className="grid gap-2 px-4 pb-4">
           {STATUS_OPTIONS.map((status) => (
@@ -78,7 +85,7 @@ export function SkillStatusMenu({
               onClick={() => run(() => hidePlanItem(skillId))}
               className="justify-start text-muted-foreground"
             >
-              {hideLabel}
+              {hideLabel ?? tr("hideFromActivePlan")}
             </Button>
           )}
           {error && (
@@ -103,6 +110,7 @@ function StatusOptionButton({
   disabled: boolean;
   onClick: () => void;
 }) {
+  const tr = useTranslations("ui");
   const visual = PLAN_STATUS_VISUALS[status];
   const Icon = visual.Icon;
 
@@ -115,7 +123,7 @@ function StatusOptionButton({
       className={`justify-start ${selected ? visual.badgeClassName : visual.textClassName}`}
     >
       <Icon className="mr-2 h-4 w-4" />
-      {visual.label}
+      {tr(status)}
       {selected && <CheckCircle2 className="ml-auto h-4 w-4" />}
     </Button>
   );

@@ -1,17 +1,15 @@
 "use client";
+import { gradesForDiscipline } from "@/lib/grades";
 
-import { useState, useTransition } from "react";
-import { updateProfileGrade } from "@/lib/actions/profile";
+import { useTranslations } from "next-intl";
+
 import { FormSelect } from "@/components/primitives/FormSelect";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  SHAOLIN_GRADES,
-  TAICHI_GRADES,
-  gradeLabelForDiscipline,
-  type Grade,
-} from "@/lib/grades";
+import { Button } from "@/components/ui/button";
+import { updateProfileGrade } from "@/lib/actions/profile";
+import { gradeLabelForDiscipline, type Grade } from "@/lib/grades";
 import type { Discipline } from "@/lib/types";
+import { useState, useTransition } from "react";
 
 type Props = {
   assignedLevelShaolin: number;
@@ -24,26 +22,25 @@ export function GradeEditor({
   assignedLevelTaichi,
   locked = false,
 }: Props) {
+  const tr = useTranslations("ui");
   return (
     <div className="space-y-4">
       <GradeField
         discipline="shaolin"
-        label="Shaolin"
+        label={tr("shaolin")}
         currentLevel={assignedLevelShaolin}
-        grades={SHAOLIN_GRADES}
+        grades={gradesForDiscipline("shaolin", tr)}
         locked={locked}
       />
       <GradeField
         discipline="taichi"
-        label="T'ai Chi"
+        label={tr("taichi")}
         currentLevel={assignedLevelTaichi}
-        grades={TAICHI_GRADES}
+        grades={gradesForDiscipline("taichi", tr)}
         locked={locked}
       />
       <p className="text-muted-foreground text-xs">
-        {locked
-          ? "I gradi e l'esame in preparazione sono assegnati dagli amministratori."
-          : "Quando aggiorni il grado, il programma d'esame della disciplina viene riportato al livello che stai preparando ora. Lo storico delle pratiche resta."}
+        {locked ? tr("managedGrades") : tr("gradeUpdateDescription")}
       </p>
     </div>
   );
@@ -57,7 +54,14 @@ type FieldProps = {
   locked: boolean;
 };
 
-function GradeField({ discipline, label, currentLevel, grades, locked }: FieldProps) {
+function GradeField({
+  discipline,
+  label,
+  currentLevel,
+  grades,
+  locked,
+}: FieldProps) {
+  const tr = useTranslations("ui");
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentLevel);
   const [confirming, setConfirming] = useState(false);
@@ -73,7 +77,7 @@ function GradeField({ discipline, label, currentLevel, grades, locked }: FieldPr
         <div>
           <div className="text-muted-foreground text-sm">{label}</div>
           <div className="text-sm font-medium">
-            {gradeLabelForDiscipline(discipline, currentLevel)}
+            {gradeLabelForDiscipline(discipline, currentLevel, tr)}
           </div>
         </div>
       </div>
@@ -111,7 +115,7 @@ function GradeField({ discipline, label, currentLevel, grades, locked }: FieldPr
         <div>
           <div className="text-muted-foreground text-sm">{label}</div>
           <div className="text-sm font-medium">
-            {gradeLabelForDiscipline(discipline, currentLevel)}
+            {gradeLabelForDiscipline(discipline, currentLevel, tr)}
           </div>
           {success && (
             <div
@@ -119,7 +123,7 @@ function GradeField({ discipline, label, currentLevel, grades, locked }: FieldPr
               style={{ color: "var(--status-success)" }}
               role="status"
             >
-              Grado aggiornato.
+              {tr("gradeUpdated")}
             </div>
           )}
         </div>
@@ -133,7 +137,7 @@ function GradeField({ discipline, label, currentLevel, grades, locked }: FieldPr
             setEditing(true);
           }}
         >
-          Modifica
+          {tr("edit")}
         </Button>
       </div>
     );
@@ -159,10 +163,7 @@ function GradeField({ discipline, label, currentLevel, grades, locked }: FieldPr
 
       {confirming && (
         <Alert variant="destructive">
-          <AlertDescription>
-            Cambiando grado, il programma d&apos;esame della disciplina verrà
-            ricreato per il nuovo livello. Lo storico delle pratiche resta.
-          </AlertDescription>
+          <AlertDescription>{tr("gradeUpdateWarning")}</AlertDescription>
         </Alert>
       )}
 
@@ -174,7 +175,7 @@ function GradeField({ discipline, label, currentLevel, grades, locked }: FieldPr
 
       <div className="flex gap-2">
         <Button type="button" onClick={handleSave} disabled={pending}>
-          {pending ? "Salvataggio..." : confirming ? "Conferma" : "Salva"}
+          {pending ? tr("saving") : confirming ? tr("confirm") : tr("save")}
         </Button>
         <Button
           type="button"
@@ -187,7 +188,7 @@ function GradeField({ discipline, label, currentLevel, grades, locked }: FieldPr
             setEditing(false);
           }}
         >
-          Annulla
+          {tr("cancel")}
         </Button>
       </div>
     </div>

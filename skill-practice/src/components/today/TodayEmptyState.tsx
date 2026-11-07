@@ -1,7 +1,8 @@
-import Link from "next/link";
-import { CalendarPlus, Dumbbell, Library, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Button } from "@/components/ui/button";
+import { CalendarPlus, Dumbbell, Library, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Props = {
   reason: "no_schedule" | "expired" | "no_plan" | "empty_session";
@@ -9,15 +10,16 @@ type Props = {
 };
 
 export function TodayEmptyState({ reason, customMode = false }: Props) {
+  const tr = useTranslations("ui");
   if (reason === "no_schedule") {
     return (
       <EmptyState
         icon={<CalendarPlus className="h-10 w-10" />}
-        title="Definisci le tue sessioni"
-        description="Scegli giorni, durata e cadenza. Distribuiamo noi le forme sulle tue settimane."
+        title={tr("defineSessions")}
+        description={tr("defineSessionsDescription")}
         action={
           <Button asChild>
-            <Link href="/sessions/setup">Imposta allenamento</Link>
+            <Link href="/sessions/setup">{tr("setupTraining")}</Link>
           </Button>
         }
       />
@@ -28,11 +30,11 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
     return (
       <EmptyState
         icon={<Sparkles className="h-10 w-10" />}
-        title="Le tue sessioni sono terminate"
-        description="Aggiorna durata e cadenza per ripartire."
+        title={tr("sessionsEnded")}
+        description={tr("restartSessions")}
         action={
           <Button asChild>
-            <Link href="/sessions/setup">Imposta allenamento</Link>
+            <Link href="/sessions/setup">{tr("setupTraining")}</Link>
           </Button>
         }
       />
@@ -43,11 +45,11 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
     return (
       <EmptyState
         icon={<Dumbbell className="h-10 w-10" />}
-        title="Nessun esercizio previsto oggi"
-        description="Il piano di allenamento attivo non assegna esercizi a questa sessione. Controlla il piano o aggiorna le sessioni."
+        title={tr("noExercisesToday")}
+        description={tr("noExercisesTodayDescription")}
         action={
           <Button asChild>
-            <Link href="/programma">Controlla piano</Link>
+            <Link href="/programma">{tr("checkPlan")}</Link>
           </Button>
         }
       />
@@ -58,11 +60,11 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
     return (
       <EmptyState
         icon={<Library className="h-10 w-10" />}
-        title="Nessuna forma selezionata"
-        description="Apri la selezione personale e scegli forme e tecniche da praticare."
+        title={tr("noFormsSelected")}
+        description={tr("chooseFormsDescription")}
         action={
           <Button asChild>
-            <Link href="/plan/custom">Apri selezione</Link>
+            <Link href="/plan/custom">{tr("openSelection")}</Link>
           </Button>
         }
       />
@@ -72,11 +74,11 @@ export function TodayEmptyState({ reason, customMode = false }: Props) {
   return (
     <EmptyState
       icon={<Library className="h-10 w-10" />}
-      title="Nessun contenuto nel tuo piano"
-      description="Attiva un programma esame oppure passa alla selezione personale."
+      title={tr("emptyPlan")}
+      description={tr("activatePlanDescription")}
       action={
         <Button asChild>
-          <Link href="/plan/exam">Programma esame</Link>
+          <Link href="/plan/exam">{tr("examProgram")}</Link>
         </Button>
       }
     />

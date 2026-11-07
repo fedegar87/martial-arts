@@ -1,7 +1,9 @@
 "use client";
+import { categoryLabel } from "@/lib/labels";
 
-import { useMemo, useState, useTransition } from "react";
-import { Plus, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,10 +14,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { DisciplineBadge } from "@/components/skill/DisciplineBadge";
-import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
 import { addFreePracticeForDate } from "@/lib/actions/calendar";
 import type { CalendarSkill } from "@/lib/types";
+import { Plus, Search } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
 
 type Props = {
   dateKey: string;
@@ -30,6 +32,7 @@ export function AddFreePracticeSheet({
   scheduledSkillIds,
   disabled = false,
 }: Props) {
+  const tr = useTranslations("ui");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [pending, startTransition] = useTransition();
@@ -41,22 +44,29 @@ export function AddFreePracticeSheet({
   );
   const formattedDate = useMemo(
     () =>
-      new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("it-IT", {
+      new Date(`${dateKey}T00:00:00Z`).toLocaleDateString(tr("locale"), {
         weekday: "long",
         day: "numeric",
         month: "long",
       }),
-    [dateKey],
+    [dateKey, tr],
   );
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return skills;
     return skills.filter((skill) =>
-      [skill.name, skill.name_italian, SKILL_CATEGORY_LABELS[skill.category]]
-        .filter((value): value is string => typeof value === "string" && value.length > 0)
+      [
+        skill.name,
+        skill.subtitle ?? skill.name_italian,
+        categoryLabel(skill.category, tr),
+      ]
+        .filter(
+          (value): value is string =>
+            typeof value === "string" && value.length > 0,
+        )
         .some((value) => value.toLowerCase().includes(needle)),
     );
-  }, [query, skills]);
+  }, [query, skills, tr]);
 
   function handleAdd(skillId: string) {
     startTransition(async () => {
@@ -71,7 +81,7 @@ export function AddFreePracticeSheet({
         setOpen(false);
         setQuery("");
       } catch {
-        setMessage("Connessione assente, riprova.");
+        setMessage(tr("offlineRetry"));
       } finally {
         setPendingSkillId(null);
       }
@@ -83,7 +93,7 @@ export function AddFreePracticeSheet({
       <SheetTrigger asChild>
         <Button type="button" variant="outline" size="sm" disabled={disabled}>
           <Plus className="h-3.5 w-3.5" />
-          Aggiungi pratica libera
+          {tr("addFreePractice")}
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -91,7 +101,7 @@ export function AddFreePracticeSheet({
         className="max-h-[85vh] overflow-hidden pb-[env(safe-area-inset-bottom)]"
       >
         <SheetHeader>
-          <SheetTitle>Aggiungi pratica libera</SheetTitle>
+          <SheetTitle>{tr("addFreePractice")}</SheetTitle>
           <SheetDescription className="capitalize">
             {formattedDate}
           </SheetDescription>
@@ -102,13 +112,15 @@ export function AddFreePracticeSheet({
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Cerca forma o tecnica"
+              placeholder={tr("searchTechnique")}
               className="pl-8"
             />
           </label>
           <div className="max-h-[52vh] space-y-2 overflow-y-auto pr-1">
             {filtered.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nessun contenuto trovato.</p>
+              <p className="text-sm text-muted-foreground">
+                {tr("noContentSentence")}
+              </p>
             ) : (
               filtered.map((skill) => {
                 const alreadyScheduled = scheduled.has(skill.id);
@@ -118,19 +130,23 @@ export function AddFreePracticeSheet({
                     className="flex min-h-14 items-center gap-3 rounded-md border border-border p-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{skill.name}</div>
-                      {skill.name_italian && (
+                      <div className="truncate text-sm font-medium">
+                        {skill.name}
+                      </div>
+                      {(skill.subtitle ?? skill.name_italian) && (
                         <div className="truncate text-xs text-muted-foreground">
-                          {skill.name_italian}
+                          {skill.subtitle ?? skill.name_italian}
                         </div>
                       )}
                       <div className="mt-1 flex flex-wrap items-center gap-1">
                         <DisciplineBadge discipline={skill.discipline} />
                         <span className="text-xs text-muted-foreground">
-                          {SKILL_CATEGORY_LABELS[skill.category]}
+                          {categoryLabel(skill.category, tr)}
                         </span>
                         {alreadyScheduled && (
-                          <span className="text-xs text-primary">in sessione</span>
+                          <span className="text-xs text-primary">
+                            {tr("inSession")}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -144,8 +160,8 @@ export function AddFreePracticeSheet({
                       {pendingSkillId === skill.id
                         ? "..."
                         : alreadyScheduled
-                          ? "Segna"
-                          : "Aggiungi"}
+                          ? tr("mark")
+                          : tr("add")}
                     </Button>
                   </div>
                 );

@@ -20,7 +20,8 @@ export const brand = {
   notificationIcon: "/icons/icon-192.png",
   calendar: {
     sourceUrl: "https://www.feskfongttai.it/la-f-e-s-k/eventi/calendario.html",
-    feedUrl: "https://calendar.google.com/calendar/ical/c_21b2296138d499b918f2f950fb93be1b499adb800503e2adcf598aba5b511ee9%40group.calendar.google.com/public/basic.ics",
+    feedUrl:
+      "https://calendar.google.com/calendar/ical/c_21b2296138d499b918f2f950fb93be1b499adb800503e2adcf598aba5b511ee9%40group.calendar.google.com/public/basic.ics",
     timeZone: "Europe/Rome",
   },
   landing: {
@@ -28,4 +29,16 @@ export const brand = {
     // Ideogrammi indicativi (abbondanza + pace): DA CONFERMARE con FESK.
     ideogram: "豐泰",
   },
+  translations: {
+    fr: {
+      description: "Pratique guidée du Kung Fu traditionnel FESK",
+      lineageLabel: "École Chang",
+    },
+  },
 } as const;
+
+export function localizedBrand(locale: string) {
+  return locale.startsWith("fr")
+    ? { ...brand, ...brand.translations.fr }
+    : brand;
+}

@@ -1,17 +1,15 @@
-import "server-only";
-import webpush, {
-  WebPushError,
-  type PushSubscription as WebPushSubscription,
-} from "web-push";
 import { brand } from "@/lib/brand";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { localDateKey } from "@/lib/date";
 import {
   buildTrainingReminderPayload,
   isAllowedPushEndpoint,
   isReminderTimeDue,
 } from "@/lib/push-notifications";
-import { getScheduledPlanItems, getScheduledSession } from "@/lib/session-scheduler";
+import {
+  getScheduledPlanItems,
+  getScheduledSession,
+} from "@/lib/session-scheduler";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type {
   NotificationPreference,
   PlanMode,
@@ -21,6 +19,11 @@ import type {
   TrainingSchedule,
   UserPlanItem,
 } from "@/lib/types";
+import "server-only";
+import webpush, {
+  WebPushError,
+  type PushSubscription as WebPushSubscription,
+} from "web-push";
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
 type AdminSupabaseClient = ReturnType<typeof createAdminClient>;
@@ -67,7 +70,12 @@ export async function sendDueTrainingReminders(
     }
     result.duePreferences++;
 
-    const userResult = await sendReminderForUser(supabase, preference, vapid, now);
+    const userResult = await sendReminderForUser(
+      supabase,
+      preference,
+      vapid,
+      now,
+    );
     result.sent += userResult.sent;
     result.skipped += userResult.skipped;
     result.failed += userResult.failed;
@@ -88,33 +96,39 @@ async function sendReminderForUser(
 
   if (!sourceFilter) return { sent: 0, skipped: 1, failed: 0 };
 
-  const [{ data: scheduleData }, { data: itemsData }, { data: logsData }, { data: subscriptionsData }] =
-    await Promise.all([
-      supabase
-        .from("training_schedule")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle(),
-      supabase
-        .from("user_plan_items")
-        .select("*, skill:skills(*)")
-        .eq("user_id", userId)
-        .eq("source", sourceFilter)
-        .eq("is_hidden", false),
-      supabase
-        .from("practice_logs")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("date", date),
-      supabase
-        .from("push_subscriptions")
-        .select("*")
-        .eq("user_id", userId)
-        .is("revoked_at", null),
-    ]);
+  const [
+    { data: scheduleData },
+    { data: itemsData },
+    { data: logsData },
+    { data: subscriptionsData },
+  ] = await Promise.all([
+    supabase
+      .from("training_schedule")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("user_plan_items")
+      .select("*, skill:skills(*)")
+      .eq("user_id", userId)
+      .eq("source", sourceFilter)
+      .eq("is_hidden", false),
+    supabase
+      .from("practice_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("date", date),
+    supabase
+      .from("push_subscriptions")
+      .select("*")
+      .eq("user_id", userId)
+      .is("revoked_at", null),
+  ]);
 
   const schedule = scheduleData as TrainingSchedule | null;
-  const items = ((itemsData ?? []) as ItemWithSkill[]).filter((item) => item.skill);
+  const items = ((itemsData ?? []) as ItemWithSkill[]).filter(
+    (item) => item.skill,
+  );
   const logs = (logsData ?? []) as PracticeLog[];
   const subscriptions = (subscriptionsData ?? []) as PushSubscriptionRecord[];
 
@@ -122,7 +136,11 @@ async function sendReminderForUser(
     return { sent: 0, skipped: 1, failed: 0 };
   }
 
-  const scheduledItems = getScheduledPlanItems(items, schedule, sourceFilter === "manual" ? "custom" : "exam");
+  const scheduledItems = getScheduledPlanItems(
+    items,
+    schedule,
+    sourceFilter === "manual" ? "custom" : "exam",
+  );
   const session = getScheduledSession(date, schedule, scheduledItems);
   if (session.kind !== "training") return { sent: 0, skipped: 1, failed: 0 };
 
@@ -136,6 +154,7 @@ async function sendReminderForUser(
   if (remainingItems.length === 0) return { sent: 0, skipped: 1, failed: 0 };
 
   const payload = buildTrainingReminderPayload({
+    locale: preference.locale,
     date,
     exerciseNames: remainingItems.map((item) => item.skill.name),
     includeExerciseNames: preference.include_exercise_names,
@@ -248,7 +267,9 @@ export async function claimPendingDelivery(
     .eq("subscription_id", subscriptionId)
     .eq("kind", eventId ? "event_reminder" : "training_reminder")
     .eq("status", "failed");
-  retryQuery = eventId ? retryQuery.eq("event_id", eventId) : retryQuery.eq("date", date);
+  retryQuery = eventId
+    ? retryQuery.eq("event_id", eventId)
+    : retryQuery.eq("date", date);
   const { data: retryData, error: retryError } = await retryQuery
     .select("id")
     .maybeSingle();
@@ -257,7 +278,10 @@ export async function claimPendingDelivery(
   return (retryData as { id: string } | null)?.id ?? null;
 }
 
-export async function markDeliverySent(supabase: AdminSupabaseClient, deliveryId: string) {
+export async function markDeliverySent(
+  supabase: AdminSupabaseClient,
+  deliveryId: string,
+) {
   await supabase
     .from("notification_deliveries")
     .update({
@@ -314,7 +338,8 @@ type VapidDetails = {
 };
 
 export function getVapidDetails(): VapidDetails {
-  const subject = process.env.VAPID_SUBJECT?.trim() || `mailto:${brand.supportEmail}`;
+  const subject =
+    process.env.VAPID_SUBJECT?.trim() || `mailto:${brand.supportEmail}`;
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
   const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
 
@@ -334,5 +359,8 @@ function describePushError(error: unknown): string {
 }
 
 function isExpiredSubscriptionError(error: unknown): boolean {
-  return error instanceof WebPushError && (error.statusCode === 404 || error.statusCode === 410);
+  return (
+    error instanceof WebPushError &&
+    (error.statusCode === 404 || error.statusCode === 410)
+  );
 }

@@ -1,13 +1,19 @@
 "use client";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { useTranslations } from "next-intl";
 
 import { ChipButton } from "@/components/primitives/Chip";
 
-const OPTIONS: Array<{ weeks: 4 | 8 | 12 | 24; label: string }> = [
-  { weeks: 4, label: "1 mese" },
-  { weeks: 8, label: "2 mesi" },
-  { weeks: 12, label: "3 mesi" },
-  { weeks: 24, label: "6 mesi" },
-];
+function OPTIONS(
+  tr: UiTranslator,
+): Array<{ weeks: 4 | 8 | 12 | 24; label: string }> {
+  return [
+    { weeks: 4, label: tr("oneMonth") },
+    { weeks: 8, label: tr("twoMonths") },
+    { weeks: 12, label: tr("threeMonths") },
+    { weeks: 24, label: tr("sixMonths") },
+  ];
+}
 
 type Props = {
   value: 4 | 8 | 12 | 24;
@@ -15,9 +21,10 @@ type Props = {
 };
 
 export function DurationPicker({ value, onChange }: Props) {
+  const tr = useTranslations("ui");
   return (
     <div className="flex flex-wrap gap-2">
-      {OPTIONS.map((opt) => (
+      {OPTIONS(tr).map((opt) => (
         <ChipButton
           key={opt.weeks}
           onClick={() => onChange(opt.weeks)}

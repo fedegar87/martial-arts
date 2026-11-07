@@ -1,7 +1,6 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useActionState } from "react";
-import { updatePassword } from "@/lib/actions/auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,22 +12,23 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { updatePassword } from "@/lib/actions/auth";
+import { useActionState } from "react";
 
 export function UpdatePasswordForm() {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(updatePassword, null);
 
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Imposta nuova password</CardTitle>
-        <CardDescription>
-          Scegli una password di almeno 8 caratteri.
-        </CardDescription>
+        <CardTitle>{tr("setPassword")}</CardTitle>
+        <CardDescription>{tr("passwordHint")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={action} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">Nuova password</Label>
+            <Label htmlFor="password">{tr("newPassword")}</Label>
             <Input
               id="password"
               name="password"
@@ -41,7 +41,7 @@ export function UpdatePasswordForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Conferma password</Label>
+            <Label htmlFor="confirmPassword">{tr("confirmPassword")}</Label>
             <Input
               id="confirmPassword"
               name="confirmPassword"
@@ -60,7 +60,7 @@ export function UpdatePasswordForm() {
           )}
 
           <Button type="submit" disabled={pending} className="w-full">
-            {pending ? "Salvataggio..." : "Salva password"}
+            {pending ? tr("saving") : tr("savePassword")}
           </Button>
         </form>
       </CardContent>

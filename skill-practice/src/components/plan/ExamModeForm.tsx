@@ -1,11 +1,12 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useActionState, useMemo, useState } from "react";
-import { activateExamModeFromForm } from "@/lib/actions/plan";
 import { FormSelect } from "@/components/primitives/FormSelect";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { activateExamModeFromForm } from "@/lib/actions/plan";
 import type { ExamProgram } from "@/lib/types";
+import { useActionState, useMemo, useState } from "react";
 
 type Props = {
   shaolinExams: ExamProgram[];
@@ -22,6 +23,7 @@ export function ExamModeForm({
   selectedTaichiId,
   showTaichi,
 }: Props) {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(
     activateExamModeFromForm,
     null,
@@ -46,7 +48,7 @@ export function ExamModeForm({
     <form action={action} className="space-y-5">
       <ExamSelect
         name="examShaolinId"
-        label="Shaolin"
+        label={tr("shaolin")}
         exams={shaolinExams}
         value={shaolinId}
         onChange={setShaolinId}
@@ -54,7 +56,7 @@ export function ExamModeForm({
       {showTaichi && (
         <ExamSelect
           name="examTaichiId"
-          label="T'ai Chi"
+          label={tr("taichi")}
           exams={taichiExams}
           value={taichiId}
           onChange={setTaichiId}
@@ -62,11 +64,11 @@ export function ExamModeForm({
       )}
 
       <div className="surface-inset rounded-md p-3 text-sm">
-        <div className="font-medium">Anteprima piano</div>
+        <div className="font-medium">{tr("planPreview")}</div>
         <p className="text-muted-foreground mt-1">
           {selectedLabels.length > 0
-            ? `Attiverai: ${selectedLabels.join(" + ")}. Il piano contiene solo i contenuti del programma selezionato.`
-            : "Nessun esame selezionato."}
+            ? tr("activatePlanPreview", { p0: selectedLabels.join(" + ") })
+            : tr("noExamSelected")}
         </p>
       </div>
 
@@ -76,11 +78,11 @@ export function ExamModeForm({
         </Alert>
       )}
       {state && "success" in state && (
-        <p className="text-muted-foreground text-sm">Programma aggiornato.</p>
+        <p className="text-muted-foreground text-sm">{tr("programUpdated")}</p>
       )}
 
       <Button type="submit" disabled={pending || !canSubmit}>
-        {pending ? "Salvataggio..." : "Attiva programma esame"}
+        {pending ? tr("saving") : tr("activateExamProgram")}
       </Button>
     </form>
   );
@@ -99,6 +101,7 @@ function ExamSelect({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const tr = useTranslations("ui");
   return (
     <FormSelect
       label={label}
@@ -108,12 +111,12 @@ function ExamSelect({
       helperText={
         exams.length === 0 ? (
           <p className="text-muted-foreground text-xs">
-            Nessun esame disponibile per il livello del profilo.
+            {tr("noExamForGrade")}
           </p>
         ) : undefined
       }
     >
-      <option value="">Nessun esame</option>
+      <option value="">{tr("noExam")}</option>
       {exams.map((exam) => (
         <option key={exam.id} value={exam.id}>
           {exam.level_name}

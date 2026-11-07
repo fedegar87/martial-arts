@@ -1,7 +1,6 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useState, useTransition } from "react";
-import { NotebookPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,6 +11,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { savePracticeNote } from "@/lib/actions/practice";
+import { NotebookPen } from "lucide-react";
+import { useState, useTransition } from "react";
 
 type Props = {
   skillId: string;
@@ -32,6 +33,7 @@ export function PracticeNoteButton({
   onOpenChange,
   initialNote = "",
 }: Props) {
+  const tr = useTranslations("ui");
   const [pending, startTransition] = useTransition();
   const [internalOpen, setInternalOpen] = useState(false);
   const [note, setNote] = useState(initialNote);
@@ -55,13 +57,13 @@ export function PracticeNoteButton({
       try {
         const result = await savePracticeNote(skillId, note);
         if (!result || "error" in result) {
-          setError(result?.error ?? "Salvataggio non confermato. Riprova.");
+          setError(result?.error ?? tr("saveUnconfirmed"));
           return;
         }
-        setMessage("Nota salvata.");
+        setMessage(tr("noteSaved"));
         setSheetOpen(false);
       } catch {
-        setError("Non è stato possibile confermare il salvataggio. Riprova.");
+        setError(tr("saveConfirmationFailed"));
       }
     });
   }
@@ -73,7 +75,7 @@ export function PracticeNoteButton({
         variant="outline"
         size={block ? "default" : compact ? "sm" : "icon"}
         className={block ? "h-11 w-full" : undefined}
-        aria-label="Aggiungi nota pratica"
+        aria-label={tr("addPracticeNote")}
         onClick={() => handleOpenChange(true)}
       >
         <NotebookPen
@@ -81,7 +83,7 @@ export function PracticeNoteButton({
             block ? "mr-2 h-4 w-4" : compact ? "mr-1 h-3.5 w-3.5" : "h-4 w-4"
           }
         />
-        {(block || compact) && "Nota"}
+        {(block || compact) && tr("note")}
       </Button>
       {showStatus && message && (
         <p className="text-muted-foreground text-xs" role="status">
@@ -94,18 +96,15 @@ export function PracticeNoteButton({
           className="material-sheet border-border pb-[env(safe-area-inset-bottom)]"
         >
           <SheetHeader>
-            <SheetTitle>Nota pratica</SheetTitle>
-            <SheetDescription>
-              Registra un dettaglio da ricordare la prossima volta che lavori
-              su questa tecnica.
-            </SheetDescription>
+            <SheetTitle>{tr("practiceNote")}</SheetTitle>
+            <SheetDescription>{tr("practiceNoteDescription")}</SheetDescription>
           </SheetHeader>
           <div className="px-4">
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
               disabled={pending}
-              aria-label="Nota pratica"
+              aria-label={tr("practiceNote")}
               rows={5}
               className="border-input bg-background min-h-32 w-full resize-y rounded-md border px-3 py-2 text-base md:text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
             />
@@ -122,7 +121,7 @@ export function PracticeNoteButton({
               disabled={pending}
               aria-busy={pending}
             >
-              {pending ? "Salvataggio..." : "Salva nota"}
+              {pending ? tr("saving") : tr("saveNote")}
             </Button>
             <Button
               type="button"
@@ -130,7 +129,7 @@ export function PracticeNoteButton({
               onClick={() => handleOpenChange(false)}
               disabled={pending}
             >
-              Salta
+              {tr("skip")}
             </Button>
           </SheetFooter>
         </SheetContent>

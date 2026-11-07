@@ -1,4 +1,6 @@
 import "server-only";
+import { getLocale } from "next-intl/server";
+import { localizeContent } from "@/lib/content-localization";
 import { createClient } from "@/lib/supabase/server";
 import type {
   Discipline,
@@ -24,7 +26,15 @@ export async function listExamProgramsForSchool(
   // Più alto = grado più basso = esame più precoce.
   const { data } = await query.order("grade_value", { ascending: false });
 
-  return (data as ExamProgram[] | null) ?? [];
+  const locale = await getLocale();
+  return ((data as ExamProgram[] | null) ?? []).map((row) =>
+    localizeContent(row, locale, [
+      "level_name",
+      "description",
+      "grade_from",
+      "grade_to",
+    ]),
+  );
 }
 
 export async function getExamProgramRequirements(
@@ -49,5 +59,12 @@ export async function getExamProgramById(
     .eq("id", examId)
     .maybeSingle();
 
-  return (data as ExamProgram | null) ?? null;
+  return data
+    ? localizeContent(data as ExamProgram, await getLocale(), [
+        "level_name",
+        "description",
+        "grade_from",
+        "grade_to",
+      ])
+    : null;
 }

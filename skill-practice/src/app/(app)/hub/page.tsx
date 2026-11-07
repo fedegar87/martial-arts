@@ -1,13 +1,15 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Bell } from "lucide-react";
-import { HubGrid } from "@/components/hub/HubGrid";
 import { HubBackground } from "@/components/hub/HubBackground";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { isProfileOnboarded } from "@/lib/onboarding-state";
+import { HubGrid } from "@/components/hub/HubGrid";
 import { Button } from "@/components/ui/button";
+import { isProfileOnboarded } from "@/lib/onboarding-state";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
+import { Bell } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function HubPage() {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
 
   if (!profile) {
@@ -28,14 +30,19 @@ export default async function HubPage() {
               {profile.display_name}
             </p>
             <h1 className="hub-anim-heading mt-1 text-2xl font-medium text-foreground">
-              Dove vuoi praticare oggi?
+              {tr("hubQuestion")}
             </h1>
             <p className="hub-anim-subtitle mt-1 text-sm text-muted-foreground">
-              Scegli un&apos;area per iniziare.
+              {tr("hubIntroduction")}
             </p>
           </div>
-          <Button asChild variant="ghost" size="icon" className="min-h-12 min-w-12 text-muted-foreground">
-            <Link href="/news" aria-label="Bacheca" title="Bacheca">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="min-h-12 min-w-12 text-muted-foreground"
+          >
+            <Link href="/news" aria-label={tr("news")} title={tr("news")}>
               <Bell className="h-5 w-5" aria-hidden />
             </Link>
           </Button>

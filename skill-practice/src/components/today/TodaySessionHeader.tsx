@@ -1,7 +1,8 @@
-import Link from "next/link";
-import { CalendarDays, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PlanMode } from "@/lib/types";
+import { CalendarDays, SlidersHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Props = {
   dayName: string;
@@ -16,8 +17,9 @@ export function TodaySessionHeader({
   gradeSummary,
   scopeLabel,
 }: Props) {
+  const tr = useTranslations("ui");
   const planLabel =
-    planMode === "custom" ? "Selezione personale" : "Programma esame";
+    planMode === "custom" ? tr("customSelection") : tr("examProgram");
 
   const eyebrowParts = [planLabel];
   if (scopeLabel) eyebrowParts.push(scopeLabel);
@@ -35,7 +37,12 @@ export function TodaySessionHeader({
           </h1>
         </div>
         <div className="flex shrink-0 gap-1">
-          <Button asChild variant="ghost" size="icon" aria-label="Apri calendario">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            aria-label={tr("openCalendar")}
+          >
             <Link href="/calendar">
               <CalendarDays className="h-5 w-5" />
             </Link>
@@ -44,7 +51,7 @@ export function TodaySessionHeader({
             asChild
             variant="ghost"
             size="icon"
-            aria-label="Imposta allenamento"
+            aria-label={tr("setupTraining")}
           >
             <Link href="/sessions/setup">
               <SlidersHorizontal className="h-5 w-5" />

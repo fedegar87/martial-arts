@@ -1,4 +1,6 @@
 import "server-only";
+import { getLocale } from "next-intl/server";
+import { localizeSkill, localizeSkills } from "@/lib/content-localization";
 import { createClient } from "@/lib/supabase/server";
 import { scopeFloorValue } from "@/lib/grades";
 import type {
@@ -23,7 +25,10 @@ type SkillScope = Pick<
 
 // Livello 0 = disciplina non praticata (per Shaolin e T'ai Chi). Gli all-access vedono
 // comunque tutto.
-function disciplineNotPracticed(discipline: Discipline, scope: SkillScope): boolean {
+function disciplineNotPracticed(
+  discipline: Discipline,
+  scope: SkillScope,
+): boolean {
   if (scope.content_access_mode === "all_school_content") return false;
   const level =
     discipline === "shaolin"
@@ -58,7 +63,7 @@ export async function listAccessibleSkills(
   const { data } = await query
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
-  return (data as Skill[] | null) ?? [];
+  return localizeSkills((data as Skill[] | null) ?? [], await getLocale());
 }
 
 export async function listSkillsByCategory(
@@ -74,7 +79,7 @@ export async function listSkillsByCategory(
     .gte("minimum_grade_value", userGradeValue)
     .eq("category", category)
     .order("display_order", { ascending: true });
-  return (data as Skill[] | null) ?? [];
+  return localizeSkills((data as Skill[] | null) ?? [], await getLocale());
 }
 
 export async function getSkillById(
@@ -89,7 +94,7 @@ export async function getSkillById(
   if (error) {
     throw new Error("Impossibile caricare l'esercizio", { cause: error });
   }
-  return (data as Skill | null) ?? null;
+  return data ? localizeSkill(data as Skill, await getLocale()) : null;
 }
 
 export async function listSkillsAtGrade(
@@ -107,7 +112,7 @@ export async function listSkillsAtGrade(
   const { data } = await query
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
-  return (data as Skill[] | null) ?? [];
+  return localizeSkills((data as Skill[] | null) ?? [], await getLocale());
 }
 
 export async function listSkillsForDiscipline(
@@ -122,7 +127,7 @@ export async function listSkillsForDiscipline(
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
 
-  return (data as Skill[] | null) ?? [];
+  return localizeSkills((data as Skill[] | null) ?? [], await getLocale());
 }
 
 // Variante snella di listSkillsForDiscipline per le schermate di selezione piano.
@@ -133,7 +138,9 @@ export async function listSkillOptionsForDiscipline(
   const supabase = await createClient();
   let query = supabase
     .from("skills")
-    .select("id, name, name_italian, minimum_grade_value, category")
+    .select(
+      "id, name, name_italian, translations, minimum_grade_value, category",
+    )
     .eq("discipline", discipline);
   if (schoolId) query = query.eq("school_id", schoolId);
   const { data } = await query
@@ -141,7 +148,10 @@ export async function listSkillOptionsForDiscipline(
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
 
-  return (data as SkillOption[] | null) ?? [];
+  return localizeSkills(
+    (data as SkillOption[] | null) ?? [],
+    await getLocale(),
+  );
 }
 
 export async function listSkillsForExam(
@@ -165,7 +175,7 @@ export async function listSkillsForExam(
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
 
-  return (skills as Skill[] | null) ?? [];
+  return localizeSkills((skills as Skill[] | null) ?? [], await getLocale());
 }
 
 // Catalogo libreria, ristretto allo scope di accesso dell'utente (grado/disciplina,
@@ -199,9 +209,11 @@ export async function listVisibleSkillsForDiscipline(
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
   if (error) {
-    throw new Error("Impossibile caricare il catalogo della libreria", { cause: error });
+    throw new Error("Impossibile caricare il catalogo della libreria", {
+      cause: error,
+    });
   }
-  return (data as Skill[] | null) ?? [];
+  return localizeSkills((data as Skill[] | null) ?? [], await getLocale());
 }
 
 // Outline (sola struttura) delle skill BLOCCATE: i gradi piu' avanzati del livello in
@@ -247,7 +259,9 @@ export async function listVisibleSkillOptionsForDiscipline(
   const supabase = await createClient();
   let query = supabase
     .from("skills")
-    .select("id, name, name_italian, minimum_grade_value, category")
+    .select(
+      "id, name, name_italian, translations, minimum_grade_value, category",
+    )
     .eq("discipline", discipline)
     .eq("school_id", scope.school_id);
 
@@ -267,7 +281,12 @@ export async function listVisibleSkillOptionsForDiscipline(
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
   if (error) {
-    throw new Error("Impossibile caricare gli esercizi selezionabili", { cause: error });
+    throw new Error("Impossibile caricare gli esercizi selezionabili", {
+      cause: error,
+    });
   }
-  return (data as SkillOption[] | null) ?? [];
+  return localizeSkills(
+    (data as SkillOption[] | null) ?? [],
+    await getLocale(),
+  );
 }

@@ -1,9 +1,11 @@
-import { LegacyHorseEmblem } from "./LegacyHorseEmblem";
+import { useTranslations } from "next-intl";
 import { EnterButton } from "./EnterButton";
+import { LegacyHorseEmblem } from "./LegacyHorseEmblem";
 
 // Variante personale legacy (cavallo di fuoco + citazione di Confucio), conservata
 // e raggiungibile da /landing-legacy. La landing pubblica FESK e FeskLandingHero.
 export function LegacyLandingHero({ ctaHref }: { ctaHref: string }) {
+  const tr = useTranslations("ui");
   return (
     <main
       className="
@@ -31,11 +33,11 @@ export function LegacyLandingHero({ ctaHref }: { ctaHref: string }) {
         </p>
 
         <p className="landing-hero__translation landing-anim-translation mt-4 text-base italic text-muted-foreground">
-          apprendere e non esserne mai sazio
+          {tr("learningMotto")}
         </p>
 
         <p className="landing-hero__author landing-anim-author mt-2 text-sm text-muted-foreground">
-          — Confucio
+          {tr("confucius")}
         </p>
 
         <div className="landing-hero__cta landing-anim-cta mt-12">

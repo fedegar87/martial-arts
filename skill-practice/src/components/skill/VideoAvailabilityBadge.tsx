@@ -1,7 +1,8 @@
-import { Video, VideoOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { hasPlayableVideo } from "@/lib/youtube";
 import { cn } from "@/lib/utils";
+import { hasPlayableVideo } from "@/lib/youtube";
+import { Video, VideoOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   videoUrl: string | null | undefined;
@@ -9,10 +10,16 @@ type Props = {
   compact?: boolean;
 };
 
-export function VideoAvailabilityBadge({ videoUrl, secondaryVideoUrl, compact = false }: Props) {
-  const available = hasPlayableVideo(videoUrl) || hasPlayableVideo(secondaryVideoUrl);
+export function VideoAvailabilityBadge({
+  videoUrl,
+  secondaryVideoUrl,
+  compact = false,
+}: Props) {
+  const tr = useTranslations("ui");
+  const available =
+    hasPlayableVideo(videoUrl) || hasPlayableVideo(secondaryVideoUrl);
   const Icon = available ? Video : VideoOff;
-  const label = available ? "Video disponibile" : "Video mancante";
+  const label = available ? tr("videoAvailable") : tr("videoMissing");
 
   return (
     <Badge

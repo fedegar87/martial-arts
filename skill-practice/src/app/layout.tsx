@@ -1,4 +1,9 @@
+import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { brand, localizedBrand } from "@/lib/brand";
+import { APP_TIME_ZONE } from "@/lib/date";
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import {
   Cormorant_Garamond,
   Noto_Serif_TC,
@@ -6,8 +11,6 @@ import {
   Space_Mono,
   Spectral,
 } from "next/font/google";
-import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
-import { brand } from "@/lib/brand";
 import "./globals.css";
 
 const displayFont = Cormorant_Garamond({
@@ -66,7 +69,7 @@ const siteUrl =
   normalizeSiteUrl(process.env.VERCEL_URL) ??
   "http://localhost:3000";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: appName,
   title: {
@@ -118,6 +121,21 @@ export const metadata: Metadata = {
   },
 };
 
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const text = localizedBrand(locale);
+  return {
+    ...baseMetadata,
+    description: text.description,
+    openGraph: {
+      ...baseMetadata.openGraph,
+      locale: locale === "fr" ? "fr_BE" : "it_IT",
+      description: text.description,
+    },
+    twitter: { ...baseMetadata.twitter, description: text.description },
+  };
+}
+
 export const viewport = {
   themeColor: brand.themeColor,
   width: "device-width",
@@ -125,20 +143,27 @@ export const viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
   return (
     <html
-      lang="it"
+      lang={locale}
       className={`dark ${displayFont.variable} ${bodyFont.variable} ${labelFont.variable} ${monoFont.variable} ${serifTcFont.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground min-h-full flex flex-col">
         <ServiceWorkerRegister />
         <div className="grain-overlay" aria-hidden="true" />
-        {children}
+        <NextIntlClientProvider
+          locale={locale}
+          messages={{ ui: messages.ui }}
+          timeZone={APP_TIME_ZONE}
+        >
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

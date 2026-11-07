@@ -1,8 +1,7 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import Link from "next/link";
-import { useActionState } from "react";
-import { requestPasswordReset } from "@/lib/actions/auth";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,23 +14,24 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LegalLinks } from "@/components/legal/LegalLinks";
+import { requestPasswordReset } from "@/lib/actions/auth";
+import Link from "next/link";
+import { useActionState } from "react";
 
 export function ForgotPasswordForm() {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(requestPasswordReset, null);
 
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Password dimenticata</CardTitle>
-        <CardDescription>
-          Inserisci la tua email per ricevere un link di reset.
-        </CardDescription>
+        <CardTitle>{tr("forgotPassword")}</CardTitle>
+        <CardDescription>{tr("resetDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={action} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{tr("email")}</Label>
             <Input
               id="email"
               name="email"
@@ -54,7 +54,7 @@ export function ForgotPasswordForm() {
           )}
 
           <Button type="submit" disabled={pending} className="w-full">
-            {pending ? "Invio in corso..." : "Invia link di reset"}
+            {pending ? tr("sending") : tr("sendResetLink")}
           </Button>
         </form>
       </CardContent>
@@ -63,7 +63,7 @@ export function ForgotPasswordForm() {
           href="/login"
           className="text-muted-foreground text-sm hover:underline"
         >
-          Torna al login
+          {tr("backLogin")}
         </Link>
         <LegalLinks />
       </CardFooter>

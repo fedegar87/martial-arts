@@ -27,9 +27,7 @@ export type PlanMode = "exam" | "custom";
 export type UserRole = "student" | "instructor" | "admin";
 
 export type ContentAccessMode =
-  | "exam_scope"
-  | "up_to_assigned_level"
-  | "all_school_content";
+  "exam_scope" | "up_to_assigned_level" | "all_school_content";
 
 export type NewsType = "event" | "announcement";
 
@@ -40,6 +38,8 @@ export type School = {
 };
 
 export type Skill = {
+  translations?: Record<string, Record<string, unknown>>;
+  subtitle?: string | null;
   id: string;
   school_id: string;
   name: string; // nome cinese traslitterato
@@ -65,10 +65,17 @@ export type Skill = {
 // serializzare le colonne pesanti (note, URL video, thumbnail) nel payload client.
 export type SkillOption = Pick<
   Skill,
-  "id" | "name" | "name_italian" | "minimum_grade_value" | "category"
+  | "id"
+  | "name"
+  | "name_italian"
+  | "subtitle"
+  | "translations"
+  | "minimum_grade_value"
+  | "category"
 >;
 
 export type ExamProgram = {
+  translations?: Record<string, Record<string, unknown>>;
   id: string;
   school_id: string;
   discipline: Discipline;
@@ -176,6 +183,7 @@ export type TrainingSchedule = {
 };
 
 export type NotificationPreference = {
+  locale?: "it" | "fr";
   user_id: string;
   training_reminders_enabled: boolean;
   reminder_time: string;
@@ -211,6 +219,7 @@ export type NotificationDelivery = {
 };
 
 export type NewsItem = {
+  translations?: Record<string, Record<string, unknown>>;
   id: string;
   school_id: string;
   title: string;
@@ -232,16 +241,15 @@ export type WeeklyReflection = {
 };
 
 export type CalendarDaySessionKind =
-  | "training"
-  | "rest_day"
-  | "expired"
-  | "no_schedule";
+  "training" | "rest_day" | "expired" | "no_schedule";
 
 export type CalendarSkill = Pick<
   Skill,
   | "id"
   | "name"
   | "name_italian"
+  | "subtitle"
+  | "translations"
   | "discipline"
   | "category"
   | "practice_mode"

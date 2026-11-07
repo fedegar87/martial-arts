@@ -8,6 +8,7 @@
 // Regola: skill visibile ⇔ minimum_grade_value >= floor, dove floor = livello
 // successivo a quello posseduto (quello in preparazione), non il grado corrente.
 
+import type { UiMessageKey, UiTranslator } from "./i18n/config";
 import type { ContentAccessMode, Discipline } from "./types";
 
 export type Grade = { value: number; label: string };
@@ -29,16 +30,24 @@ export function isSkillWithinLevelScope(
     assigned_level_shaolin: number;
     assigned_level_taichi: number;
   },
-  skill: { discipline: Discipline; minimum_grade_value: number; is_extra: boolean },
+  skill: {
+    discipline: Discipline;
+    minimum_grade_value: number;
+    is_extra: boolean;
+  },
 ): boolean {
   if (scope.content_access_mode === "all_school_content") return true;
   if (skill.is_extra && !scope.can_view_extra_content) return false;
   if (skill.discipline === "taichi") {
     if (scope.assigned_level_taichi === 0) return false;
-    return skill.minimum_grade_value >= scopeFloorValue(scope.assigned_level_taichi);
+    return (
+      skill.minimum_grade_value >= scopeFloorValue(scope.assigned_level_taichi)
+    );
   }
   if (scope.assigned_level_shaolin === 0) return false;
-  return skill.minimum_grade_value >= scopeFloorValue(scope.assigned_level_shaolin);
+  return (
+    skill.minimum_grade_value >= scopeFloorValue(scope.assigned_level_shaolin)
+  );
 }
 
 // Grado-sentinella per skill fuori dal programma cinture (sezione "Altro").
@@ -69,25 +78,60 @@ export const TAICHI_GRADES: Grade[] = [
   ...SHAOLIN_GRADES.filter((g) => g.value <= 5),
 ];
 
-export function gradeLabel(value: number): string {
+export function gradeLabel(value: number, tr?: UiTranslator): string {
+  if (tr) return translatedGrade(value, tr);
   if (value === EXTRA_GRADE_VALUE) return EXTRA_GRADE_LABEL;
   return SHAOLIN_GRADES.find((g) => g.value === value)?.label ?? `${value}`;
 }
 
-export function gradesForDiscipline(discipline: Discipline): Grade[] {
-  return discipline === "shaolin" ? SHAOLIN_GRADES : TAICHI_GRADES;
+export function gradesForDiscipline(
+  discipline: Discipline,
+  tr?: UiTranslator,
+): Grade[] {
+  const grades = discipline === "shaolin" ? SHAOLIN_GRADES : TAICHI_GRADES;
+  return tr
+    ? grades.map((grade) => ({
+        ...grade,
+        label: translatedGrade(grade.value, tr),
+      }))
+    : grades;
 }
 
 export function gradeLabelForDiscipline(
   discipline: Discipline,
   value: number,
+  tr?: UiTranslator,
 ): string {
+  if (tr) return translatedGrade(value, tr);
   if (value === EXTRA_GRADE_VALUE) return EXTRA_GRADE_LABEL;
   if (value === 0) return "Non praticato";
   return (
     gradesForDiscipline(discipline).find((g) => g.value === value)?.label ??
     `${value}`
   );
+}
+
+function translatedGrade(value: number, tr: UiTranslator): string {
+  if (value === EXTRA_GRADE_VALUE) return tr("other");
+  if (value === 0) return tr("notPracticed");
+  const keys: Record<number, UiMessageKey> = {
+    8: "grade8Chi",
+    7: "grade7Chi",
+    6: "grade6Chi",
+    5: "grade5Chi",
+    4: "grade4Chi",
+    3: "grade3Chi",
+    2: "grade2Chi",
+    1: "grade1Chi",
+    [-1]: "grade1Chieh",
+    [-2]: "grade2Chieh",
+    [-3]: "grade3Chieh",
+    [-4]: "grade4Chieh",
+    [-5]: "grade5Chieh",
+    [-6]: "grade1HalfMoon",
+    [-7]: "grade2HalfMoon",
+  };
+  return keys[value] ? tr(keys[value]) : String(value);
 }
 
 export function nextGradeValue(current: number): number | null {
@@ -98,7 +142,9 @@ export function nextGradeValue(current: number): number | null {
   return SHAOLIN_GRADES[idx + 1].value;
 }
 
-export function minimumSelectableExamGradeValue(current: number): number | null {
+export function minimumSelectableExamGradeValue(
+  current: number,
+): number | null {
   if (current === 0) return null;
 
   const idx = SHAOLIN_GRADES.findIndex((g) => g.value === current);

@@ -1,9 +1,10 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Plus } from "lucide-react";
 import { addSkillToPlan, removeSkillFromPlan } from "@/lib/actions/plan";
+import { Check, Plus } from "lucide-react";
+import { useTransition } from "react";
 
 type Props = {
   skillId: string;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function AddToPlanButton({ skillId, inPersonalSelection }: Props) {
+  const tr = useTranslations("ui");
   const [pending, start] = useTransition();
 
   function handleClick() {
@@ -40,7 +42,7 @@ export function AddToPlanButton({ skillId, inPersonalSelection }: Props) {
       ) : (
         <Plus className="mr-2 h-4 w-4" />
       )}
-      {pending ? "..." : inPersonalSelection ? "Nel ripasso" : "Ripasso"}
+      {pending ? "..." : inPersonalSelection ? tr("inReview") : tr("review")}
     </Button>
   );
 }

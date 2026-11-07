@@ -1,13 +1,15 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
 import { revokePushSubscriptionOnSignOut } from "@/lib/actions/push-notifications";
 import { unsubscribeFromPushNotifications } from "@/lib/push-client";
+import { LogOut } from "lucide-react";
+import { useTransition } from "react";
 
 export function SignOutButton() {
+  const tr = useTranslations("ui");
   const [pending, start] = useTransition();
 
   function handleClick() {
@@ -25,7 +27,7 @@ export function SignOutButton() {
       className="w-full"
     >
       <LogOut className="mr-2 h-4 w-4" />
-      Esci
+      {tr("signOut")}
     </Button>
   );
 }

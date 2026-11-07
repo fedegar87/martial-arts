@@ -1,7 +1,7 @@
 # Strategia White-Label e Multi-Arte Marziale
 
 **Status:** Attiva (Strategia architetturale canonica)  
-**Ultimo aggiornamento:** 2026-11-04  
+**Ultimo aggiornamento:** 2026-11-07
 **Stato codice di riferimento:** Migrazioni `0001`–`0049`, `src/lib/brand.ts`, `src/app/manifest.ts`
 **Sostituisce:** `docs/architecture-multitenancy-readiness.md` (eliminato), `plan/2026-06-13-white-label-multi-instance-strategy.md` (eliminato)  
 
@@ -59,12 +59,12 @@ Questi moduli sono già **indipendenti dal Kung Fu** e costituiscono il core inv
 - `FeskLandingHero.tsx` + `src/app/layout.tsx`: presuppongono ideogramma tradizionale cinese (`lang="zh-Hant"` e font `Noto_Serif_TC`).
 - `AppHeader.tsx` usa la casetta `House` Lucide, della stessa famiglia delle altre icone; nessun asset Home specifico FESK.
 - `src/app/globals.css`: palette dark/gold cablata in `:root` e font editoriali `Cormorant_Garamond` / `Spectral`.
-- `public/sw.js` (`CACHE_NAME = "fesk-practice-v6"`) e `public/offline.html` (colori dark/gold inline e testo italiano).
+- `public/sw.js` (`CACHE_NAME = "fesk-practice-v7"`) e `public/offline.html` (colori dark/gold inline, testo bilingue italiano/francese).
 - `supabase/email-templates/invite.html`: logo, colori e dicitura `"FESK Practice"` / `"Fong Ttai"` cablati nell'HTML da incollare su Supabase Dashboard.
 - `src/app/(legal)/privacy/page.tsx` (riga 20): contiene ancora un letterale `"FESK"` accanto a `brand.federationName`.
 
 #### Accoppiamento B — Terminologia UI
-- Termini come `"forme"`, `"ripetizioni per forma"`, `"3 minuti per forma"` (`SessionPreview.tsx`) e testi fissi in italiano nei componenti.
+- UI italiano/francese tramite `next-intl` e cataloghi per chiavi (richiesta esplicita Arlon, 2026-11-07). La lingua è indipendente dal brand e dal modello di deploy: anche una scuola affiliata FESK può usare il francese nell'istanza attuale. I contenuti authored supportano traduzioni con fallback all'originale (`0050`, da applicare prima del deploy); nomenclatura marziale e logica FESK restano comuni.
 
 #### Accoppiamento C — Categorie e semantica del contatore ripetizioni
 - Enum Postgres `skill_category` e tipo TS `SkillCategory` (`forme`, `tui_fa`, `po_chi`, `chin_na`, `armi_forma`, `armi_combattimento`, `tue_shou`, `ta_lu`, `chi_kung`, `preparatori`).
@@ -146,6 +146,7 @@ Non anticipare mai una fase prima che si verifichi il suo trigger concreto.
 - **Trigger:** stato attuale.
 - **Lavoro codice richiesto:** **nessuno.** Tutte le associazioni affiliate FESK condividono lo stesso programma e usano l'istanza corrente tramite `user_invites` e gli script `invita-utenti.mjs` / `promote-after-exam.mjs`.
 - **Unica regola:** rispettare l'igiene del §0 (niente nuovi hardcoding FESK sparsi).
+- **Trigger Arlon attivato il 2026-11-07:** predisposizione i18n italiano/francese, compresi contenuti authored e promemoria, senza creare tenant, fork o deploy aggiuntivi. Traduzioni tecniche da validare con la scuola; documenti legali ancora nel testo italiano di riferimento. Vedi `skill-practice/docs/i18n.md`.
 
 ### Fase 1 — Prima scuola Kung Fu Chang esterna a FESK (~2–4 giorni)
 - **Trigger:** accordo concreto con una seconda scuola/federazione che condivide l'impianto Shaolin + T'ai Chi ma richiede brand, testi e catalogo video propri.

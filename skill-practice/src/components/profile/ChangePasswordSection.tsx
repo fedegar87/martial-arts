@@ -1,21 +1,27 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useActionState } from "react";
-import { changePassword } from "@/lib/actions/auth";
+import { Disclosure } from "@/components/primitives/Disclosure";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Disclosure } from "@/components/primitives/Disclosure";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { changePassword } from "@/lib/actions/auth";
+import { useActionState } from "react";
 
 export function ChangePasswordSection() {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(changePassword, null);
 
   return (
-    <Disclosure title="Sicurezza" summary="Cambia password" revealKey={state}>
+    <Disclosure
+      title="Sicurezza"
+      summary={tr("changePassword")}
+      revealKey={state}
+    >
       <form action={action} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="currentPassword">Password attuale</Label>
+          <Label htmlFor="currentPassword">{tr("currentPassword")}</Label>
           <Input
             id="currentPassword"
             name="currentPassword"
@@ -26,7 +32,7 @@ export function ChangePasswordSection() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="newPassword">Nuova password</Label>
+          <Label htmlFor="newPassword">{tr("newPassword")}</Label>
           <Input
             id="newPassword"
             name="newPassword"
@@ -39,7 +45,7 @@ export function ChangePasswordSection() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Conferma nuova password</Label>
+          <Label htmlFor="confirmPassword">{tr("confirmNewPassword")}</Label>
           <Input
             id="confirmPassword"
             name="confirmPassword"
@@ -64,7 +70,7 @@ export function ChangePasswordSection() {
         )}
 
         <Button type="submit" disabled={pending} className="w-full">
-          {pending ? "Aggiornamento..." : "Aggiorna password"}
+          {pending ? tr("updating") : tr("updatePassword")}
         </Button>
       </form>
     </Disclosure>

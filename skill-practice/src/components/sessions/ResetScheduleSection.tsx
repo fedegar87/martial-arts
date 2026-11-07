@@ -1,8 +1,6 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -17,8 +15,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { resetTrainingSchedule } from "@/lib/actions/training-schedule";
+import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 export function ResetScheduleSection() {
+  const tr = useTranslations("ui");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +42,9 @@ export function ResetScheduleSection() {
   return (
     <section className="border-t border-border pt-6 mt-6 space-y-3">
       <div className="space-y-1">
-        <h2 className="section-label">
-          Zona ripristino
-        </h2>
+        <h2 className="section-label">{tr("resetSection")}</h2>
         <p className="text-sm text-muted-foreground">
-          Cancella la programmazione attuale per ricominciare da zero. Il piano
-          di skill e lo storico delle pratiche restano invariati.
+          {tr("resetScheduleDescription")}
         </p>
       </div>
 
@@ -57,26 +56,22 @@ export function ResetScheduleSection() {
 
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger asChild>
-          <Button
-            type="button"
-            variant="destructive"
-            className="h-10 gap-2"
-          >
+          <Button type="button" variant="destructive" className="h-10 gap-2">
             <Trash2 className="h-4 w-4" />
-            Cancella schedule
+            {tr("clearSchedule")}
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancellare la programmazione?</AlertDialogTitle>
+            <AlertDialogTitle>{tr("clearScheduleConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Cancellerai giorni, ripetizioni, cadenza e durata. Il piano di
-              skill e lo storico delle pratiche restano invariati. Dovrai
-              ricreare la programmazione da zero.
+              {tr("clearScheduleWarning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>Annulla</AlertDialogCancel>
+            <AlertDialogCancel disabled={pending}>
+              {tr("cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={(event) => {
                 event.preventDefault();
@@ -85,7 +80,7 @@ export function ResetScheduleSection() {
               disabled={pending}
               className="border border-destructive bg-transparent text-destructive shadow-none hover:bg-destructive/10"
             >
-              {pending ? "Cancellazione..." : "Cancella"}
+              {pending ? tr("deleting") : tr("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

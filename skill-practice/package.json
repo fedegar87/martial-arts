@@ -8,11 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none src/lib/youtube.test.ts src/lib/youtube-api.test.ts src/lib/skill-video.test.ts src/lib/skill-presentation.test.ts src/lib/practice-logic.test.ts src/lib/progress-logic.test.ts src/lib/session-scheduler.test.ts src/lib/calendar-logic.test.ts src/lib/landing.test.ts src/lib/onboarding-state.test.ts src/lib/auth-validation.test.ts src/lib/grades.test.ts src/lib/seed-fesk.test.ts src/lib/push-notifications.test.ts src/lib/ical-events.test.ts src/lib/federation-event-logic.test.ts",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none src/lib/youtube.test.ts src/lib/youtube-api.test.ts src/lib/skill-video.test.ts src/lib/skill-presentation.test.ts src/lib/practice-logic.test.ts src/lib/progress-logic.test.ts src/lib/session-scheduler.test.ts src/lib/calendar-logic.test.ts src/lib/landing.test.ts src/lib/onboarding-state.test.ts src/lib/auth-validation.test.ts src/lib/grades.test.ts src/lib/seed-fesk.test.ts src/lib/push-notifications.test.ts src/lib/ical-events.test.ts src/lib/federation-event-logic.test.ts src/lib/i18n.test.ts",
     "ui:audit": "node scripts/ui-audit.mjs",
     "test:custom-selection": "node tests/browser/custom-selection.smoke.mjs",
     "test:federation-calendar": "node tests/browser/federation-calendar.smoke.mjs",
-    "sync:events": "node --conditions=react-server --env-file=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-federation-events.mjs"
+    "sync:events": "node --conditions=react-server --env-file=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-federation-events.mjs",
+    "test:i18n": "node tests/browser/i18n.smoke.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
@@ -22,6 +23,7 @@
     "ical.js": "2.2.1",
     "lucide-react": "^1.11.0",
     "next": "16.3.6",
+    "next-intl": "^4.14.9",
     "radix-ui": "^1.4.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",

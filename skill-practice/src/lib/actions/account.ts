@@ -1,7 +1,8 @@
 "use server";
+import { getTranslations } from "next-intl/server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export type AccountFormState = { error: string } | { success: string } | null;
 
@@ -9,11 +10,11 @@ export async function requestAccountDeletion(
   _prev: AccountFormState,
   formData: FormData,
 ): Promise<AccountFormState> {
+  const tr = await getTranslations("ui");
   const confirmed = formData.get("confirmDeletionRequest") === "on";
   if (!confirmed) {
     return {
-      error:
-        "Conferma di aver capito che la richiesta verra gestita dalla scuola.",
+      error: tr("confirmDeletionUnderstanding"),
     };
   }
 
@@ -21,7 +22,7 @@ export async function requestAccountDeletion(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta." };
+  if (!user) return { error: tr("sessionExpiredPeriod") };
 
   const { error } = await supabase
     .from("account_deletion_requests")
@@ -29,14 +30,13 @@ export async function requestAccountDeletion(
 
   if (error) {
     if (error.code === "23505") {
-      return { success: "Hai gia una richiesta di cancellazione in attesa." };
+      return { success: tr("alreadyPendingDeletion") };
     }
     return { error: error.message };
   }
 
   revalidatePath("/profile");
   return {
-    success:
-      "Richiesta registrata. Un amministratore dovra completare la cancellazione.",
+    success: tr("deletionRegistered"),
   };
 }

@@ -1,10 +1,11 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
 import { markPracticeDone } from "@/lib/actions/practice";
 import { completedButtonClassName } from "@/lib/ui-classes";
+import { Check } from "lucide-react";
+import { useState, useTransition } from "react";
 import { PracticeNoteButton } from "./PracticeNoteButton";
 
 type Props = {
@@ -18,6 +19,7 @@ export function PracticeCheckButton({
   alreadyDone,
   initialNote,
 }: Props) {
+  const tr = useTranslations("ui");
   const [pending, start] = useTransition();
   const [done, setDone] = useState(alreadyDone);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -29,13 +31,13 @@ export function PracticeCheckButton({
       try {
         const result = await markPracticeDone(skillId);
         if (!result || "error" in result) {
-          setMessage(result?.error ?? "Salvataggio non confermato. Riprova.");
+          setMessage(result?.error ?? tr("saveUnconfirmed"));
           return;
         }
         setDone(true);
         setNoteOpen(true);
       } catch {
-        setMessage("Non è stato possibile confermare il salvataggio. Riprova.");
+        setMessage(tr("saveConfirmationFailed"));
       }
     });
   }
@@ -49,14 +51,14 @@ export function PracticeCheckButton({
           disabled={pending || done}
           aria-busy={pending}
           variant={done ? "outline" : "default"}
-          className={
-            done
-              ? `w-full ${completedButtonClassName}`
-              : "w-full"
-          }
+          className={done ? `w-full ${completedButtonClassName}` : "w-full"}
         >
           <Check className="mr-2 h-4 w-4" />
-          {pending ? "Salvataggio…" : done ? "Praticato oggi" : "Fatto"}
+          {pending
+            ? tr("savingEllipsis")
+            : done
+              ? tr("practicedToday")
+              : tr("done")}
         </Button>
         <PracticeNoteButton
           skillId={skillId}

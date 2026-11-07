@@ -5,7 +5,13 @@ export default function AuthLayout({
 }) {
   return (
     <div className="bg-background flex min-h-dvh items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
-      {children}
+      <div className="w-full max-w-sm space-y-4">
+        <div className="flex justify-end">
+          <LocaleSwitcher />
+        </div>
+        {children}
+      </div>
     </div>
   );
 }
+import { LocaleSwitcher } from "@/components/shared/LocaleSwitcher";

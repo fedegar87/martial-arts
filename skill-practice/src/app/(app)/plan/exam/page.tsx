@@ -1,15 +1,17 @@
-import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
 import { ExamModeForm } from "@/components/plan/ExamModeForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   isSelectableExamGrade,
   minimumSelectableExamGradeValue,
 } from "@/lib/grades";
+import { listExamProgramsForSchool } from "@/lib/queries/exam-programs";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
 import type { ExamProgram } from "@/lib/types";
+import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 export default async function PlanExamPage() {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -29,15 +31,15 @@ export default async function PlanExamPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Programma esame</h1>
+        <h1 className="text-2xl font-semibold">{tr("examProgram")}</h1>
         <p className="text-muted-foreground text-sm">
-          Scegli il programma dell&apos;esame corrente o di un esame precedente.
+          {tr("chooseExamDescription")}
         </p>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Esami</CardTitle>
+          <CardTitle className="text-base">{tr("exams")}</CardTitle>
         </CardHeader>
         <CardContent>
           <ExamModeForm
@@ -66,15 +68,17 @@ function selectableExamCandidates(
   const currentExamGrade = minimumSelectableExamGradeValue(currentGrade);
   if (currentExamGrade === null) return [];
 
-  return exams.filter(
-    (exam) =>
-      exam.grade_from !== null &&
-      isSelectableExamGrade(currentGrade, exam.grade_value),
-  ).sort(
-    (a, b) =>
-      Math.abs(a.grade_value - currentExamGrade) -
-      Math.abs(b.grade_value - currentExamGrade),
-  );
+  return exams
+    .filter(
+      (exam) =>
+        exam.grade_from !== null &&
+        isSelectableExamGrade(currentGrade, exam.grade_value),
+    )
+    .sort(
+      (a, b) =>
+        Math.abs(a.grade_value - currentExamGrade) -
+        Math.abs(b.grade_value - currentExamGrade),
+    );
 }
 
 function selectedExamId(

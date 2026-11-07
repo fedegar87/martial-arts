@@ -1,14 +1,16 @@
 "use server";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { getTranslations } from "next-intl/server";
 
-import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { localDateKey } from "@/lib/date";
 import {
   getScheduledPlanItems,
   getScheduledSession,
   type ItemWithSkill,
 } from "@/lib/session-scheduler";
+import { createClient } from "@/lib/supabase/server";
 import type { PlanMode, PracticeLog, TrainingSchedule } from "@/lib/types";
+import { revalidatePath } from "next/cache";
 
 export type CalendarActionState = { error: string } | { success: true };
 
@@ -25,14 +27,20 @@ export async function setPracticeCompletionForDate(
   dateKey: string,
   completed: boolean,
 ): Promise<CalendarActionState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const userId = await getAuthenticatedUserId(supabase);
-  if (!userId) return { error: "Sessione scaduta" };
+  if (!userId) return { error: tr("sessionExpired") };
 
-  const dateError = validateMutableDateKey(dateKey);
+  const dateError = validateMutableDateKey(tr, dateKey);
   if (dateError) return { error: dateError };
 
-  const scheduleContext = await getScheduleContext(supabase, userId, skillId, dateKey);
+  const scheduleContext = await getScheduleContext(
+    supabase,
+    userId,
+    skillId,
+    dateKey,
+  );
   if ("error" in scheduleContext) return scheduleContext;
 
   if (completed) {
@@ -79,14 +87,20 @@ export async function addFreePracticeForDate(
   skillId: string,
   dateKey: string,
 ): Promise<CalendarActionState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const userId = await getAuthenticatedUserId(supabase);
-  if (!userId) return { error: "Sessione scaduta" };
+  if (!userId) return { error: tr("sessionExpired") };
 
-  const dateError = validateMutableDateKey(dateKey);
+  const dateError = validateMutableDateKey(tr, dateKey);
   if (dateError) return { error: dateError };
 
-  const scheduleContext = await getScheduleContext(supabase, userId, skillId, dateKey);
+  const scheduleContext = await getScheduleContext(
+    supabase,
+    userId,
+    skillId,
+    dateKey,
+  );
   if ("error" in scheduleContext) return scheduleContext;
 
   if (scheduleContext.isScheduled) {
@@ -117,18 +131,24 @@ export async function removeFreePracticeForDate(
   skillId: string,
   dateKey: string,
 ): Promise<CalendarActionState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const userId = await getAuthenticatedUserId(supabase);
-  if (!userId) return { error: "Sessione scaduta" };
+  if (!userId) return { error: tr("sessionExpired") };
 
-  const dateError = validateMutableDateKey(dateKey);
+  const dateError = validateMutableDateKey(tr, dateKey);
   if (dateError) return { error: dateError };
 
-  const scheduleContext = await getScheduleContext(supabase, userId, skillId, dateKey);
+  const scheduleContext = await getScheduleContext(
+    supabase,
+    userId,
+    skillId,
+    dateKey,
+  );
   if ("error" in scheduleContext) return scheduleContext;
 
   if (scheduleContext.isScheduled) {
-    return { error: "Questa pratica appartiene alla sessione programmata." };
+    return { error: tr("practiceBelongsToSession") };
   }
 
   const { data: existing, error: selectError } = await supabase
@@ -258,9 +278,12 @@ async function updateLastPracticedAt(
   return error?.message ?? null;
 }
 
-function validateMutableDateKey(dateKey: string): string | null {
-  if (!isValidDateKey(dateKey)) return "Data non valida";
-  if (dateKey > localDateKey()) return "Non puoi segnare giorni futuri";
+function validateMutableDateKey(
+  tr: UiTranslator,
+  dateKey: string,
+): string | null {
+  if (!isValidDateKey(dateKey)) return tr("invalidDate");
+  if (dateKey > localDateKey()) return tr("noFuturePractice");
   return null;
 }
 

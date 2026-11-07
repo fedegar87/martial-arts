@@ -1,11 +1,12 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useState } from "react";
-import Image from "next/image";
-import { Play, VideoOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { extractYouTubeId } from "@/lib/youtube";
 import { localVideoThumbnailUrl } from "@/lib/skill-video";
+import { extractYouTubeId } from "@/lib/youtube";
+import { Play, VideoOff } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 import { YouTubePlayback } from "./YouTubePlayback";
 
 type Props = {
@@ -14,13 +15,12 @@ type Props = {
   thumbnailUrl?: string | null;
 };
 
-export function VideoPlayer({
-  videoUrl,
-  title,
-  thumbnailUrl,
-}: Props) {
+export function VideoPlayer({ videoUrl, title, thumbnailUrl }: Props) {
+  const tr = useTranslations("ui");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [failedThumbnailUrl, setFailedThumbnailUrl] = useState<string | null>(null);
+  const [failedThumbnailUrl, setFailedThumbnailUrl] = useState<string | null>(
+    null,
+  );
   const videoId = extractYouTubeId(videoUrl);
   const safeThumbnailUrl = localVideoThumbnailUrl(thumbnailUrl);
   const showThumbnail =
@@ -39,7 +39,7 @@ export function VideoPlayer({
           type="button"
           variant="outline"
           onClick={() => setIsPlaying(true)}
-          aria-label={`Riproduci video: ${title}`}
+          aria-label={tr("playVideoFor", { p0: title })}
           className="relative aspect-video h-auto min-h-[200px] w-full flex-col gap-3 overflow-hidden whitespace-normal p-4"
         >
           {showThumbnail && (
@@ -59,25 +59,24 @@ export function VideoPlayer({
             <Play className="ml-0.5 size-6" fill="currentColor" aria-hidden />
           </span>
           <span className="relative space-y-1 text-center">
-            <span className="block text-sm font-medium">Riproduci video</span>
+            <span className="block text-sm font-medium">{tr("playVideo")}</span>
             <span className="text-muted-foreground block text-xs leading-relaxed">
               {title}
             </span>
           </span>
         </Button>
       )}
-      <p className="text-muted-foreground text-xs">
-        YouTube viene caricato solo dopo Play.
-      </p>
+      <p className="text-muted-foreground text-xs">{tr("youtubeNotice")}</p>
     </div>
   );
 }
 
 function UnavailablePlaceholder() {
+  const tr = useTranslations("ui");
   return (
     <p className="text-muted-foreground flex items-center gap-2 text-sm">
       <VideoOff className="h-4 w-4 shrink-0" aria-hidden />
-      Video non ancora disponibile.
+      {tr("videoUnavailable")}
     </p>
   );
 }

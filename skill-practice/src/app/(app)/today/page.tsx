@@ -1,13 +1,5 @@
-import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { getUserPlanItems } from "@/lib/queries/plan";
-import { getThisWeekLogs } from "@/lib/queries/practice-log";
-import { getUnreadNewsCount } from "@/lib/queries/news";
-import { getTrainingSchedule } from "@/lib/queries/training-schedule";
-import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
-import { getScheduledPlanItems, getScheduledSession } from "@/lib/session-scheduler";
-import { localDateKey } from "@/lib/date";
-import { timed } from "@/lib/perf";
+import { disciplineLabel } from "@/lib/labels";
+
 import { NewsBanner } from "@/components/news/NewsBanner";
 import { TrainingReminderPrompt } from "@/components/pwa/TrainingReminderPrompt";
 import { RestDayCard } from "@/components/today/RestDayCard";
@@ -15,11 +7,26 @@ import { TodayEmptyState } from "@/components/today/TodayEmptyState";
 import { TodayPracticeSections } from "@/components/today/TodayPracticeSections";
 import { TodaySessionHeader } from "@/components/today/TodaySessionHeader";
 import { TodaySessionSummary } from "@/components/today/TodaySessionSummary";
-import { DISCIPLINE_LABELS } from "@/lib/labels";
+import { localDateKey } from "@/lib/date";
 import { gradeLabelForDiscipline } from "@/lib/grades";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { timed } from "@/lib/perf";
+import { getUnreadNewsCount } from "@/lib/queries/news";
+import { getUserPlanItems } from "@/lib/queries/plan";
+import { getThisWeekLogs } from "@/lib/queries/practice-log";
+import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
+import { getTrainingSchedule } from "@/lib/queries/training-schedule";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
+import {
+  getScheduledPlanItems,
+  getScheduledSession,
+} from "@/lib/session-scheduler";
 import type { PlanMode, TrainingSchedule, UserProfile } from "@/lib/types";
+import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 export default async function TodayPage() {
+  const tr = await getTranslations("ui");
   const profile = await timed("today.profile", () => getCurrentProfile());
   if (!profile) redirect("/login");
 
@@ -27,25 +34,28 @@ export default async function TodayPage() {
     profile.plan_mode === "custom" ? "manual" : "exam_program";
   const pushVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const pushEnabled = Boolean(pushVapidKey);
-  const [items, logs, unreadNewsCount, schedule, reminderSettings] = await Promise.all([
-    timed("today.plan_items", () =>
-      getUserPlanItems(profile.id, undefined, sourceFilter),
-    ),
-    timed("today.week_logs", () => getThisWeekLogs(profile.id)),
-    timed("today.unread_news", () => getUnreadNewsCount(profile)),
-    timed("today.schedule", () => getTrainingSchedule(profile.id)),
-    pushEnabled
-      ? timed("today.reminders", () => getTrainingReminderSettings(profile.id))
-      : Promise.resolve(null),
-  ]);
+  const [items, logs, unreadNewsCount, schedule, reminderSettings] =
+    await Promise.all([
+      timed("today.plan_items", () =>
+        getUserPlanItems(profile.id, undefined, sourceFilter),
+      ),
+      timed("today.week_logs", () => getThisWeekLogs(profile.id)),
+      timed("today.unread_news", () => getUnreadNewsCount(profile)),
+      timed("today.schedule", () => getTrainingSchedule(profile.id)),
+      pushEnabled
+        ? timed("today.reminders", () =>
+            getTrainingReminderSettings(profile.id),
+          )
+        : Promise.resolve(null),
+    ]);
 
   const todayStr = localDateKey();
   const dayName = new Date(`${todayStr}T00:00:00Z`).toLocaleDateString(
-    "it-IT",
+    tr("locale"),
     { weekday: "long" },
   );
-  const gradeSummary = buildGradeSummary(profile);
-  const scopeLabel = buildScopeLabel(profile, schedule);
+  const gradeSummary = buildGradeSummary(tr, profile);
+  const scopeLabel = buildScopeLabel(tr, profile, schedule);
   const todayLogs = logs.filter((log) => log.date === todayStr);
 
   if (items.length === 0) {
@@ -79,7 +89,11 @@ export default async function TodayPage() {
     );
   }
 
-  const scheduledItems = getScheduledPlanItems(items, schedule, profile.plan_mode);
+  const scheduledItems = getScheduledPlanItems(
+    items,
+    schedule,
+    profile.plan_mode,
+  );
   if (scheduledItems.length === 0) {
     return (
       <TodayShell
@@ -138,10 +152,7 @@ export default async function TodayPage() {
     );
   }
 
-  const dailyItems = [
-    ...session.focus,
-    ...session.maintenance,
-  ];
+  const dailyItems = [...session.focus, ...session.maintenance];
   const dailyCount = dailyItems.length;
   const completedCount = dailyItems.filter((item) =>
     todayLogs.some((log) => log.skill_id === item.skill_id && log.completed),
@@ -213,6 +224,7 @@ function TodayShell({
 }
 
 function buildScopeLabel(
+  tr: UiTranslator,
   profile: UserProfile,
   schedule: TrainingSchedule | null,
 ): string | null {
@@ -226,22 +238,24 @@ function buildScopeLabel(
   const disciplines = schedule.exam_disciplines ?? [];
   if (disciplines.length !== 1) return null;
 
-  return `Solo ${DISCIPLINE_LABELS[disciplines[0]]}`;
+  return tr("onlyDiscipline", { p0: disciplineLabel(disciplines[0], tr) });
 }
 
-function buildGradeSummary(profile: UserProfile): string {
+function buildGradeSummary(tr: UiTranslator, profile: UserProfile): string {
   const parts = [
-    `${DISCIPLINE_LABELS.shaolin} ${gradeLabelForDiscipline(
+    `${disciplineLabel("shaolin", tr)} ${gradeLabelForDiscipline(
       "shaolin",
       profile.assigned_level_shaolin,
+      tr,
     )}`,
   ];
 
   if (profile.assigned_level_taichi > 0) {
     parts.push(
-      `${DISCIPLINE_LABELS.taichi} ${gradeLabelForDiscipline(
+      `${disciplineLabel("taichi", tr)} ${gradeLabelForDiscipline(
         "taichi",
         profile.assigned_level_taichi,
+        tr,
       )}`,
     );
   }

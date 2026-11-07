@@ -1,6 +1,8 @@
-import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import type { UiTranslator } from "@/lib/i18n/config";
 import type { Discipline, PlanMode } from "@/lib/types";
+import { CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Props = {
   current: PlanMode;
@@ -8,18 +10,21 @@ type Props = {
   activeMode: PlanMode;
 };
 
-const TABS: { mode: PlanMode; label: string }[] = [
-  { mode: "exam", label: "Esame" },
-  { mode: "custom", label: "Personale" },
-];
+function TABS(tr: UiTranslator): { mode: PlanMode; label: string }[] {
+  return [
+    { mode: "exam", label: tr("exam") },
+    { mode: "custom", label: tr("personal") },
+  ];
+}
 
 export function PlanTabsNav({ current, discipline, activeMode }: Props) {
+  const tr = useTranslations("ui");
   return (
     <nav
-      aria-label="Modalità del piano"
+      aria-label={tr("planMode")}
       className="program-plan-tabs shrink-0 self-start"
     >
-      {TABS.map(({ mode, label }) => (
+      {TABS(tr).map(({ mode, label }) => (
         <TabLink
           key={mode}
           href={`/programma?d=${discipline}&t=${mode}`}
@@ -43,6 +48,7 @@ function TabLink({
   isActiveMode: boolean;
   label: string;
 }) {
+  const tr = useTranslations("ui");
   return (
     <Link
       href={href}
@@ -57,12 +63,14 @@ function TabLink({
       <span className="whitespace-nowrap">{label}</span>
       {isActiveMode && (
         <span
-          aria-label="Modalità attiva"
-          title="Modalità attiva"
+          aria-label={tr("activeMode")}
+          title={tr("activeMode")}
           className="ml-auto inline-flex items-center gap-1 text-primary"
         >
           <CheckCircle2 className="h-3 w-3" />
-          <span className="hidden text-[0.65rem] sm:inline">Attivo</span>
+          <span className="hidden text-[0.65rem] sm:inline">
+            {tr("active")}
+          </span>
         </span>
       )}
     </Link>

@@ -1,18 +1,22 @@
-import Link from "next/link";
-import { ListOrdered } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/progress/SectionHeader";
+import { Badge } from "@/components/ui/badge";
 import type { TopPracticedSkill } from "@/lib/queries/progress";
+import { ListOrdered } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Props = { items: TopPracticedSkill[] };
 
 export function TopPracticedList({ items }: Props) {
+  const tr = useTranslations("ui");
   return (
     <section className="space-y-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]">
       <SectionHeader
         icon={ListOrdered}
-        title="I contenuti più praticati"
-        right={<span className="text-xs text-muted-foreground">da sempre</span>}
+        title={tr("mostPracticed")}
+        right={
+          <span className="text-xs text-muted-foreground">{tr("allTime")}</span>
+        }
       />
       <ul className="space-y-1">
         {items.map((item) => (
@@ -31,7 +35,7 @@ export function TopPracticedList({ items }: Props) {
               </span>
               <Badge variant="secondary" className="shrink-0">
                 {item.practiceDays}{" "}
-                {item.practiceDays === 1 ? "giorno" : "giorni"}
+                {item.practiceDays === 1 ? tr("day") : tr("days")}
               </Badge>
             </Link>
           </li>

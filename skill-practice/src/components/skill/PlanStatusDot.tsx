@@ -1,6 +1,7 @@
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
-import { cn } from "@/lib/utils";
 import type { PlanStatus } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   status?: PlanStatus;
@@ -8,17 +9,14 @@ type Props = {
   activeLabelPrefix?: string;
 };
 
-export function PlanStatusDot({
-  status,
-  className,
-  activeLabelPrefix = "Nel piano",
-}: Props) {
+export function PlanStatusDot({ status, className, activeLabelPrefix }: Props) {
+  const tr = useTranslations("ui");
   if (!status) {
     return (
       <span
         role="img"
-        aria-label="Non nel piano"
-        title="Non nel piano"
+        aria-label={tr("notInPlan")}
+        title={tr("notInPlan")}
         className={cn(
           "border-muted-foreground/40 inline-block h-2.5 w-2.5 shrink-0 rounded-full border bg-transparent",
           className,
@@ -29,7 +27,7 @@ export function PlanStatusDot({
 
   const visual = PLAN_STATUS_VISUALS[status];
   const Icon = visual.Icon;
-  const label = `${activeLabelPrefix}: ${visual.label}`;
+  const label = `${activeLabelPrefix ?? tr("inPlan")}: ${tr(status)}`;
 
   return (
     <span

@@ -1,5 +1,10 @@
-import Link from "next/link";
-import type { ReactNode } from "react";
+import { categoryLabel } from "@/lib/labels";
+
+import { chipClassName } from "@/components/primitives/Chip";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { Discipline, SkillCategory } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   RotateCcw,
@@ -8,12 +13,9 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { chipClassName } from "@/components/primitives/Chip";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { SKILL_CATEGORY_LABELS } from "@/lib/labels";
-import { cn } from "@/lib/utils";
-import type { Discipline, SkillCategory } from "@/lib/types";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import type { ReactNode } from "react";
 
 type CategoryOption = {
   value: SkillCategory;
@@ -45,6 +47,7 @@ export function LibraryFilters({
   allVisibleCount,
   videoCount,
 }: Props) {
+  const tr = useTranslations("ui");
   const selectedCategorySet = new Set(selectedCategories);
   const activeFilterCount =
     selectedCategories.length + (withVideo ? 1 : 0) + (query ? 1 : 0);
@@ -57,7 +60,9 @@ export function LibraryFilters({
   }) => {
     const params = new URLSearchParams();
     const nextCategories =
-      updates.categories === undefined ? selectedCategories : updates.categories;
+      updates.categories === undefined
+        ? selectedCategories
+        : updates.categories;
     const nextWithVideo =
       updates.withVideo === undefined ? withVideo : updates.withVideo;
     const nextQuery = updates.query === undefined ? query : updates.query;
@@ -78,11 +83,16 @@ export function LibraryFilters({
       <form action={basePath} className="flex gap-2">
         <input type="hidden" name="d" value={discipline} />
         {selectedCategories.map((category) => (
-          <input key={category} type="hidden" name="category" value={category} />
+          <input
+            key={category}
+            type="hidden"
+            name="category"
+            value={category}
+          />
         ))}
         {withVideo && <input type="hidden" name="withVideo" value="1" />}
         <label htmlFor="library-search" className="sr-only">
-          Cerca
+          {tr("search")}
         </label>
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -91,11 +101,16 @@ export function LibraryFilters({
             name="q"
             type="search"
             defaultValue={query}
-            placeholder="Cerca forme o tecniche"
+            placeholder={tr("searchForms")}
             className="min-h-11 pl-9 pr-3"
           />
         </div>
-        <Button type="submit" variant="outline" size="icon-lg" aria-label="Cerca">
+        <Button
+          type="submit"
+          variant="outline"
+          size="icon-lg"
+          aria-label={tr("search")}
+        >
           <Search className="h-4 w-4" />
         </Button>
       </form>
@@ -103,11 +118,14 @@ export function LibraryFilters({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium">
-            {resultCount} di {totalCount}{" "}
+            {resultCount} {tr("of")} {totalCount}{" "}
             {totalCount === 1 ? "contenuto" : "contenuti"}
           </p>
           {hasActiveFilters && (
-            <div className="mt-2 flex flex-wrap gap-2" aria-label="Filtri attivi">
+            <div
+              className="mt-2 flex flex-wrap gap-2"
+              aria-label={tr("activeFilters")}
+            >
               {query && (
                 <ActiveFilter href={buildHref({ query: null })} label={query} />
               )}
@@ -119,13 +137,13 @@ export function LibraryFilters({
                       (item) => item !== category,
                     ),
                   })}
-                  label={SKILL_CATEGORY_LABELS[category]}
+                  label={categoryLabel(category, tr)}
                 />
               ))}
               {withVideo && (
                 <ActiveFilter
                   href={buildHref({ withVideo: false })}
-                  label="Con video"
+                  label={tr("withVideo")}
                 />
               )}
             </div>
@@ -137,7 +155,7 @@ export function LibraryFilters({
             className="tap-feedback label-font inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-sm border border-border px-2.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            Azzera
+            {tr("reset")}
           </Link>
         )}
       </div>
@@ -149,7 +167,7 @@ export function LibraryFilters({
         <summary className="tap-feedback flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 marker:hidden [&::-webkit-details-marker]:hidden">
           <span className="flex min-w-0 items-center gap-2">
             <SlidersHorizontal className="h-4 w-4 shrink-0 text-primary" />
-            <span className="label-font truncate text-sm">Filtri</span>
+            <span className="label-font truncate text-sm">{tr("filters")}</span>
           </span>
           <span className="flex shrink-0 items-center gap-2">
             {activeFilterCount > 0 && (
@@ -163,18 +181,16 @@ export function LibraryFilters({
 
         <div className="space-y-4 border-t border-border/70 p-3">
           <div className="space-y-2">
-            <h2 className="section-label">
-              Categorie
-            </h2>
+            <h2 className="section-label">{tr("categories")}</h2>
             <div
               className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
               role="list"
-              aria-label="Categorie"
+              aria-label={tr("categories")}
             >
               <FilterChip
                 href={buildHref({ categories: [] })}
                 active={selectedCategories.length === 0}
-                label="Tutte"
+                label={tr("allCategories")}
                 count={allVisibleCount}
               />
               {categories.map((category) => {
@@ -188,7 +204,7 @@ export function LibraryFilters({
                     key={category.value}
                     href={buildHref({ categories: nextCategories })}
                     active={active}
-                    label={SKILL_CATEGORY_LABELS[category.value]}
+                    label={categoryLabel(category.value, tr)}
                     count={category.count}
                     muted={category.count === 0 && !active}
                   />
@@ -198,14 +214,12 @@ export function LibraryFilters({
           </div>
 
           <div className="space-y-2">
-            <h2 className="section-label">
-              Media
-            </h2>
+            <h2 className="section-label">{tr("media")}</h2>
             <div className="flex">
               <FilterChip
                 href={buildHref({ withVideo: !withVideo })}
                 active={withVideo}
-                label="Con video"
+                label={tr("withVideo")}
                 count={videoCount}
                 icon={<Video className="h-3.5 w-3.5" />}
                 wide
@@ -250,7 +264,9 @@ function FilterChip({
       <span
         className={cn(
           "rounded-sm px-1.5 py-0.5 text-[0.68rem] leading-none",
-          active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
+          active
+            ? "bg-primary/10 text-primary"
+            : "bg-muted text-muted-foreground",
         )}
       >
         {count}

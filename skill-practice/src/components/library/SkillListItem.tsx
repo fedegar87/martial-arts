@@ -1,13 +1,17 @@
-import Link from "next/link";
-import { Card } from "@/components/ui/card";
 import { LevelBadge } from "@/components/skill/LevelBadge";
 import { PlanStatusDot } from "@/components/skill/PlanStatusDot";
 import { StatusBadge } from "@/components/skill/StatusBadge";
 import { VideoAvailabilityBadge } from "@/components/skill/VideoAvailabilityBadge";
 import { SkillStatusMenu } from "@/components/today/SkillStatusMenu";
-import { ChevronRight, Clock } from "lucide-react";
-import { formatEstimatedMinutes, skillItalianSubtitle } from "@/lib/skill-presentation";
+import { Card } from "@/components/ui/card";
+import {
+  formatEstimatedMinutes,
+  skillItalianSubtitle,
+} from "@/lib/skill-presentation";
 import type { PlanStatus, Skill } from "@/lib/types";
+import { ChevronRight, Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Props = {
   skill: Skill;
@@ -20,11 +24,15 @@ type Props = {
 export function SkillListItem({
   skill,
   planStatus,
-  statusLabelPrefix = "Nel piano",
+  statusLabelPrefix,
   showEmptyStatusDot = true,
   editableStatus = false,
 }: Props) {
-  const subtitle = skillItalianSubtitle(skill.name, skill.name_italian);
+  const tr = useTranslations("ui");
+  const subtitle = skillItalianSubtitle(
+    skill.name,
+    skill.subtitle ?? skill.name_italian,
+  );
   const duration = formatEstimatedMinutes(skill.estimated_duration_seconds);
   const editable = editableStatus && planStatus;
 
@@ -37,13 +45,15 @@ export function SkillListItem({
         {planStatus || showEmptyStatusDot ? (
           <PlanStatusDot
             status={planStatus}
-            activeLabelPrefix={statusLabelPrefix}
+            activeLabelPrefix={statusLabelPrefix ?? tr("inPlan")}
           />
         ) : (
           <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0" />
         )}
         <div className="min-w-0 flex-1">
-          <div className="wrap-break-word font-medium leading-snug">{skill.name}</div>
+          <div className="wrap-break-word font-medium leading-snug">
+            {skill.name}
+          </div>
           {subtitle && (
             <p className="text-muted-foreground mt-0.5 wrap-break-word text-xs leading-relaxed">
               {subtitle}
@@ -52,7 +62,10 @@ export function SkillListItem({
           <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-2 text-xs">
             <LevelBadge level={skill.minimum_grade_value} />
             {duration && (
-              <span className="flex items-center gap-1" aria-label={`Durata stimata pratica: ${duration}`}>
+              <span
+                className="flex items-center gap-1"
+                aria-label={tr("estimatedPracticeDuration", { p0: duration })}
+              >
                 <Clock className="h-3 w-3" aria-hidden />
                 {duration}
               </span>
@@ -69,7 +82,12 @@ export function SkillListItem({
           secondaryVideoUrl={skill.secondary_video_url}
           compact
         />
-        {!editable && <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" aria-hidden />}
+        {!editable && (
+          <ChevronRight
+            className="text-muted-foreground h-4 w-4 shrink-0"
+            aria-hidden
+          />
+        )}
       </Link>
       {editable && (
         <div className="pr-2">

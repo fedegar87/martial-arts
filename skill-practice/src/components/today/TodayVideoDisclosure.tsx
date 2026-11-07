@@ -1,11 +1,12 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useId, useState } from "react";
-import Link from "next/link";
-import { ChevronUp, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
+import { Button } from "@/components/ui/button";
 import { getSkillVideoVariants } from "@/lib/skill-video";
+import { ChevronUp, Play } from "lucide-react";
+import Link from "next/link";
+import { useId, useState } from "react";
 
 type Props = {
   skillId: string;
@@ -20,22 +21,24 @@ export function TodayVideoDisclosure({
   videoUrl,
   secondaryVideoUrl,
 }: Props) {
+  const tr = useTranslations("ui");
   const [open, setOpen] = useState(false);
   const panelId = useId();
-  const variants = getSkillVideoVariants({
-    video_url: videoUrl,
-    secondary_video_url: secondaryVideoUrl ?? null,
-    video_label: null,
-    secondary_video_label: null,
-    thumbnail_url: null,
-  });
+  const variants = getSkillVideoVariants(
+    {
+      video_url: videoUrl,
+      secondary_video_url: secondaryVideoUrl ?? null,
+      video_label: null,
+      secondary_video_label: null,
+      thumbnail_url: null,
+    },
+    tr,
+  );
   const firstVideo = variants[0];
 
   if (!firstVideo) {
     return (
-      <p className="text-muted-foreground text-xs">
-        Video non ancora disponibile.
-      </p>
+      <p className="text-muted-foreground text-xs">{tr("videoUnavailable")}</p>
     );
   }
 
@@ -54,12 +57,12 @@ export function TodayVideoDisclosure({
         {open ? (
           <>
             <ChevronUp aria-hidden />
-            Chiudi video
+            {tr("closeVideo")}
           </>
         ) : (
           <>
             <Play aria-hidden />
-            Ripassa il video
+            {tr("reviewVideo")}
           </>
         )}
       </Button>
@@ -79,7 +82,7 @@ export function TodayVideoDisclosure({
                 className="h-auto px-0 whitespace-normal"
               >
                 <Link href={`/skill/${skillId}?v=2`}>
-                  Vedi anche il secondo video nella scheda
+                  {tr("secondVideoHint")}
                 </Link>
               </Button>
             </div>

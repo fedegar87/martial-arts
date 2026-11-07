@@ -1,9 +1,18 @@
 "use client";
+import { localizedBrand } from "@/lib/brand";
 
+import type { UiTranslator } from "@/lib/i18n/config";
+import { useTranslations } from "next-intl";
+
+import {
+  BarChart3,
+  BookOpenText,
+  CalendarDays,
+  Target,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpenText, CalendarDays, User, Target } from "lucide-react";
-import { brand } from "@/lib/brand";
 
 type NavItem = {
   href: string;
@@ -13,44 +22,55 @@ type NavItem = {
   match?: string[];
 };
 
-const NAV_ITEMS: NavItem[] = [
-  {
-    href: "/today",
-    label: "Allenamento",
-    shortLabel: "Allenamento",
-    Icon: CalendarDays,
-    match: ["/calendar", "/sessions"],
-  },
-  {
-    href: "/programma",
-    label: "Programma",
-    shortLabel: "Programma",
-    Icon: Target,
-    match: ["/plan"],
-  },
-  {
-    href: "/library",
-    label: brand.lineageLabel,
-    shortLabel: "Scuola",
-    Icon: BookOpenText,
-    match: ["/skill"],
-  },
-  {
-    href: "/progress",
-    label: "Progressi",
-    shortLabel: "Progressi",
-    Icon: BarChart3,
-  },
-  { href: "/profile", label: "Profilo", shortLabel: "Profilo", Icon: User },
-];
+function NAV_ITEMS(tr: UiTranslator): NavItem[] {
+  return [
+    {
+      href: "/today",
+      label: tr("training"),
+      shortLabel: tr("training"),
+      Icon: CalendarDays,
+      match: ["/calendar", "/sessions"],
+    },
+    {
+      href: "/programma",
+      label: tr("program"),
+      shortLabel: tr("program"),
+      Icon: Target,
+      match: ["/plan"],
+    },
+    {
+      href: "/library",
+      label: localizedBrand(tr("locale")).lineageLabel,
+      shortLabel: tr("school"),
+      Icon: BookOpenText,
+      match: ["/skill"],
+    },
+    {
+      href: "/progress",
+      label: tr("progressPlural"),
+      shortLabel: tr("progressPlural"),
+      Icon: BarChart3,
+    },
+    {
+      href: "/profile",
+      label: tr("profile"),
+      shortLabel: tr("profile"),
+      Icon: User,
+    },
+  ];
+}
 
 export function BottomNav() {
+  const tr = useTranslations("ui");
   const pathname = usePathname();
 
   return (
-    <nav className="app-nav material-bar hairline" aria-label="Navigazione principale">
+    <nav
+      className="app-nav material-bar hairline"
+      aria-label={tr("mainNavigation")}
+    >
       <div className="app-nav__inner">
-        {NAV_ITEMS.map(({ href, label, shortLabel, Icon, match }) => {
+        {NAV_ITEMS(tr).map(({ href, label, shortLabel, Icon, match }) => {
           const matches = [href, ...(match ?? [])];
           const active = matches.some(
             (m) => pathname === m || pathname.startsWith(m + "/"),

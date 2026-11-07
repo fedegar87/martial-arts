@@ -1,20 +1,19 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { Pencil } from "lucide-react";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { getExamProgramById } from "@/lib/queries/exam-programs";
-import { listSkillsAtGrade, listSkillsForExam } from "@/lib/queries/skills";
-import { getUserPlanItems } from "@/lib/queries/plan";
+import { categoryLabel, disciplineLabel } from "@/lib/labels";
+
+import { DisciplineToggle } from "@/components/library/DisciplineToggle";
+import { SkillListItem } from "@/components/library/SkillListItem";
+import { PlanTabsNav } from "@/components/programma/PlanTabsNav";
+import { Button } from "@/components/ui/button";
 import {
   activateCustomFormAction,
   activateExamFormAction,
 } from "@/lib/actions/plan";
-import { SkillListItem } from "@/components/library/SkillListItem";
-import { DisciplineToggle } from "@/components/library/DisciplineToggle";
-import { PlanTabsNav } from "@/components/programma/PlanTabsNav";
-import { Button } from "@/components/ui/button";
-import { SKILL_CATEGORY_LABELS, DISCIPLINE_LABELS } from "@/lib/labels";
 import { gradeLabelForDiscipline, nextGradeValue } from "@/lib/grades";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { getExamProgramById } from "@/lib/queries/exam-programs";
+import { getUserPlanItems } from "@/lib/queries/plan";
+import { listSkillsAtGrade, listSkillsForExam } from "@/lib/queries/skills";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
 import type {
   Discipline,
   ExamProgram,
@@ -24,10 +23,16 @@ import type {
   SkillCategory,
   UserProfile,
 } from "@/lib/types";
+import { Pencil } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 type Props = { searchParams: Promise<{ d?: string; t?: string }> };
 
 export default async function ProgrammaPage({ searchParams }: Props) {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -65,10 +70,13 @@ export default async function ProgrammaPage({ searchParams }: Props) {
       ? examSkills.filter((skill) => skill.discipline === discipline)
       : tabPlanItems.map((item) => item.skill);
 
-  const grouped = skills.reduce<Record<SkillCategory, Skill[]>>((acc, skill) => {
-    (acc[skill.category] ??= []).push(skill);
-    return acc;
-  }, {} as Record<SkillCategory, Skill[]>);
+  const grouped = skills.reduce<Record<SkillCategory, Skill[]>>(
+    (acc, skill) => {
+      (acc[skill.category] ??= []).push(skill);
+      return acc;
+    },
+    {} as Record<SkillCategory, Skill[]>,
+  );
   // In modalita esame lo stato focus/ripasso e' il default del programma (uguale per
   // tutte le forme, non una scelta dell'utente): non lo mostriamo. Nella selezione
   // personale invece riflette una scelta reale, quindi resta visibile.
@@ -77,9 +85,10 @@ export default async function ProgrammaPage({ searchParams }: Props) {
   for (const item of tabPlanItems) {
     planStatusBySkillId.set(item.skill_id, item.status);
   }
-  const planStatusLabelPrefix = "Nella selezione personale";
+  const planStatusLabelPrefix = tr("inCustomSelection");
 
   const subtitle = buildSubtitle(
+    tr,
     tab,
     discipline,
     selectedExamForDiscipline,
@@ -90,7 +99,7 @@ export default async function ProgrammaPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Programma</h1>
+        <h1 className="text-2xl font-semibold">{tr("program")}</h1>
         <p className="text-muted-foreground text-sm">{subtitle}</p>
       </header>
 
@@ -112,17 +121,14 @@ export default async function ProgrammaPage({ searchParams }: Props) {
           {showBanner && <ActivateModeBanner tab={tab} />}
 
           {skills.length === 0 ? (
-            <EmptyState
-              tab={tab}
-              hasNextGrade={nextGrade !== null}
-            />
+            <EmptyState tab={tab} hasNextGrade={nextGrade !== null} />
           ) : (
             <>
               <div className="space-y-6">
                 {(Object.keys(grouped) as SkillCategory[]).map((category) => (
                   <section key={category} className="space-y-2">
                     <h2 className="section-label">
-                      {SKILL_CATEGORY_LABELS[category]}
+                      {categoryLabel(category, tr)}
                     </h2>
                     <div className="space-y-2">
                       {grouped[category].map((skill) => (
@@ -152,20 +158,27 @@ export default async function ProgrammaPage({ searchParams }: Props) {
 }
 
 function buildSubtitle(
+  tr: UiTranslator,
   tab: PlanMode,
   discipline: Discipline,
   selectedExam: ExamProgram | null,
   nextGrade: number | null,
 ): string {
-  const disciplineLabel = DISCIPLINE_LABELS[discipline];
+  const disciplineName = disciplineLabel(discipline, tr);
   if (tab === "exam") {
     if (selectedExam)
-      return `${disciplineLabel} — programma selezionato: ${selectedExam.level_name}.`;
+      return tr("selectedProgram", {
+        p0: disciplineName,
+        p1: selectedExam.level_name,
+      });
     if (nextGrade === null)
-      return `${disciplineLabel} — nessun esame in preparazione.`;
-    return `${disciplineLabel} — prossimo esame: ${gradeLabelForDiscipline(discipline, nextGrade)}.`;
+      return tr("noPreparingExamFor", { p0: disciplineName });
+    return tr("nextExamFor", {
+      p0: disciplineName,
+      p1: gradeLabelForDiscipline(discipline, nextGrade, tr),
+    });
   }
-  return `${disciplineLabel} — selezione personale.`;
+  return tr("customSelectionFor", { p0: disciplineName });
 }
 
 function selectedExamIdForDiscipline(
@@ -178,12 +191,11 @@ function selectedExamIdForDiscipline(
 }
 
 function ActivateModeBanner({ tab }: { tab: PlanMode }) {
+  const tr = useTranslations("ui");
   const action =
     tab === "exam" ? activateExamFormAction : activateCustomFormAction;
   const label =
-    tab === "exam"
-      ? "Stai esplorando il programma esame, ma il piano attivo è la selezione personale."
-      : "Stai esplorando la selezione personale, ma il piano attivo è il programma esame.";
+    tab === "exam" ? tr("examPreviewNotice") : tr("customPreviewNotice");
 
   return (
     <form
@@ -192,7 +204,7 @@ function ActivateModeBanner({ tab }: { tab: PlanMode }) {
     >
       <p className="text-muted-foreground">{label}</p>
       <Button type="submit" size="sm" variant="outline">
-        Imposta come piano attivo
+        {tr("setActivePlan")}
       </Button>
     </form>
   );
@@ -205,10 +217,9 @@ function ModifyLink({
   tab: PlanMode;
   discipline: Discipline;
 }) {
-  const href =
-    tab === "exam" ? "/plan/exam" : `/plan/custom?d=${discipline}`;
-  const label =
-    tab === "exam" ? "Scegli programma esame" : "Modifica selezione";
+  const tr = useTranslations("ui");
+  const href = tab === "exam" ? "/plan/exam" : `/plan/custom?d=${discipline}`;
+  const label = tab === "exam" ? tr("chooseExamProgram") : tr("editSelection");
   return (
     <div className="pt-2">
       <Button asChild variant="ghost" size="sm">
@@ -228,23 +239,20 @@ function EmptyState({
   tab: PlanMode;
   hasNextGrade: boolean;
 }) {
+  const tr = useTranslations("ui");
   if (tab === "exam") {
     return (
       <p className="text-muted-foreground text-sm">
-        {hasNextGrade
-          ? "Nessun contenuto in questo programma."
-          : "Nessun esame in preparazione per questa disciplina."}
+        {hasNextGrade ? tr("emptyProgram") : tr("noDisciplineExam")}
       </p>
     );
   }
 
   return (
     <div className="space-y-3 text-sm">
-      <p className="text-muted-foreground">
-        Non hai ancora una selezione personale.
-      </p>
+      <p className="text-muted-foreground">{tr("noCustomSelection")}</p>
       <Button asChild size="sm" variant="outline">
-        <Link href="/plan/custom">Crea selezione personale</Link>
+        <Link href="/plan/custom">{tr("createCustomSelection")}</Link>
       </Button>
     </div>
   );

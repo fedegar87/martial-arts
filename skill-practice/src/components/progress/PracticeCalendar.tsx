@@ -1,14 +1,17 @@
-import { CalendarDays } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/progress/SectionHeader";
+import { Button } from "@/components/ui/button";
+import type { UiTranslator } from "@/lib/i18n/config";
 import type { PracticeDay } from "@/lib/queries/progress";
+import { CalendarDays } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Props = {
   days: PracticeDay[];
 };
 
 export function PracticeCalendar({ days }: Props) {
+  const tr = useTranslations("ui");
   const weeks = buildWeeks(days);
   const monthLabels = buildMonthLabels(weeks);
   const practicedCount = days.filter((day) => day.practiced).length;
@@ -17,18 +20,22 @@ export function PracticeCalendar({ days }: Props) {
     <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-sm)]">
       <SectionHeader
         icon={CalendarDays}
-        title="Calendario pratica"
-        right={practicedCount > 0
-          ? <span className="text-xs text-muted-foreground">ultimi 90 giorni</span>
-          : undefined}
+        title={tr("practiceCalendar")}
+        right={
+          practicedCount > 0 ? (
+            <span className="text-xs text-muted-foreground">
+              {tr("last90Days")}
+            </span>
+          ) : undefined
+        }
       />
       {practicedCount === 0 ? (
         <div className="space-y-3">
           <p className="text-muted-foreground text-sm">
-            Nessuna pratica registrata negli ultimi 90 giorni.
+            {tr("noPractice90Days")}
           </p>
           <Button asChild variant="outline" size="sm" className="min-h-11">
-            <Link href="/today">Vai ad Allenamento</Link>
+            <Link href="/today">{tr("goTraining")}</Link>
           </Button>
         </div>
       ) : (
@@ -39,7 +46,9 @@ export function PracticeCalendar({ days }: Props) {
               <div
                 aria-hidden
                 className="grid gap-1 text-[0.62rem] leading-none text-muted-foreground"
-                style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+                style={{
+                  gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))`,
+                }}
               >
                 {monthLabels.map((label, index) => (
                   <span key={index} className="truncate">
@@ -53,7 +62,7 @@ export function PracticeCalendar({ days }: Props) {
                 aria-hidden
                 className="grid grid-rows-7 gap-1 text-right text-[0.62rem] leading-none text-muted-foreground"
               >
-                {WEEKDAY_LABELS.map((label, index) => (
+                {WEEKDAY_LABELS(tr).map((label, index) => (
                   <span key={index} className="flex items-center justify-end">
                     {label}
                   </span>
@@ -61,9 +70,14 @@ export function PracticeCalendar({ days }: Props) {
               </div>
               <div
                 role="img"
-                aria-label={`Mappa pratica ultimi 90 giorni: ${practicedCount} ${practicedCount === 1 ? "giorno" : "giorni"} con pratica`}
+                aria-label={tr("practiceMapLabel", {
+                  p0: practicedCount,
+                  p1: practicedCount === 1 ? tr("day") : tr("days"),
+                })}
                 className="grid gap-1"
-                style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+                style={{
+                  gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))`,
+                }}
               >
                 {weeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="grid grid-rows-7 gap-1">
@@ -72,7 +86,7 @@ export function PracticeCalendar({ days }: Props) {
                         <div
                           key={day.date}
                           aria-hidden
-                          title={`${formatDate(day.date)}: ${day.practiced ? "praticato" : "non praticato"}`}
+                          title={`${formatDate(tr, day.date)}: ${day.practiced ? tr("practiced") : tr("notPracticedLowercase")}`}
                           className={`aspect-square min-h-2 rounded-sm border ${cellStyle(day.practiced)}`}
                         />
                       ) : (
@@ -89,7 +103,8 @@ export function PracticeCalendar({ days }: Props) {
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            {practicedCount} {practicedCount === 1 ? "giorno" : "giorni"} con pratica negli ultimi 90.
+            {practicedCount} {practicedCount === 1 ? tr("day") : tr("days")}{" "}
+            {tr("practicedLast90")}
           </p>
         </>
       )}
@@ -97,7 +112,17 @@ export function PracticeCalendar({ days }: Props) {
   );
 }
 
-const WEEKDAY_LABELS = ["Lu", "Ma", "Me", "Gi", "Ve", "Sa", "Do"];
+function WEEKDAY_LABELS(tr: UiTranslator) {
+  return [
+    tr("mondayShort"),
+    tr("tuesdayShort"),
+    tr("wednesdayShort"),
+    tr("thursdayShort"),
+    tr("fridayShort"),
+    tr("saturdayShort"),
+    tr("sundayShort"),
+  ];
+}
 const MONTH_LABELS = [
   "gen",
   "feb",
@@ -156,8 +181,8 @@ function cellStyle(practiced: boolean): string {
   return "border-border/70 bg-background";
 }
 
-function formatDate(date: string): string {
-  return new Date(`${date}T00:00:00Z`).toLocaleDateString("it-IT", {
+function formatDate(tr: UiTranslator, date: string): string {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString(tr("locale"), {
     day: "numeric",
     month: "short",
   });

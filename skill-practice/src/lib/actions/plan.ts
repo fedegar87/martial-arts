@@ -1,11 +1,13 @@
 "use server";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { getTranslations } from "next-intl/server";
 
+import { isSelectableExamGrade, nextGradeValue } from "@/lib/grades";
+import { buildManualPlanItem } from "@/lib/plan-manager";
 import { createClient } from "@/lib/supabase/server";
+import type { Discipline, PlanStatus, UserProfile } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { buildManualPlanItem } from "@/lib/plan-manager";
-import { isSelectableExamGrade, nextGradeValue } from "@/lib/grades";
-import type { Discipline, PlanStatus, UserProfile } from "@/lib/types";
 
 export type PlanFormState = { error: string } | { success: true } | null;
 
@@ -13,11 +15,12 @@ export async function addSkillToPlan(
   skillId: string,
   status: PlanStatus = "maintenance",
 ): Promise<PlanFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const item = buildManualPlanItem(user.id, skillId, status);
   const { error } = await supabase
@@ -36,11 +39,12 @@ export async function addSkillToPlan(
 export async function removeSkillFromPlan(
   skillId: string,
 ): Promise<PlanFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const { error } = await supabase
     .from("user_plan_items")
@@ -62,18 +66,19 @@ export async function activateExamModeFromForm(
   _prev: PlanFormState,
   formData: FormData,
 ): Promise<PlanFormState> {
+  const tr = await getTranslations("ui");
   const examShaolinId = optionalUuid(formData.get("examShaolinId"));
   const examTaichiId = optionalUuid(formData.get("examTaichiId"));
 
   if (!examShaolinId && !examTaichiId) {
-    return { error: "Seleziona almeno un esame" };
+    return { error: tr("selectAtLeastOneExam") };
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const { data: profileData, error: profileError } = await supabase
     .from("user_profiles")
@@ -82,7 +87,7 @@ export async function activateExamModeFromForm(
     .maybeSingle();
 
   if (profileError) return { error: profileError.message };
-  if (!profileData) return { error: "Profilo non trovato" };
+  if (!profileData) return { error: tr("profileNotFound") };
 
   const profile = profileData as UserProfile;
   const validationError = await validateSelectedExams(
@@ -125,11 +130,12 @@ export async function switchToCustomMode(): Promise<PlanFormState> {
 }
 
 export async function activateExamFromProfile(): Promise<PlanFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const { count: existingExamItems } = await supabase
     .from("user_plan_items")
@@ -155,7 +161,7 @@ export async function activateExamFromProfile(): Promise<PlanFormState> {
     .eq("id", user.id)
     .maybeSingle();
   if (profileError) return { error: profileError.message };
-  if (!profileData) return { error: "Profilo non trovato" };
+  if (!profileData) return { error: tr("profileNotFound") };
 
   const profile = profileData as UserProfile;
   const nextShaolin = nextGradeValue(profile.assigned_level_shaolin);
@@ -165,7 +171,7 @@ export async function activateExamFromProfile(): Promise<PlanFormState> {
       : nextGradeValue(profile.assigned_level_taichi);
 
   if (nextShaolin === null && nextTaichi === null) {
-    return { error: "Nessun esame in preparazione" };
+    return { error: tr("noPreparingExam") };
   }
 
   const { data: examsData } = await supabase
@@ -182,18 +188,18 @@ export async function activateExamFromProfile(): Promise<PlanFormState> {
   const examShaolinId =
     nextShaolin === null
       ? null
-      : exams.find(
+      : (exams.find(
           (e) => e.discipline === "shaolin" && e.grade_value === nextShaolin,
-        )?.id ?? null;
+        )?.id ?? null);
   const examTaichiId =
     nextTaichi === null
       ? null
-      : exams.find(
+      : (exams.find(
           (e) => e.discipline === "taichi" && e.grade_value === nextTaichi,
-        )?.id ?? null;
+        )?.id ?? null);
 
   if (!examShaolinId && !examTaichiId) {
-    return { error: "Esami non trovati per il prossimo grado" };
+    return { error: tr("noNextGradeExams") };
   }
 
   const { error } = await supabase.rpc("activate_exam_mode", {
@@ -238,7 +244,8 @@ export async function saveCustomSelectionFromForm(
   formData: FormData,
 ): Promise<PlanFormState> {
   const disciplineRaw = String(formData.get("discipline") ?? "shaolin");
-  const discipline: Discipline = disciplineRaw === "taichi" ? "taichi" : "shaolin";
+  const discipline: Discipline =
+    disciplineRaw === "taichi" ? "taichi" : "shaolin";
   const skillIds = formData
     .getAll("skillIds")
     .map((value) => String(value))
@@ -262,11 +269,12 @@ export async function saveCustomSelectionFromForm(
 }
 
 export async function deleteCustomSelection(): Promise<PlanFormState> {
+  const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   const { error } = await supabase
     .from("user_plan_items")
@@ -332,6 +340,7 @@ async function validateSelectedExams(
   examShaolinId: string | null,
   examTaichiId: string | null,
 ): Promise<string | null> {
+  const tr = await getTranslations("ui");
   const examIds = [examShaolinId, examTaichiId].filter(
     (id): id is string => id !== null,
   );
@@ -343,15 +352,18 @@ async function validateSelectedExams(
   if (error) return error.message;
 
   const examsById = new Map(
-    ((data ?? []) as Array<{
-      id: string;
-      discipline: Discipline;
-      grade_value: number;
-      grade_from: string | null;
-    }>).map((exam) => [exam.id, exam]),
+    (
+      (data ?? []) as Array<{
+        id: string;
+        discipline: Discipline;
+        grade_value: number;
+        grade_from: string | null;
+      }>
+    ).map((exam) => [exam.id, exam]),
   );
 
   const shaolinError = validateExamForDiscipline(
+    tr,
     examsById,
     examShaolinId,
     "shaolin",
@@ -360,6 +372,7 @@ async function validateSelectedExams(
   if (shaolinError) return shaolinError;
 
   const taichiError = validateExamForDiscipline(
+    tr,
     examsById,
     examTaichiId,
     "taichi",
@@ -371,6 +384,7 @@ async function validateSelectedExams(
 }
 
 function validateExamForDiscipline(
+  tr: UiTranslator,
   examsById: Map<
     string,
     {
@@ -388,14 +402,14 @@ function validateExamForDiscipline(
 
   const exam = examsById.get(examId);
   if (!exam || exam.discipline !== discipline) {
-    return "Esame non valido per la disciplina selezionata";
+    return tr("invalidDisciplineExam");
   }
 
   if (
     exam.grade_from === null ||
     !isSelectableExamGrade(currentGrade, exam.grade_value)
   ) {
-    return "L'esame selezionato non è disponibile per il livello del profilo";
+    return tr("examNotAvailable");
   }
 
   return null;

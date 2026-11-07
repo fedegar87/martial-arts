@@ -1,14 +1,14 @@
-import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
+import type { UiTranslator } from "@/lib/i18n/config";
+
+import { Calendar, type CalendarView } from "@/components/calendar/Calendar";
+import { addDaysToDateKey, localDateKey } from "@/lib/date";
 import {
   getCalendarDataInRange,
   getCalendarSkillOptions,
 } from "@/lib/queries/calendar";
-import { addDaysToDateKey, localDateKey } from "@/lib/date";
-import {
-  Calendar,
-  type CalendarView,
-} from "@/components/calendar/Calendar";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
+import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 type Props = { searchParams: Promise<{ view?: string; date?: string }> };
 
@@ -20,6 +20,7 @@ type CalendarRange = {
 };
 
 export default async function CalendarPage({ searchParams }: Props) {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -43,19 +44,28 @@ export default async function CalendarPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold">Calendario</h1>
+        <h1 className="text-2xl font-semibold">{tr("calendar")}</h1>
         <p className="text-muted-foreground text-sm">
-          Allenamenti, pratica libera ed eventi federali.
+          {tr("calendarDescription")}
         </p>
       </header>
 
-      {calendarData.eventsUnavailable && <p className="text-muted-foreground text-sm" role="status">Eventi federali temporaneamente non disponibili.</p>}
+      {calendarData.eventsUnavailable && (
+        <p className="text-muted-foreground text-sm" role="status">
+          {tr("eventsUnavailable")}
+        </p>
+      )}
 
       <Calendar
         view={view}
         selectedDate={selectedDate}
         days={calendarData.days}
-        periodLabel={formatPeriodLabel(view, range.activeFrom, range.activeTo)}
+        periodLabel={formatPeriodLabel(
+          tr,
+          view,
+          range.activeFrom,
+          range.activeTo,
+        )}
         previousDate={previousDate}
         nextDate={nextDate}
         skillOptions={skillOptions}
@@ -141,22 +151,23 @@ function isoWeekday(date: string): number {
 }
 
 function formatPeriodLabel(
+  tr: UiTranslator,
   view: CalendarView,
   from: string,
   to: string,
 ): string {
   if (view === "month") {
-    return new Date(`${from}T00:00:00Z`).toLocaleDateString("it-IT", {
+    return new Date(`${from}T00:00:00Z`).toLocaleDateString(tr("locale"), {
       month: "long",
       year: "numeric",
     });
   }
 
-  return `${fmtDate(from)} - ${fmtDate(to)}`;
+  return `${fmtDate(tr, from)} - ${fmtDate(tr, to)}`;
 }
 
-function fmtDate(date: string): string {
-  return new Date(`${date}T00:00:00Z`).toLocaleDateString("it-IT", {
+function fmtDate(tr: UiTranslator, date: string): string {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString(tr("locale"), {
     day: "numeric",
     month: "short",
   });

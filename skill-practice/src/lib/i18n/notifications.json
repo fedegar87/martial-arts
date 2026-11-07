@@ -1,0 +1,16 @@
+{
+  "it": {
+    "trainingWithNames": "Oggi devi allenare {names}",
+    "trainingCount": "Oggi devi allenare {count, plural, one {# esercizio} other {# esercizi}}",
+    "moreExercises": " e altri {count}",
+    "allDay": "Tutto il giorno",
+    "eventTomorrow": "{brand} · Evento domani"
+  },
+  "fr": {
+    "trainingWithNames": "À pratiquer aujourd’hui : {names}",
+    "trainingCount": "À pratiquer aujourd’hui : {count, plural, one {# exercice} other {# exercices}}",
+    "moreExercises": " et {count} autres",
+    "allDay": "Toute la journée",
+    "eventTomorrow": "{brand} · Événement demain"
+  }
+}

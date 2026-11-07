@@ -1,17 +1,14 @@
 "use client";
+import { disciplineLabel } from "@/lib/labels";
 
-import { useEffect, useState, useTransition, useOptimistic } from "react";
+import { useTranslations } from "next-intl";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
-import { DISCIPLINE_LABELS } from "@/lib/labels";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import type { Discipline, PlanStatus, Skill, UserPlanItem } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { useEffect, useOptimistic, useState, useTransition } from "react";
 
 const FocusIcon = PLAN_STATUS_VISUALS.focus.Icon;
 const MaintenanceIcon = PLAN_STATUS_VISUALS.maintenance.Icon;
@@ -27,6 +24,7 @@ type Props = {
 };
 
 export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
+  const tr = useTranslations("ui");
   const [optimistic, setOptimistic] = useOptimistic(
     items,
     (state, update: { skillId: string; status: PlanStatus }) =>
@@ -63,9 +61,10 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Forme nel piano</CardTitle>
+        <CardTitle className="text-base">{tr("formsInPlan")}</CardTitle>
         <p className="text-muted-foreground text-xs">
-          {filtered.length} forme · {focusCount} focus · {maintCount} mantenimento
+          {filtered.length} {tr("formsSeparator")} {focusCount}{" "}
+          {tr("focusSeparator")} {maintCount} {tr("maintenanceLowercase")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -78,7 +77,7 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
         {grouped.map((group) => (
           <div key={group.discipline} className="space-y-2">
             <h3 className="text-muted-foreground text-xs font-semibold uppercase">
-              {DISCIPLINE_LABELS[group.discipline]} ({group.items.length})
+              {disciplineLabel(group.discipline, tr)} ({group.items.length})
             </h3>
             {group.categories.map((cat) => (
               <div key={cat.category} className="space-y-1">
@@ -108,7 +107,7 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
         ))}
         {filtered.length === 0 && (
           <p className="text-muted-foreground text-sm">
-            Nessuna forma nel piano per l&apos;ambito selezionato.
+            {tr("noFormsForScope")}
           </p>
         )}
       </CardContent>
@@ -117,6 +116,7 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
 }
 
 function PolarHeader() {
+  const tr = useTranslations("ui");
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 px-3">
       <span aria-hidden="true" />
@@ -128,10 +128,10 @@ function PolarHeader() {
       >
         <span className="text-primary flex items-center gap-0.5">
           <FocusIcon className="h-3 w-3" />
-          Focus
+          {tr("focus")}
         </span>
         <span className="flex items-center justify-end gap-0.5 text-[var(--status-info)]">
-          Mantenimento
+          {tr("maintenance")}
           <MaintenanceIcon className="h-3 w-3" />
         </span>
       </div>
@@ -148,11 +148,12 @@ function StatusSelector({
   skillName: string;
   onChange: (next: PlanStatus) => void;
 }) {
+  const tr = useTranslations("ui");
   const isFocus = status === "focus";
   return (
     <div
       role="radiogroup"
-      aria-label={`Stato nel piano per ${skillName}`}
+      aria-label={tr("planStatusFor", { p0: skillName })}
       className={cn(
         STATUS_SELECTOR_WIDTH_CLASS,
         "bg-muted/70 relative grid h-8 shrink-0 grid-cols-2 rounded-full border p-0.5 shadow-inner transition-colors",
@@ -172,7 +173,7 @@ function StatusSelector({
         type="button"
         role="radio"
         aria-checked={isFocus}
-        aria-label={`${skillName}: focus`}
+        aria-label={tr("focusFor", { p0: skillName })}
         onClick={() => onChange("focus")}
         className={cn(
           "relative z-10 flex min-w-0 items-center justify-center gap-0.5 rounded-full px-1 text-[10px] font-semibold leading-none transition-colors sm:text-[11px]",
@@ -182,7 +183,7 @@ function StatusSelector({
         )}
       >
         <FocusIcon className="h-3.5 w-3.5 shrink-0" />
-        <span>Focus</span>
+        <span>{tr("focus")}</span>
       </button>
       <span
         aria-hidden="true"
@@ -192,7 +193,7 @@ function StatusSelector({
         type="button"
         role="radio"
         aria-checked={!isFocus}
-        aria-label={`${skillName}: mantenimento`}
+        aria-label={tr("maintenanceFor", { p0: skillName })}
         onClick={() => onChange("maintenance")}
         className={cn(
           "relative z-10 flex min-w-0 items-center justify-center gap-0.5 rounded-full px-1 text-[9px] font-semibold leading-none transition-colors sm:text-[10px]",
@@ -201,7 +202,7 @@ function StatusSelector({
             : "text-background",
         )}
       >
-        <span>Mantenimento</span>
+        <span>{tr("maintenance")}</span>
         <MaintenanceIcon className="h-3.5 w-3.5 shrink-0" />
       </button>
     </div>

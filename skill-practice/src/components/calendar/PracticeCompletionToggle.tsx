@@ -1,14 +1,15 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useOptimistic, useState, useTransition } from "react";
-import { Check, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { completedButtonClassName } from "@/lib/ui-classes";
 import {
   addFreePracticeForDate,
   removeFreePracticeForDate,
   setPracticeCompletionForDate,
 } from "@/lib/actions/calendar";
+import { completedButtonClassName } from "@/lib/ui-classes";
+import { Check, Circle } from "lucide-react";
+import { useOptimistic, useState, useTransition } from "react";
 
 type Props = {
   skillId: string;
@@ -25,6 +26,7 @@ export function PracticeCompletionToggle({
   disabled = false,
   kind,
 }: Props) {
+  const tr = useTranslations("ui");
   // useOptimistic: la base segue la prop `done` del server dopo la revalidation,
   // cosi una mutazione avvenuta altrove (es. "Segna" da AddFreePracticeSheet) si
   // riflette qui; in caso di errore l'override ottimistico si annulla da solo.
@@ -53,7 +55,7 @@ export function PracticeCompletionToggle({
           setError(result.error);
         }
       } catch {
-        setError("Connessione assente, riprova.");
+        setError(tr("offlineRetry"));
       }
     });
   }
@@ -67,14 +69,14 @@ export function PracticeCompletionToggle({
         aria-pressed={checked}
         disabled={disabled || pending}
         onClick={handleClick}
-        className={
-          checked
-            ? completedButtonClassName
-            : undefined
-        }
+        className={checked ? completedButtonClassName : undefined}
       >
-        {checked ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
-        {pending ? "..." : checked ? "Fatto" : "Non fatto"}
+        {checked ? (
+          <Check className="h-3.5 w-3.5" />
+        ) : (
+          <Circle className="h-3.5 w-3.5" />
+        )}
+        {pending ? "..." : checked ? tr("done") : tr("notDone")}
       </Button>
       {error && (
         <p className="max-w-40 text-xs text-destructive" role="status">

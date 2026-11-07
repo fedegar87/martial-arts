@@ -1,10 +1,11 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import { useOptimistic, useState, useTransition } from "react";
-import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { incrementRep, decrementRep } from "@/lib/actions/practice";
+import { decrementRep, incrementRep } from "@/lib/actions/practice";
 import { completedButtonClassName } from "@/lib/ui-classes";
+import { Minus, Plus } from "lucide-react";
+import { useOptimistic, useState, useTransition } from "react";
 import { PracticeNoteButton } from "./PracticeNoteButton";
 
 type Props = {
@@ -14,7 +15,13 @@ type Props = {
   todayNote?: string;
 };
 
-export function RepsCounter({ skillId, repsDone, repsTarget, todayNote }: Props) {
+export function RepsCounter({
+  skillId,
+  repsDone,
+  repsTarget,
+  todayNote,
+}: Props) {
+  const tr = useTranslations("ui");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [optimisticReps, applyDelta] = useOptimistic(
@@ -40,11 +47,11 @@ export function RepsCounter({ skillId, repsDone, repsTarget, todayNote }: Props)
                 const result = await decrementRep(skillId);
                 if (result && "error" in result) setError(result.error);
               } catch {
-                setError("Connessione assente, riprova.");
+                setError(tr("offlineRetry"));
               }
             })
           }
-          aria-label="Annulla ripetizione"
+          aria-label={tr("undoRep")}
         >
           <Minus className="h-4 w-4" />
         </Button>
@@ -56,11 +63,7 @@ export function RepsCounter({ skillId, repsDone, repsTarget, todayNote }: Props)
           size="sm"
           variant={completed ? "outline" : "default"}
           disabled={pending || completed}
-          className={
-            completed
-              ? completedButtonClassName
-              : undefined
-          }
+          className={completed ? completedButtonClassName : undefined}
           onClick={() =>
             startTransition(async () => {
               applyDelta(1);
@@ -69,13 +72,13 @@ export function RepsCounter({ skillId, repsDone, repsTarget, todayNote }: Props)
                 const result = await incrementRep(skillId);
                 if (result && "error" in result) setError(result.error);
               } catch {
-                setError("Connessione assente, riprova.");
+                setError(tr("offlineRetry"));
               }
             })
           }
         >
           <Plus className="mr-1 h-4 w-4" />
-          {completed ? "Completata" : "Ripetizione"}
+          {completed ? tr("completed") : tr("repetition")}
         </Button>
         <PracticeNoteButton skillId={skillId} compact initialNote={todayNote} />
       </div>

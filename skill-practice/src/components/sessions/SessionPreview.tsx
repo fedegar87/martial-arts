@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 // Stima rough: una performance (singola ripetizione di una forma) richiede ~3 minuti.
 // Non usa estimated_duration_seconds reale per semplicità (l'anteprima è solo orientativa).
 const MINUTES_PER_PERFORMANCE = 3;
@@ -8,10 +9,13 @@ type Props = {
 };
 
 export function SessionPreview({ formCount, reps }: Props) {
+  const tr = useTranslations("ui");
   const minutes = Math.max(1, formCount * reps * MINUTES_PER_PERFORMANCE);
   return (
     <p className="text-muted-foreground text-sm">
-      Sessione tipo: ~{minutes} minuti, {formCount} forme × {reps} ripetizioni.
+      {tr("typicalSession")}
+      {minutes} {tr("minutesComma")} {formCount} {tr("formsTimes")} {reps}{" "}
+      {tr("repetitionsPeriod")}
     </p>
   );
 }

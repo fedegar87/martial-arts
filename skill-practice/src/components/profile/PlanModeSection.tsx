@@ -1,7 +1,6 @@
 "use client";
+import { useTranslations } from "next-intl";
 
-import Link from "next/link";
-import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,12 +12,15 @@ import {
 } from "@/components/ui/sheet";
 import { switchToCustomMode } from "@/lib/actions/plan";
 import type { PlanMode } from "@/lib/types";
+import Link from "next/link";
+import { useState, useTransition } from "react";
 
 type Props = {
   planMode: PlanMode;
 };
 
 export function PlanModeSection({ planMode }: Props) {
+  const tr = useTranslations("ui");
   const [pending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -38,7 +40,7 @@ export function PlanModeSection({ planMode }: Props) {
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         <Button asChild variant={planMode === "exam" ? "secondary" : "outline"}>
-          <Link href="/plan/exam">Programma esame</Link>
+          <Link href="/plan/exam">{tr("examProgram")}</Link>
         </Button>
         <Button
           type="button"
@@ -46,31 +48,31 @@ export function PlanModeSection({ planMode }: Props) {
           disabled={pending}
           onClick={handleCustomClick}
         >
-          Selezione personale
+          {tr("customSelection")}
         </Button>
       </div>
       <Button asChild variant="ghost" className="w-full justify-start">
-        <Link href="/programma">Vedi programma</Link>
+        <Link href="/programma">{tr("viewProgram")}</Link>
       </Button>
       <Sheet open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <SheetContent side="bottom" className="material-sheet pb-[env(safe-area-inset-bottom)]">
+        <SheetContent
+          side="bottom"
+          className="material-sheet pb-[env(safe-area-inset-bottom)]"
+        >
           <SheetHeader>
-            <SheetTitle>Passare alla selezione personale?</SheetTitle>
-            <SheetDescription>
-              Il piano attivo userà la tua selezione personale. Programma
-              esame, storico pratica e note restano salvati.
-            </SheetDescription>
+            <SheetTitle>{tr("switchCustomConfirm")}</SheetTitle>
+            <SheetDescription>{tr("switchCustomDescription")}</SheetDescription>
           </SheetHeader>
           <SheetFooter>
             <Button onClick={confirmCustomMode} disabled={pending}>
-              {pending ? "Aggiornamento..." : "Conferma"}
+              {pending ? tr("updating") : tr("confirm")}
             </Button>
             <Button
               type="button"
               variant="ghost"
               onClick={() => setConfirmOpen(false)}
             >
-              Annulla
+              {tr("cancel")}
             </Button>
           </SheetFooter>
         </SheetContent>

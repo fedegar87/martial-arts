@@ -1,11 +1,14 @@
 "use client";
+import { gradesForDiscipline } from "@/lib/grades";
+import { disciplineLabel } from "@/lib/labels";
 
-import { useActionState, useMemo, useState } from "react";
-import { finishWithoutExam, selectExam } from "@/lib/actions/onboarding";
+import { useTranslations } from "next-intl";
+
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { FormSelect } from "@/components/primitives/FormSelect";
 import { OptionCard } from "@/components/primitives/OptionCard";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,10 +16,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LegalLinks } from "@/components/legal/LegalLinks";
+import { finishWithoutExam, selectExam } from "@/lib/actions/onboarding";
+import { nextGradeValue } from "@/lib/grades";
 import type { ExamProgram } from "@/lib/types";
-import { nextGradeValue, SHAOLIN_GRADES, TAICHI_GRADES } from "@/lib/grades";
-import { DISCIPLINE_LABELS } from "@/lib/labels";
+import { useActionState, useMemo, useState } from "react";
 
 type Props = {
   exams: ExamProgram[];
@@ -24,6 +27,7 @@ type Props = {
 };
 
 export function OnboardingForm({ exams, displayName }: Props) {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(selectExam, null);
   const [practicesShaolin, setPracticesShaolin] = useState(true);
   const [practicesTaichi, setPracticesTaichi] = useState(false);
@@ -32,20 +36,18 @@ export function OnboardingForm({ exams, displayName }: Props) {
 
   const visibleExams = useMemo(
     () =>
-      exams.filter(
-        (exam) => {
-          if (exam.discipline === "shaolin") {
-            return (
-              practicesShaolin &&
-              exam.grade_value === nextGradeValue(assignedLevelShaolin)
-            );
-          }
+      exams.filter((exam) => {
+        if (exam.discipline === "shaolin") {
           return (
-            practicesTaichi &&
-            exam.grade_value === nextGradeValue(assignedLevelTaichi)
+            practicesShaolin &&
+            exam.grade_value === nextGradeValue(assignedLevelShaolin)
           );
-        },
-      ),
+        }
+        return (
+          practicesTaichi &&
+          exam.grade_value === nextGradeValue(assignedLevelTaichi)
+        );
+      }),
     [
       assignedLevelShaolin,
       assignedLevelTaichi,
@@ -60,26 +62,29 @@ export function OnboardingForm({ exams, displayName }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ciao {displayName}</CardTitle>
-        <CardDescription>
-          Imposta discipline, gradi attuali ed esame da preparare. Genereremo
-          il tuo piano di pratica dal prossimo esame.
-        </CardDescription>
+        <CardTitle>
+          {tr("hello")} {displayName}
+        </CardTitle>
+        <CardDescription>{tr("onboardingDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={action} className="space-y-6">
           <section className="space-y-3">
-            <div className="text-sm font-medium">Discipline praticate</div>
+            <div className="text-sm font-medium">
+              {tr("practicedDisciplines")}
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <OptionCard selected={practicesShaolin}>
                 <input
                   type="checkbox"
                   name="practicesShaolin"
                   checked={practicesShaolin}
-                  onChange={(event) => setPracticesShaolin(event.target.checked)}
+                  onChange={(event) =>
+                    setPracticesShaolin(event.target.checked)
+                  }
                   className="h-5 w-5"
                 />
-                {DISCIPLINE_LABELS.shaolin}
+                {disciplineLabel("shaolin", tr)}
               </OptionCard>
               <OptionCard selected={practicesTaichi}>
                 <input
@@ -89,24 +94,24 @@ export function OnboardingForm({ exams, displayName }: Props) {
                   onChange={(event) => setPracticesTaichi(event.target.checked)}
                   className="h-5 w-5"
                 />
-                {DISCIPLINE_LABELS.taichi}
+                {disciplineLabel("taichi", tr)}
               </OptionCard>
             </div>
           </section>
 
           <section className="space-y-3">
-            <div className="text-sm font-medium">Grado attuale</div>
+            <div className="text-sm font-medium">{tr("currentGrade")}</div>
             <div className="grid gap-3 sm:grid-cols-2">
               {practicesShaolin && (
                 <FormSelect
-                  label="Shaolin"
+                  label={tr("shaolin")}
                   name="assignedLevelShaolin"
                   value={assignedLevelShaolin}
                   onChange={(event) =>
                     setAssignedLevelShaolin(Number(event.target.value))
                   }
                 >
-                  {SHAOLIN_GRADES.map((grade) => (
+                  {gradesForDiscipline("shaolin", tr).map((grade) => (
                     <option key={grade.value} value={grade.value}>
                       {grade.label}
                     </option>
@@ -116,20 +121,20 @@ export function OnboardingForm({ exams, displayName }: Props) {
 
               {practicesTaichi && (
                 <FormSelect
-                  label="T'ai Chi"
+                  label={tr("taichi")}
                   name="assignedLevelTaichi"
                   value={assignedLevelTaichi}
                   onChange={(event) =>
                     setAssignedLevelTaichi(Number(event.target.value))
                   }
                 >
-                  {TAICHI_GRADES.filter((grade) => grade.value !== 0).map(
-                    (grade) => (
+                  {gradesForDiscipline("taichi", tr)
+                    .filter((grade) => grade.value !== 0)
+                    .map((grade) => (
                       <option key={grade.value} value={grade.value}>
                         {grade.label}
                       </option>
-                    ),
-                  )}
+                    ))}
                 </FormSelect>
               )}
             </div>
@@ -139,7 +144,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
             <FormSelect
               key={firstExamId}
               id="examId"
-              label="Esame in preparazione"
+              label={tr("preparingExam")}
               name="examId"
               required
               defaultValue={firstExamId}
@@ -147,23 +152,20 @@ export function OnboardingForm({ exams, displayName }: Props) {
             >
               {visibleExams.map((exam) => (
                 <option key={exam.id} value={exam.id}>
-                  {DISCIPLINE_LABELS[exam.discipline]} — {exam.level_name}
+                  {disciplineLabel(exam.discipline, tr)} — {exam.level_name}
                 </option>
               ))}
             </FormSelect>
             {visibleExams.length === 0 && (
               <p className="text-muted-foreground text-sm">
-                Nessun prossimo esame disponibile per i gradi selezionati.
+                {tr("noNextExam")}
               </p>
             )}
             <div className="space-y-2">
               {visibleExams.slice(0, 4).map((exam) => (
-                <div
-                  key={exam.id}
-                  className="rounded-lg border p-3 text-sm"
-                >
+                <div key={exam.id} className="rounded-lg border p-3 text-sm">
                   <div className="font-medium">
-                    {DISCIPLINE_LABELS[exam.discipline]} — {exam.level_name}
+                    {disciplineLabel(exam.discipline, tr)} — {exam.level_name}
                   </div>
                   {exam.description && (
                     <div className="text-muted-foreground">
@@ -192,7 +194,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
             disabled={pending || visibleExams.length === 0}
             className="w-full"
           >
-            {pending ? "Creazione piano..." : "Inizia"}
+            {pending ? tr("creatingPlan") : tr("start")}
           </Button>
           <Button
             type="submit"
@@ -201,7 +203,7 @@ export function OnboardingForm({ exams, displayName }: Props) {
             disabled={pending}
             className="w-full"
           >
-            Continua senza esame (allenamento libero)
+            {tr("continueWithoutExam")}
           </Button>
           <LegalLinks className="justify-center" />
         </form>

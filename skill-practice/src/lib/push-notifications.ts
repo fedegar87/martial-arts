@@ -1,4 +1,5 @@
 import { brand } from "./brand.ts";
+import { notificationTranslator } from "./notification-messages.ts";
 
 export type BrowserPushSubscription = {
   endpoint: string;
@@ -145,15 +146,20 @@ export function buildTrainingReminderPayload({
   date,
   exerciseNames,
   includeExerciseNames,
+  locale = "it",
 }: {
   date: string;
   exerciseNames: string[];
   includeExerciseNames: boolean;
+  locale?: "it" | "fr";
 }): TrainingReminderPayload {
   const count = exerciseNames.length;
+  const tr = notificationTranslator(locale);
   const body = includeExerciseNames
-    ? `Oggi devi allenare ${formatExerciseList(exerciseNames)}`
-    : `Oggi devi allenare ${count} ${count === 1 ? "esercizio" : "esercizi"}`;
+    ? tr("trainingWithNames", {
+        names: formatExerciseList(exerciseNames, locale),
+      })
+    : tr("trainingCount", { count });
 
   return {
     title: brand.appName,
@@ -165,9 +171,15 @@ export function buildTrainingReminderPayload({
   };
 }
 
-export function formatExerciseList(names: string[]): string {
+export function formatExerciseList(
+  names: string[],
+  locale: "it" | "fr" = "it",
+): string {
   const visible = names.slice(0, MAX_EXERCISE_NAMES);
   const hidden = names.length - visible.length;
-  const suffix = hidden > 0 ? ` e altri ${hidden}` : "";
+  const suffix =
+    hidden > 0
+      ? notificationTranslator(locale)("moreExercises", { count: hidden })
+      : "";
   return `${visible.join(", ")}${suffix}`;
 }

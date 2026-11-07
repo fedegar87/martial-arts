@@ -1,15 +1,18 @@
-import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/queries/user-profile";
-import { listVisibleSkillOptionsForDiscipline } from "@/lib/queries/skills";
-import { getSelectedSkillIds } from "@/lib/queries/plan";
-import { CustomSelectionForm } from "@/components/plan/CustomSelectionForm";
+import { disciplineLabel } from "@/lib/labels";
+
 import { DisciplineToggle } from "@/components/library/DisciplineToggle";
-import { DISCIPLINE_LABELS } from "@/lib/labels";
+import { CustomSelectionForm } from "@/components/plan/CustomSelectionForm";
+import { getSelectedSkillIds } from "@/lib/queries/plan";
+import { listVisibleSkillOptionsForDiscipline } from "@/lib/queries/skills";
+import { getCurrentProfile } from "@/lib/queries/user-profile";
 import type { Discipline, SkillCategory, SkillOption } from "@/lib/types";
+import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 type Props = { searchParams: Promise<{ d?: string }> };
 
 export default async function PlanCustomPage({ searchParams }: Props) {
+  const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
@@ -41,9 +44,9 @@ export default async function PlanCustomPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Selezione personale</h1>
+        <h1 className="text-2xl font-semibold">{tr("customSelection")}</h1>
         <p className="text-muted-foreground text-sm">
-          {DISCIPLINE_LABELS[discipline]} — scegli forme e tecniche da usare nel piano di allenamento.
+          {disciplineLabel(discipline, tr)} {tr("customSelectionDescription")}
         </p>
       </header>
 

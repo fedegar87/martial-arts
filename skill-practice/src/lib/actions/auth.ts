@@ -1,8 +1,7 @@
 "use server";
+import type { UiTranslator } from "@/lib/i18n/config";
+import { getTranslations } from "next-intl/server";
 
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { cookies, headers } from "next/headers";
 import {
   PASSWORD_UPDATE_COOKIE,
   safeRedirectPath,
@@ -10,6 +9,9 @@ import {
   validatePasswordMatch,
   validatePasswordStrength,
 } from "@/lib/auth-validation";
+import { createClient } from "@/lib/supabase/server";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export type AuthFormState = { error: string } | { success: string } | null;
 
@@ -17,19 +19,20 @@ export async function login(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const tr = await getTranslations("ui");
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const next = safeRedirectPath(String(formData.get("next") ?? ""));
 
   if (!email || !password) {
-    return { error: "Email e password sono obbligatorie" };
+    return { error: tr("credentialsRequired") };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: loginErrorMessage(error.message) };
+    return { error: loginErrorMessage(tr, error.message) };
   }
 
   redirect(next ?? "/hub");
@@ -45,29 +48,28 @@ export async function requestPasswordReset(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const tr = await getTranslations("ui");
   const email = String(formData.get("email") ?? "").trim();
-  const emailCheck = validateEmail(email);
+  const emailCheck = validateEmail(email, tr);
 
   if (!emailCheck.valid) {
-    return { error: emailCheck.error ?? "Email non valida." };
+    return { error: emailCheck.error ?? tr("invalidEmail") };
   }
 
-  const failureMessage =
-    "Non è stato possibile completare la richiesta. Riprova tra qualche minuto.";
+  const failureMessage = tr("requestFailed");
 
   try {
     const origin = await getAppOrigin();
     const redirectTo = `${origin}/auth/callback?next=/auth/update-password`;
     const supabase = await createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
 
     // Un account assente deve ricevere la stessa risposta di uno registrato.
     if (error && error.code !== "user_not_found") {
       return {
-        error:
-          error.status === 429
-            ? "Troppe richieste. Attendi qualche minuto prima di riprovare."
-            : failureMessage,
+        error: error.status === 429 ? tr("tooManyRequests") : failureMessage,
       };
     }
   } catch {
@@ -75,8 +77,7 @@ export async function requestPasswordReset(
   }
 
   return {
-    success:
-      "Se l'email è registrata, riceverai un link per reimpostare la password.",
+    success: tr("resetEmailSent"),
   };
 }
 
@@ -84,26 +85,26 @@ export async function updatePassword(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const tr = await getTranslations("ui");
   const cookieStore = await cookies();
 
   if (!cookieStore.has(PASSWORD_UPDATE_COOKIE)) {
     return {
-      error:
-        "Il link non è valido o è scaduto. Richiedi un nuovo reset password.",
+      error: tr("expiredPasswordLink"),
     };
   }
 
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirmPassword") ?? "");
 
-  const strengthCheck = validatePasswordStrength(password);
+  const strengthCheck = validatePasswordStrength(password, tr);
   if (!strengthCheck.valid) {
-    return { error: strengthCheck.error ?? "Password non valida." };
+    return { error: strengthCheck.error ?? tr("invalidPassword") };
   }
 
-  const matchCheck = validatePasswordMatch(password, confirm);
+  const matchCheck = validatePasswordMatch(password, confirm, tr);
   if (!matchCheck.valid) {
-    return { error: matchCheck.error ?? "Le password non coincidono." };
+    return { error: matchCheck.error ?? tr("passwordMismatch") };
   }
 
   const supabase = await createClient();
@@ -125,26 +126,27 @@ export async function changePassword(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const tr = await getTranslations("ui");
   const currentPassword = String(formData.get("currentPassword") ?? "");
   const newPassword = String(formData.get("newPassword") ?? "");
   const confirm = String(formData.get("confirmPassword") ?? "");
 
   if (!currentPassword) {
-    return { error: "Password attuale obbligatoria." };
+    return { error: tr("currentPasswordRequired") };
   }
 
-  const strengthCheck = validatePasswordStrength(newPassword);
+  const strengthCheck = validatePasswordStrength(newPassword, tr);
   if (!strengthCheck.valid) {
-    return { error: strengthCheck.error ?? "Password non valida." };
+    return { error: strengthCheck.error ?? tr("invalidPassword") };
   }
 
   if (newPassword === currentPassword) {
-    return { error: "La nuova password deve essere diversa da quella attuale." };
+    return { error: tr("passwordMustDiffer") };
   }
 
-  const matchCheck = validatePasswordMatch(newPassword, confirm);
+  const matchCheck = validatePasswordMatch(newPassword, confirm, tr);
   if (!matchCheck.valid) {
-    return { error: matchCheck.error ?? "Le password non coincidono." };
+    return { error: matchCheck.error ?? tr("passwordMismatch") };
   }
 
   const supabase = await createClient();
@@ -157,26 +159,26 @@ export async function changePassword(
     const message = error.message.toLowerCase();
     // Solo l'errore esplicito di password attuale errata; non mascherare errori generici.
     if (message.includes("current")) {
-      return { error: "Password attuale errata." };
+      return { error: tr("wrongCurrentPassword") };
     }
     return { error: error.message };
   }
 
-  return { success: "Password aggiornata." };
+  return { success: tr("passwordUpdated") };
 }
 
-function loginErrorMessage(message: string): string {
+function loginErrorMessage(tr: UiTranslator, message: string): string {
   const normalized = message.toLowerCase();
   if (normalized.includes("invalid login credentials")) {
-    return "Email o password non corretti.";
+    return tr("wrongCredentials");
   }
   if (normalized.includes("email not confirmed")) {
-    return "Devi prima confermare l'email dall'invito ricevuto.";
+    return tr("confirmInviteEmail");
   }
   if (normalized.includes("rate") || normalized.includes("too many")) {
-    return "Troppi tentativi. Riprova tra qualche minuto.";
+    return tr("tooManyAttempts");
   }
-  return "Accesso non riuscito. Riprova.";
+  return tr("loginFailed");
 }
 
 async function getAppOrigin(): Promise<string> {

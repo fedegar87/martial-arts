@@ -1,8 +1,9 @@
 "use server";
+import { getTranslations } from "next-intl/server";
 
+import { nextGradeValue, SHAOLIN_GRADES, TAICHI_GRADES } from "@/lib/grades";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { nextGradeValue, SHAOLIN_GRADES, TAICHI_GRADES } from "@/lib/grades";
 
 export type OnboardingFormState = { error: string } | null;
 
@@ -14,13 +15,14 @@ export async function selectExam(
   _prev: OnboardingFormState,
   formData: FormData,
 ): Promise<OnboardingFormState> {
+  const tr = await getTranslations("ui");
   const examId = String(formData.get("examId") ?? "");
-  if (!examId) return { error: "Seleziona un esame" };
+  if (!examId) return { error: tr("selectExam") };
 
   const practicesShaolin = formData.get("practicesShaolin") === "on";
   const practicesTaichi = formData.get("practicesTaichi") === "on";
   if (!practicesShaolin && !practicesTaichi) {
-    return { error: "Seleziona almeno una disciplina" };
+    return { error: tr("selectDiscipline") };
   }
 
   const assignedLevelShaolin = Number(formData.get("assignedLevelShaolin"));
@@ -32,17 +34,17 @@ export async function selectExam(
     !isValidGrade(assignedLevelShaolin, SHAOLIN_GRADES) ||
     !isValidGrade(assignedLevelTaichi, TAICHI_GRADES)
   ) {
-    return { error: "Grado non valido" };
+    return { error: tr("invalidGrade") };
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Sessione scaduta" };
+  if (!user) return { error: tr("sessionExpired") };
 
   if (await isProfileLocked(supabase, user.id)) {
-    return { error: "Il tuo profilo e gestito dagli amministratori." };
+    return { error: tr("profileManaged") };
   }
 
   const { data: examRow } = await supabase
@@ -51,7 +53,7 @@ export async function selectExam(
     .eq("id", examId)
     .maybeSingle();
 
-  if (!examRow) return { error: "Esame non trovato" };
+  if (!examRow) return { error: tr("examNotFound") };
 
   const exam = examRow as {
     id: string;
@@ -60,17 +62,17 @@ export async function selectExam(
   };
 
   if (exam.discipline === "shaolin" && !practicesShaolin) {
-    return { error: "L'esame scelto e Shaolin: abilita la disciplina Shaolin" };
+    return { error: tr("enableShaolin") };
   }
 
   if (exam.discipline === "taichi" && !practicesTaichi) {
-    return { error: "L'esame scelto e T'ai Chi: abilita la disciplina T'ai Chi" };
+    return { error: tr("enableTaichi") };
   }
 
   const currentGrade =
     exam.discipline === "shaolin" ? assignedLevelShaolin : assignedLevelTaichi;
   if (nextGradeValue(currentGrade) !== exam.grade_value) {
-    return { error: "L'esame scelto non corrisponde al prossimo grado" };
+    return { error: tr("examGradeMismatch") };
   }
 
   const profileUpdate: Record<string, unknown> = {
@@ -102,7 +104,9 @@ export async function finishWithoutExam(formData: FormData): Promise<void> {
   // Accetta il valore solo se e un grado reale, altrimenti fallback al default
   // (un valore bogus tipo 999 romperebbe esami/libreria/profilo).
   const assignedLevelShaolin =
-    practicesShaolin && isValidGrade(rawShaolin, SHAOLIN_GRADES) ? rawShaolin : 8;
+    practicesShaolin && isValidGrade(rawShaolin, SHAOLIN_GRADES)
+      ? rawShaolin
+      : 8;
   const assignedLevelTaichi =
     practicesTaichi && isValidGrade(rawTaichi, TAICHI_GRADES) ? rawTaichi : 0;
 

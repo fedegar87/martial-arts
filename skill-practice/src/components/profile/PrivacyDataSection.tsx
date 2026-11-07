@@ -1,28 +1,31 @@
 "use client";
+import type { UiTranslator } from "@/lib/i18n/config";
 
-import { useActionState } from "react";
-import { Download, FileText, Trash2 } from "lucide-react";
-import { requestAccountDeletion } from "@/lib/actions/account";
+import { useTranslations } from "next-intl";
+
+import { LegalLinks } from "@/components/legal/LegalLinks";
+import { Disclosure } from "@/components/primitives/Disclosure";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Disclosure } from "@/components/primitives/Disclosure";
-import { LegalLinks } from "@/components/legal/LegalLinks";
+import { requestAccountDeletion } from "@/lib/actions/account";
+import { Download, FileText, Trash2 } from "lucide-react";
+import { useActionState } from "react";
 
 type Props = {
   pendingDeletionRequestedAt?: string | null;
 };
 
 export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
-  const [state, action, pending] = useActionState(
-    requestAccountDeletion,
-    null,
-  );
+  const tr = useTranslations("ui");
+  const [state, action, pending] = useActionState(requestAccountDeletion, null);
   const hasPendingDeletion = Boolean(pendingDeletionRequestedAt);
 
   return (
     <Disclosure
-      title="Privacy e dati"
-      summary={hasPendingDeletion ? "Richiesta di cancellazione in attesa" : "Documenti e gestione dei dati"}
+      title={tr("privacyAndData")}
+      summary={
+        hasPendingDeletion ? tr("deletionPending") : tr("documentsAndData")
+      }
       revealKey={state}
     >
       <div className="space-y-4">
@@ -30,18 +33,18 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
           <Button asChild variant="outline" className="w-full justify-start">
             <a href="/profile/export">
               <Download className="mr-2 h-4 w-4" />
-              Scarica i tuoi dati
+              {tr("downloadData")}
             </a>
           </Button>
           <p className="text-muted-foreground text-xs">
-            Include profilo, piano, diario pratica, calendario e riflessioni.
+            {tr("dataExportDescription")}
           </p>
         </div>
 
         <div className="rounded-md border p-3">
           <div className="mb-2 flex items-center gap-2 text-sm font-medium">
             <FileText className="h-4 w-4" aria-hidden />
-            Documenti
+            {tr("documents")}
           </div>
           <LegalLinks />
         </div>
@@ -49,13 +52,13 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
         <form action={action} className="space-y-3 rounded-md border p-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Trash2 className="h-4 w-4" aria-hidden />
-            Cancellazione account
+            {tr("deleteAccount")}
           </div>
           {hasPendingDeletion ? (
             <p className="text-muted-foreground text-sm">
-              Richiesta in attesa dal{" "}
-              {formatDate(pendingDeletionRequestedAt ?? "")}. Un amministratore
-              dovra completarla.
+              {tr("requestPendingSince")}{" "}
+              {formatDate(tr, pendingDeletionRequestedAt ?? "")}
+              {tr("adminCompletesDeletion")}
             </p>
           ) : (
             <>
@@ -65,10 +68,7 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
                   name="confirmDeletionRequest"
                   className="mt-1 h-4 w-4"
                 />
-                <span>
-                  Capisco che questa richiesta dovra essere verificata dalla
-                  scuola prima della cancellazione definitiva.
-                </span>
+                <span>{tr("deletionAcknowledgement")}</span>
               </label>
               <Button
                 type="submit"
@@ -76,7 +76,7 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
                 disabled={pending}
                 className="w-full"
               >
-                {pending ? "Invio richiesta..." : "Richiedi cancellazione"}
+                {pending ? tr("sendingRequest") : tr("requestDeletion")}
               </Button>
             </>
           )}
@@ -98,9 +98,9 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
   );
 }
 
-function formatDate(value: string): string {
+function formatDate(tr: UiTranslator, value: string): string {
   if (!value) return "";
-  return new Intl.DateTimeFormat("it-IT", {
+  return new Intl.DateTimeFormat(tr("locale"), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

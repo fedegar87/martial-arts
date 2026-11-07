@@ -65,6 +65,19 @@ Per il razionale completo vedi `archive/`:
 | **D13** | Aggiornamento di sicurezza framework | **Implementato localmente il 2026-09-27.** Next.js ed `eslint-config-next` aggiornati da `16.2.4` a `16.3.6`, React/React DOM da `19.2.4` a `19.2.8`, per includere le correzioni di sicurezza correnti. Lint, typecheck, 79 test e build superati; verifiche HTTP anonime di login, route protette e varianti RSC superate. Verifica interattiva con account e deploy non eseguiti. |
 | **D14** | Strategia White-Label e Multi-Arte Marziale | **Consolidata il 2026-11-04 in `plan/white-label-strategy.md`.** Unico codebase + deploy isolati Vercel/Supabase per organizzazioni esterne (fino a ~15-20 scuole, zero SaaS prematuro). Evoluzione strettamente attivata da trigger reali (zero over-engineering): Fase 1 per altre scuole Chang (separazione Schema SQL vs Seed + Tenant Brand/Asset Pack); Fase 2 per altre arti marziali come Taekwondo/Karate (`curriculum_tracks` `1..N`, `grade_levels` con `rank_order` crescente `1..N`, `skill_categories` con `tracking_mode`). Il riepilogo operativo FESK e' nello stesso documento. |
 
+**D15 — Multilingua (2026-11-07, richiesta esplicita per Arlon):** italiano e francese
+con `next-intl`, cataloghi per chiavi in `src/lib/i18n/`, locale da cookie tecnico
+`practice_locale` o `Accept-Language`, selettore nella shell e nelle pagine pubbliche.
+URL, identità e logica FESK restano comuni. I contenuti authored hanno traduzioni
+JSONB per lingua su tecniche, esami e news, con fallback al testo originale;
+nomi cinesi, note personali e dati tecnici non sono tradotti automaticamente.
+Migration `0050_i18n_content_and_notifications.sql` applicata in Supabase il
+2026-11-07 su conferma dell'utente (esito SQL riuscito, non verificato direttamente
+con un account autenticato): aggiunge anche la lingua dei promemoria in background. Testi legali
+estratti nel catalogo italiano e dichiarati come testo di riferimento anche in
+modalità francese; traduzione/revisione per apertura in Belgio ancora da completare.
+Procedura e terminologia: `skill-practice/docs/i18n.md`.
+
 ### 2.2 Decisioni aperte ⚠️
 
 | # | Decisione | Opzioni | Impatto | Priorità |
@@ -80,6 +93,7 @@ Per il razionale completo vedi `archive/`:
 |------------|--------|------|
 | Frontend | Next.js 14+ App Router + TypeScript | — |
 | UI | Tailwind CSS + shadcn/ui | Componenti accessibili pronti |
+| Lingue | next-intl, italiano/francese | Cookie + browser, cataloghi UI, date e contenuti authored con fallback |
 | PWA | Service worker statico + manifest | `public/sw.js` registrato in produzione; `next-pwa` rimosso il 2026-06-02 |
 | Database | Supabase (PostgreSQL + Auth) | Auth predisposta multi-utente |
 | Push reminder | Web Push + VAPID + Supabase `pg_cron`/`pg_net` | Cron esistente ogni 15 minuti; invio server-only via `web-push` |
@@ -877,7 +891,6 @@ PIANO LIBERO
 | Gamification (punti, badge, streak) | Non risolve il core, distrae |
 | Chat / messaggistica | WhatsApp esiste |
 | AI di qualsiasi tipo | Tecnologia non matura per MA, fuori scope |
-| Multi-lingua | Non ancora |
 | Marketplace | Mai |
 | Community/social features | Fuori scope MVP, da rivalutare per scaling federazione |
 | CI/CD complesso | Vercel auto-deploy da main basta |

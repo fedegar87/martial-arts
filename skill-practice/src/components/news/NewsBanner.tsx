@@ -1,11 +1,13 @@
-import Link from "next/link";
 import { Megaphone } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type Props = {
   unreadCount: number;
 };
 
 export function NewsBanner({ unreadCount }: Props) {
+  const tr = useTranslations("ui");
   if (unreadCount <= 0) return null;
 
   return (
@@ -16,8 +18,8 @@ export function NewsBanner({ unreadCount }: Props) {
       <Megaphone className="h-4 w-4 shrink-0" />
       <span className="label-font">
         {unreadCount === 1
-          ? "1 nuova comunicazione"
-          : `${unreadCount} nuove comunicazioni`}
+          ? tr("oneNewAnnouncement")
+          : tr("newAnnouncements", { p0: unreadCount })}
       </span>
     </Link>
   );

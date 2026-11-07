@@ -1,23 +1,13 @@
 "use client";
+import { disciplineLabel } from "@/lib/labels";
 
-import { useActionState, useCallback, useState } from "react";
-import { setupTrainingSchedule } from "@/lib/actions/training-schedule";
+import { useTranslations } from "next-intl";
+
 import { OptionCard } from "@/components/primitives/OptionCard";
-import { DISCIPLINE_LABELS } from "@/lib/labels";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { WeekdayChips } from "./WeekdayChips";
-import { DurationPicker } from "./DurationPicker";
-import { CadencePicker } from "./CadencePicker";
-import { PlanFormsSection } from "./PlanFormsSection";
-import { RepsStepper } from "./RepsStepper";
-import { SessionPreview } from "./SessionPreview";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { setupTrainingSchedule } from "@/lib/actions/training-schedule";
 import type {
   Discipline,
   PlanMode,
@@ -25,6 +15,13 @@ import type {
   TrainingSchedule,
   UserPlanItem,
 } from "@/lib/types";
+import { useActionState, useCallback, useState } from "react";
+import { CadencePicker } from "./CadencePicker";
+import { DurationPicker } from "./DurationPicker";
+import { PlanFormsSection } from "./PlanFormsSection";
+import { RepsStepper } from "./RepsStepper";
+import { SessionPreview } from "./SessionPreview";
+import { WeekdayChips } from "./WeekdayChips";
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
 
@@ -35,16 +32,20 @@ const ALL_DISCIPLINES: Discipline[] = ["shaolin", "taichi"];
 // Riapertura: ricostruiamo il pill "durata" dalla differenza date salvate.
 // L'action ri-ancora start_date a oggi al save, quindi un re-save senza modifiche estende
 // implicitamente la fine di N giorni. Comportamento voluto: "rieditare = N settimane da ora".
-function durationFromSchedule(schedule: TrainingSchedule | null): 4 | 8 | 12 | 24 {
+function durationFromSchedule(
+  schedule: TrainingSchedule | null,
+): 4 | 8 | 12 | 24 {
   if (!schedule) return 12;
   const start = new Date(`${schedule.start_date}T00:00:00Z`).getTime();
   const end = new Date(`${schedule.end_date}T00:00:00Z`).getTime();
   const weeks = Math.round((end - start) / (7 * 24 * 60 * 60 * 1000));
   if (!Number.isFinite(weeks)) return 12;
   const options: Array<4 | 8 | 12 | 24> = [4, 8, 12, 24];
-  return options.reduce((best, opt) =>
-    Math.abs(opt - weeks) < Math.abs(best - weeks) ? opt : best
-  , 12 as 4 | 8 | 12 | 24);
+  return options.reduce(
+    (best, opt) =>
+      Math.abs(opt - weeks) < Math.abs(best - weeks) ? opt : best,
+    12 as 4 | 8 | 12 | 24,
+  );
 }
 
 type Props = {
@@ -62,6 +63,7 @@ export function SetupForm({
   disciplineCounts,
   items,
 }: Props) {
+  const tr = useTranslations("ui");
   const [state, action, pending] = useActionState(setupTrainingSchedule, null);
   const availableExamDisciplines = availableDisciplines(disciplineCounts);
   const [examScope, setExamScope] = useState<ExamDisciplineScope>(() =>
@@ -70,7 +72,9 @@ export function SetupForm({
   const [weekdays, setWeekdays] = useState<number[]>(
     current?.weekdays ?? [1, 3, 5],
   );
-  const [duration, setDuration] = useState<4 | 8 | 12 | 24>(durationFromSchedule(current));
+  const [duration, setDuration] = useState<4 | 8 | 12 | 24>(
+    durationFromSchedule(current),
+  );
   const [cadence, setCadence] = useState<1 | 2 | 4>(
     current?.cadence_weeks ?? 2,
   );
@@ -97,7 +101,7 @@ export function SetupForm({
   const canSubmit = weekdays.length > 0;
   const endDate = new Date();
   endDate.setUTCDate(endDate.getUTCDate() + duration * 7);
-  const endLabel = endDate.toLocaleDateString("it-IT", {
+  const endLabel = endDate.toLocaleDateString(tr("locale"), {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -107,7 +111,7 @@ export function SetupForm({
     <form action={action} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Piano attivo</CardTitle>
+          <CardTitle className="text-base">{tr("activePlan")}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">{programLabel}</p>
@@ -117,7 +121,7 @@ export function SetupForm({
       {showExamScope ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Ambito sessioni</CardTitle>
+            <CardTitle className="text-base">{tr("sessionScope")}</CardTitle>
           </CardHeader>
           <CardContent>
             {isSingleDiscipline ? (
@@ -144,13 +148,13 @@ export function SetupForm({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Giorni di allenamento</CardTitle>
+          <CardTitle className="text-base">{tr("trainingDays")}</CardTitle>
         </CardHeader>
         <CardContent>
           <WeekdayChips value={weekdays} onChange={setWeekdays} />
           {weekdays.length === 0 && (
             <p className="text-muted-foreground mt-2 text-xs">
-              Seleziona almeno un giorno.
+              {tr("selectDay")}
             </p>
           )}
         </CardContent>
@@ -158,21 +162,23 @@ export function SetupForm({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Durata</CardTitle>
+          <CardTitle className="text-base">{tr("duration")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <DurationPicker value={duration} onChange={setDuration} />
-          <p className="text-muted-foreground text-xs">Fino al {endLabel}.</p>
+          <p className="text-muted-foreground text-xs">
+            {tr("until")} {endLabel}.
+          </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Lunghezza ciclo</CardTitle>
+          <CardTitle className="text-base">{tr("cycleLength")}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-2 text-xs">
-            Entro questo intervallo tutte le forme vengono praticate almeno una volta.
+            {tr("cycleDescription")}
           </p>
           <CadencePicker value={cadence} onChange={setCadence} />
         </CardContent>
@@ -186,7 +192,7 @@ export function SetupForm({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Ripetizioni per forma</CardTitle>
+          <CardTitle className="text-base">{tr("repsPerForm")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <RepsStepper value={reps} onChange={setReps} />
@@ -200,12 +206,8 @@ export function SetupForm({
         </Alert>
       )}
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={pending || !canSubmit}
-      >
-        {pending ? "Salvataggio..." : "Genera sessioni"}
+      <Button type="submit" className="w-full" disabled={pending || !canSubmit}>
+        {pending ? tr("saving") : tr("generateSessions")}
       </Button>
     </form>
   );
@@ -218,24 +220,21 @@ function SingleDisciplineNotice({
   discipline: Discipline;
   count: number;
 }) {
+  const tr = useTranslations("ui");
   return (
     <div className="space-y-2">
-      <input
-        type="hidden"
-        name="exam_discipline_scope"
-        value={discipline}
-      />
+      <input type="hidden" name="exam_discipline_scope" value={discipline} />
       <div className="border-border bg-muted/40 flex min-h-11 items-center justify-between gap-3 rounded-lg border px-4 py-2 text-sm">
         <span className="font-medium">
-          Solo {DISCIPLINE_LABELS[discipline]}
+          {tr("only")} {disciplineLabel(discipline, tr)}
         </span>
         <span className="text-muted-foreground text-xs">
-          {count} esercizi
+          {count} {tr("exercisesLowercase")}
         </span>
       </div>
       <p className="text-muted-foreground text-xs">
-        Il piano d&apos;esame attivo contiene solo {DISCIPLINE_LABELS[discipline]}.
-        Aggiungi l&apos;altra disciplina da Programma esame per cambiare ambito.
+        {tr("examOnlyContains")} {disciplineLabel(discipline, tr)}
+        {tr("addOtherDiscipline")}
       </p>
     </div>
   );
@@ -250,19 +249,20 @@ function ExamScopePicker({
   onChange: (value: ExamDisciplineScope) => void;
   disciplineCounts: Record<Discipline, number>;
 }) {
+  const tr = useTranslations("ui");
   const options = [
     {
       value: "both" as const,
-      label: "Entrambi",
-      detail: `${totalCount(disciplineCounts)} esercizi`,
+      label: tr("both"),
+      detail: tr("exerciseCount", { p0: totalCount(disciplineCounts) }),
     },
-    ...ALL_DISCIPLINES.filter((discipline) => disciplineCounts[discipline] > 0).map(
-      (discipline) => ({
-        value: discipline,
-        label: DISCIPLINE_LABELS[discipline],
-        detail: `${disciplineCounts[discipline]} esercizi`,
-      }),
-    ),
+    ...ALL_DISCIPLINES.filter(
+      (discipline) => disciplineCounts[discipline] > 0,
+    ).map((discipline) => ({
+      value: discipline,
+      label: disciplineLabel(discipline, tr),
+      detail: tr("exerciseCount", { p0: disciplineCounts[discipline] }),
+    })),
   ];
 
   return (
