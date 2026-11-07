@@ -581,6 +581,30 @@ Per account limitati, contenuti oltre il livello successivo restano soggetti a
 scope e RLS; un eventuale accesso a singole tecniche assegnato dall'istruttore
 richiede un intervento separato. Non rimuovere i controlli di accesso del catalogo.
 
+### Materiali glass discreti — Implementati il 2026-11-07
+
+Materiali condivisi in `globals.css`, derivati dai token del tema: barre opache
+all'86% (navigazione 88%), blur 16 px; pannelli al 95%, blur 18 px; saturazione,
+riflessi e ombre contenuti. Etichette secondarie delle barre appena più chiare,
+con contrasto della navigazione superiore a 5:1 anche sul bianco sottostante.
+Corretto l'ordine delle dichiarazioni WebKit/standard nel CSS compilato e la
+precedenza del materiale sullo sfondo generato dei pannelli. Ricette condivise
+fuori dai layer Tailwind, con variante navigazione tramite soli token.
+
+Base opaca senza supporto al filtro; trasparenza ridotta, contrasto aumentato e
+colori forzati gestiti anche per gli overlay modali. Pannelli senza transizioni
+dei filtri. Tema scuro/oro, pulsanti, card, layout e logica dati conservati;
+nessuna nuova dipendenza, modifica ai componenti generati o migrazione.
+
+Verificati lint, typecheck, 95 test, build, audit UI invariato, regressione del
+modulo personale e Chromium isolato con componenti reali/dati demo: stili
+calcolati, contrasto, tastiera/focus, preferenze di accessibilità, ramo opaco
+simulato e layout a 320/375/390 px e landscape 844×390. Screenshot esaminati.
+WebKit non installato: resta da confrontare la resa su Safari/iPhone fisico.
+Piano operativo temporaneo eliminato dopo le verifiche, come richiesto;
+regole risultanti in `skill-practice/docs/ui-system.md`. Commit e push inclusi,
+deploy ancora rinviato.
+
 ### 6.1 "Oggi fai questo" (`practice-logic.ts`)
 
 Input: tutte le `UserPlanItem` non nascoste dell'utente.

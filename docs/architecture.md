@@ -643,6 +643,11 @@ Design:
 
 - Tema scuro caldo/gold FESK in `src/app/globals.css`.
 - Tailwind v4 via CSS theme, non `tailwind.config.ts`.
+- Materiali condivisi di barre e pannelli in `globals.css` (`--material-*`):
+  traslucenza discreta solo con supporto al backdrop filter, base opaca e
+  preferenze di trasparenza/contrasto rispettate anche dagli overlay modali.
+  Ricette fuori dai layer Tailwind per prevalere sulle utility generate;
+  componenti shadcn, card di contenuto e logica dati restano invariati.
 - Font e asset sono brand-specific, non ancora configurabili per tenant.
 - Landing/hub possono essere piu editoriali; strumenti operativi restano densi
   e prevedibili.

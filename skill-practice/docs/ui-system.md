@@ -1,6 +1,6 @@
 # UI system operativo
 
-Versione: 2026-05-11.
+Versione: 2026-11-07.
 
 Questo documento e' la guida rapida per scegliere componenti UI, classi locali e cartelle. Il piano completo e' in `docs/ui-codebase-refactor-plan.md`.
 
@@ -121,6 +121,35 @@ Mappa delle superfici (token in `globals.css`):
 - card e sezioni raggruppate = `--surface-grouped` (`bg-card`)
 - chrome sovrapposto (header, sheet, nav) = `--surface-elevated`, applicato via `material-bar` / `material-sheet`
 - nota / contenuto incassato = `--surface-inset` (classe `surface-inset`)
+
+I materiali di barre e pannelli sono definiti soltanto in `globals.css`, tramite
+i token `--material-*`, derivati dalle superfici del tema. Barre: opacita' 86%,
+blur 16 px e saturazione 120%; navigazione: opacita' 88%; pannelli: opacita' 95%,
+blur 18 px e saturazione 115%. Bordi luminosi al 5% e ombre contenute. Le
+etichette secondarie delle barre hanno un colore locale leggermente piu' chiaro
+per mantenere il contrasto anche sopra contenuti chiari.
+
+Le ricette `material-bar` / `material-sheet` sono intenzionalmente fuori dai
+layer Tailwind: l'opt-in al materiale deve prevalere sul `bg-popover` generato
+di shadcn. La navigazione varia i token della ricetta comune, senza duplicare
+background o filtri con selettori piu' specifici. Non modificare i componenti
+generati e non aggiungere override nei singoli callsite.
+
+La base e' opaca; `@supports` abilita trasparenza e blur soltanto con supporto
+al filtro. Scrivere `-webkit-backdrop-filter` prima di `backdrop-filter`: l'ordine
+inverso fa perdere la proprieta' standard nell'ottimizzazione della build.
+Verificare gli stili calcolati con il CSS di produzione, non soltanto il sorgente.
+Non animare i filtri: i pannelli limitano le transizioni a opacita' e movimento.
+
+`prefers-reduced-transparency: reduce` e `prefers-contrast: more` rendono opachi
+i materiali ed eliminano il blur anche dagli overlay di sheet e alert-dialog.
+Con contrasto aumentato i separatori sono piu' evidenti; `forced-colors: active`
+usa colori di sistema senza filtri o ombre. Conservare il controllo del sistema
+sui colori, il focus visibile e le preferenze di movimento gia' esistenti.
+
+Applicare questi materiali ai livelli di navigazione e comandi sovrapposti.
+Card, testi e controlli ordinari conservano i trattamenti esistenti; evitare
+filtri per pulsante, rifrazione e sfondi decorativi aggiunti per mostrare il vetro.
 
 Esistono due tier di "card su pagina", entrambi intenzionali:
 
