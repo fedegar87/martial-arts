@@ -51,6 +51,8 @@ npm run build
 Italiano/francese: configurazione, cataloghi, contenuti e migrazione da applicare
 prima del deploy in [docs/i18n.md](docs/i18n.md). Verifica del cambio lingua con
 `npm run test:i18n` dopo la build.
+`npm run test:profile` verifica il profilo completo con query e azioni simulate:
+selettore lingua, riepiloghi, errori e uniformita' grafica a 320/390 px e in landscape.
 
 I test unitari sono accanto alla logica in `src/lib/`. I test browser ripetibili
 sono in `tests/browser/` e usano Chromium dal tooling locale `../tools/video/`:

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions/auth";
 import { revokePushSubscriptionOnSignOut } from "@/lib/actions/push-notifications";
 import { unsubscribeFromPushNotifications } from "@/lib/push-client";
+import { wrappingButtonClassName } from "@/lib/ui-classes";
 import { LogOut } from "lucide-react";
 import { useTransition } from "react";
 
@@ -24,7 +25,7 @@ export function SignOutButton() {
       variant="outline"
       onClick={handleClick}
       disabled={pending}
-      className="w-full"
+      className={`${wrappingButtonClassName} w-full`}
     >
       <LogOut className="mr-2 h-4 w-4" />
       {tr("signOut")}

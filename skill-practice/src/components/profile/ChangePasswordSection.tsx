@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { changePassword } from "@/lib/actions/auth";
+import { wrappingButtonClassName } from "@/lib/ui-classes";
 import { useActionState } from "react";
 
 export function ChangePasswordSection() {
@@ -15,7 +16,7 @@ export function ChangePasswordSection() {
 
   return (
     <Disclosure
-      title="Sicurezza"
+      title={tr("security")}
       summary={tr("changePassword")}
       revealKey={state}
     >
@@ -69,7 +70,11 @@ export function ChangePasswordSection() {
           </Alert>
         )}
 
-        <Button type="submit" disabled={pending} className="w-full">
+        <Button
+          type="submit"
+          disabled={pending}
+          className={`${wrappingButtonClassName} w-full`}
+        >
           {pending ? tr("updating") : tr("updatePassword")}
         </Button>
       </form>

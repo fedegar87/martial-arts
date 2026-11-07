@@ -8,6 +8,7 @@ import { Disclosure } from "@/components/primitives/Disclosure";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { requestAccountDeletion } from "@/lib/actions/account";
+import { wrappingButtonClassName } from "@/lib/ui-classes";
 import { Download, FileText, Trash2 } from "lucide-react";
 import { useActionState } from "react";
 
@@ -30,7 +31,11 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
     >
       <div className="space-y-4">
         <div className="space-y-2">
-          <Button asChild variant="outline" className="w-full justify-start">
+          <Button
+            asChild
+            variant="outline"
+            className={`${wrappingButtonClassName} w-full justify-start text-left`}
+          >
             <a href="/profile/export">
               <Download className="mr-2 h-4 w-4" />
               {tr("downloadData")}
@@ -74,7 +79,7 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
                 type="submit"
                 variant="destructive"
                 disabled={pending}
-                className="w-full"
+                className={`${wrappingButtonClassName} w-full`}
               >
                 {pending ? tr("sendingRequest") : tr("requestDeletion")}
               </Button>

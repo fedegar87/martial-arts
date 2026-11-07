@@ -5,6 +5,7 @@ import { PlanModeSection } from "@/components/profile/PlanModeSection";
 import { PrivacyDataSection } from "@/components/profile/PrivacyDataSection";
 import { SignOutButton } from "@/components/profile/SignOutButton";
 import { TrainingReminderSettings } from "@/components/profile/TrainingReminderSettings";
+import { LocaleSwitcher } from "@/components/shared/LocaleSwitcher";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,15 +15,17 @@ import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getCurrentProfileAccount } from "@/lib/queries/user-profile";
 import type { TrainingSchedule, UserRole } from "@/lib/types";
+import { wrappingButtonClassName } from "@/lib/ui-classes";
 import { CalendarDays, CalendarPlus, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 export default async function ProfilePage() {
   const tr = await getTranslations("ui");
+  const locale = await getLocale();
   const profile = await getCurrentProfileAccount();
   if (!profile) redirect("/login");
 
@@ -55,7 +58,7 @@ export default async function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{tr("yourGrades")}</CardTitle>
+          <CardTitle>{tr("yourGrades")}</CardTitle>
         </CardHeader>
         <CardContent>
           <GradeEditor
@@ -84,6 +87,13 @@ export default async function ProfilePage() {
       </Disclosure>
 
       <Disclosure
+        title={tr("language")}
+        summary={locale === "fr" ? "Français" : "Italiano"}
+      >
+        <LocaleSwitcher variant="settings" />
+      </Disclosure>
+
+      <Disclosure
         title={tr("program")}
         summary={
           profile.plan_mode === "custom"
@@ -96,19 +106,27 @@ export default async function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{tr("training")}</CardTitle>
+          <CardTitle>{tr("training")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-muted-foreground text-sm">
             {scheduleSummary(tr, schedule)}
           </div>
-          <Button asChild variant="outline" className="w-full justify-start">
+          <Button
+            asChild
+            variant="outline"
+            className={`${wrappingButtonClassName} w-full justify-start text-left`}
+          >
             <Link href="/sessions/setup">
               <CalendarPlus className="mr-2 h-4 w-4" />
               {schedule ? tr("editTraining") : tr("setupTraining")}
             </Link>
           </Button>
-          <Button asChild variant="outline" className="w-full justify-start">
+          <Button
+            asChild
+            variant="outline"
+            className={`${wrappingButtonClassName} w-full justify-start text-left`}
+          >
             <Link href="/calendar">
               <CalendarDays className="mr-2 h-4 w-4" />
               {tr("calendar")}

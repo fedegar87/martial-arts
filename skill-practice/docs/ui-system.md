@@ -97,7 +97,7 @@ Lo stato completato e' uno stato, non una CTA primaria.
 
 ## Disclosure
 
-`Disclosure` e' la primitiva condivisa per le cinque sezioni secondarie del
+`Disclosure` e' la primitiva condivisa per le sei sezioni secondarie del
 Profilo. Riusa `Card` con `details`/`summary` nativi: titolo e riepilogo visibili,
 chevron, target minimo 56 px e focus interno al bordo. Le sezioni si aprono
 indipendentemente e i figli restano montati, conservando i campi alla chiusura.
@@ -108,6 +108,14 @@ Identita' e gradi restano visibili; Allenamento, Calendario ed Esci mantengono
 accessi diretti. Non annidare altri accordion intorno a questi controlli.
 I riepiloghi devono rappresentare lo stato salvato, non le bozze dei form;
 eventuali richieste pendenti devono essere riconoscibili anche a sezione chiusa.
+
+Lingua usa lo stesso `Disclosure`, con la lingua salvata nel riepilogo, e
+`FormSelect` come i gradi. Il selettore non compare nella barra superiore
+dell'app. Titoli dei pannelli e `CardTitle` condividono font, dimensione, peso
+e interlinea; errori delle impostazioni usano `Alert`.
+Le azioni del profilo usano `wrappingButtonClassName` da `ui-classes.ts` per
+conservare altezza minima e testo completo anche con etichette francesi lunghe;
+le due modalita' programma hanno colonne di uguale larghezza e si impilano su mobile.
 
 Nel Calendario gli eventi federali riusano celle e giorno esistenti: un solo
 indicatore, elenco essenziale e dettagli su richiesta nel `material-sheet`.

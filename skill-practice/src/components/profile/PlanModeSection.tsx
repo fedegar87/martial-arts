@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { switchToCustomMode } from "@/lib/actions/plan";
 import type { PlanMode } from "@/lib/types";
+import { wrappingButtonClassName } from "@/lib/ui-classes";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
@@ -38,8 +39,12 @@ export function PlanModeSection({ planMode }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <Button asChild variant={planMode === "exam" ? "secondary" : "outline"}>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <Button
+          asChild
+          variant={planMode === "exam" ? "secondary" : "outline"}
+          className={wrappingButtonClassName}
+        >
           <Link href="/plan/exam">{tr("examProgram")}</Link>
         </Button>
         <Button
@@ -47,11 +52,16 @@ export function PlanModeSection({ planMode }: Props) {
           variant={planMode === "custom" ? "secondary" : "outline"}
           disabled={pending}
           onClick={handleCustomClick}
+          className={wrappingButtonClassName}
         >
           {tr("customSelection")}
         </Button>
       </div>
-      <Button asChild variant="ghost" className="w-full justify-start">
+      <Button
+        asChild
+        variant="ghost"
+        className={`${wrappingButtonClassName} w-full justify-start text-left`}
+      >
         <Link href="/programma">{tr("viewProgram")}</Link>
       </Button>
       <Sheet open={confirmOpen} onOpenChange={setConfirmOpen}>

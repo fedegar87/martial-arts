@@ -67,7 +67,7 @@ Per il razionale completo vedi `archive/`:
 
 **D15 — Multilingua (2026-11-07, richiesta esplicita per Arlon):** italiano e francese
 con `next-intl`, cataloghi per chiavi in `src/lib/i18n/`, locale da cookie tecnico
-`practice_locale` o `Accept-Language`, selettore nella shell e nelle pagine pubbliche.
+`practice_locale` o `Accept-Language`, selettore nella sezione Lingua del profilo e nelle pagine pubbliche. La barra superiore autenticata conserva soltanto Home e Bacheca.
 URL, identità e logica FESK restano comuni. I contenuti authored hanno traduzioni
 JSONB per lingua su tecniche, esami e news, con fallback al testo originale;
 nomi cinesi, note personali e dati tecnici non sono tradotti automaticamente.
@@ -769,11 +769,13 @@ Toggle in alto: `[ Il mio livello ]  [ Per esame ]  [ Tutto ]`
 ### 7.4 Tab "Profilo"
 
 Riorganizzazione implementata il 2026-11-07: nome, email, scuola e gradi visibili;
-Dettagli account, Programma, Promemoria, Sicurezza e Privacy/dati apribili
+Dettagli account, Lingua, Programma, Promemoria, Sicurezza e Privacy/dati apribili
 indipendentemente. Allenamento e Calendario conservano collegamenti diretti;
 Esci resta visibile. `primitives/Disclosure.tsx` usa details/summary nativi,
 stile Card condiviso e riapertura sugli esiti delle azioni, senza smontare i
-campi. Riepiloghi visibili per modalita' programma e promemoria effettivamente
+campi. Lingua usa `FormSelect` come i gradi, con la lingua salvata nel riepilogo;
+il selettore e' assente dall'header autenticato. Titoli dei pannelli e delle card
+condividono tipografia e interlinea. Riepiloghi visibili per modalita' programma e promemoria effettivamente
 salvati; richiesta di cancellazione pendente riconoscibile anche da chiusa.
 Nessuna nuova query, dipendenza, autorizzazione o migrazione. Verificati lint,
 typecheck, 95 test, build e audit UI (solo la nuova primitiva aggiunge un

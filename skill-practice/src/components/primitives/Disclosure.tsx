@@ -24,9 +24,13 @@ export function Disclosure({ title, summary, revealKey, children }: Props) {
       <details ref={detailsRef} className="group/disclosure">
         <summary className="tap-feedback flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 focus-visible:outline-offset-[-2px] [&::-webkit-details-marker]:hidden">
           <span className="min-w-0 flex-1">
-            <span className="font-heading block text-base font-medium">{title}</span>
+            <span className="font-heading block text-base leading-snug font-medium">
+              {title}
+            </span>
             {summary && (
-              <span className="text-muted-foreground mt-0.5 block text-sm">{summary}</span>
+              <span className="text-muted-foreground mt-0.5 block text-sm">
+                {summary}
+              </span>
             )}
           </span>
           <ChevronDown

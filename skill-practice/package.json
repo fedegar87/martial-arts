@@ -13,7 +13,8 @@
     "test:custom-selection": "node tests/browser/custom-selection.smoke.mjs",
     "test:federation-calendar": "node tests/browser/federation-calendar.smoke.mjs",
     "sync:events": "node --conditions=react-server --env-file=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-federation-events.mjs",
-    "test:i18n": "node tests/browser/i18n.smoke.mjs"
+    "test:i18n": "node tests/browser/i18n.smoke.mjs",
+    "test:profile": "node tests/browser/profile.smoke.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

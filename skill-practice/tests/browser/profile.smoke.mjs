@@ -1,0 +1,361 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import http from "node:http";
+import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const requireTools = createRequire(
+  path.join(path.dirname(app), "tools/video/package.json"),
+);
+process.env.PLAYWRIGHT_BROWSERS_PATH = "0";
+const { build } = requireTools("esbuild");
+const { chromium } = requireTools("playwright");
+const results = path.join(app, "test-results");
+await fs.mkdir(results, { recursive: true });
+const temporary = await fs.mkdtemp(path.join(results, "profile-fixture-"));
+const screenshots = path.join(results, "profile");
+await fs.mkdir(screenshots, { recursive: true });
+const catalogs = Object.fromEntries(
+  await Promise.all(
+    ["it", "fr"].map(async (locale) => [
+      locale,
+      JSON.parse(
+        await fs.readFile(
+          path.join(app, `src/lib/i18n/${locale}.json`),
+          "utf8",
+        ),
+      ),
+    ]),
+  ),
+);
+await fs.writeFile(
+  path.join(temporary, "queries.ts"),
+  `
+export const getCurrentProfileAccount = async () => ({
+  id: 'fixture', display_name: 'Nome di collaudo', email: 'allievo@example.test', school_name: 'Scuola di collaudo',
+  role: 'student', assigned_level_shaolin: 5, assigned_level_taichi: 0, profile_locked: true, plan_mode: 'exam', created_at: '2026-01-01T12:00:00Z'
+});
+export const getTrainingSchedule = async () => null;
+export const getPendingAccountDeletionRequest = async () => null;
+export const getTrainingReminderSettings = async () => ({enabled:false, activeSubscriptionCount:0, reminderTime:'09:00', timeZone:'Europe/Rome', includeExerciseNames:true});
+`,
+);
+await fs.writeFile(
+  path.join(temporary, "actions.ts"),
+  `
+export async function setLocale(value) {
+  (window.__calls ??= []).push(value);
+  if (window.__hold) await new Promise(resolve => window.__finish = resolve);
+  if (window.__fail) throw Error('Fixture save failure');
+  window.__locale = value;
+}
+const unexpected = async () => { throw Error('Unexpected account mutation'); };
+export { unexpected as changePassword, unexpected as signOut, unexpected as requestAccountDeletion,
+  unexpected as updateProfileGrade, unexpected as switchToCustomMode, unexpected as revokePushSubscriptionOnSignOut,
+  unexpected as enableTrainingReminders, unexpected as disableTrainingReminders, unexpected as updateTrainingReminderSettings };
+`,
+);
+await fs.writeFile(
+  path.join(temporary, "intl.ts"),
+  `
+import {createTranslator} from 'next-intl';
+export const getLocale = async () => window.__locale;
+export const getTranslations = async namespace => createTranslator({locale:window.__locale, messages:window.__catalogs[window.__locale], namespace});
+`,
+);
+await fs.writeFile(
+  path.join(temporary, "navigation.ts"),
+  `
+export const useRouter = () => ({refresh: () => { void window.__render(); }});
+export const usePathname = () => '/profile';
+export const redirect = () => { throw Error('Unexpected redirect'); };
+`,
+);
+await fs.writeFile(
+  path.join(temporary, "link.tsx"),
+  `
+import React from 'react';
+export default function Link({prefetch, children, ...props}) {return <a {...props}>{children}</a>;}
+`,
+);
+await fs.writeFile(
+  path.join(temporary, "fixture.tsx"),
+  `
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {NextIntlClientProvider} from 'next-intl';
+import ProfilePage from '@/app/(app)/profile/page';
+import {AppHeader} from '@/components/shared/AppHeader';
+import {BottomNav} from '@/components/nav/BottomNav';
+window.__catalogs = ${JSON.stringify(catalogs)};
+window.__locale = new URLSearchParams(location.search).get('locale') === 'fr' ? 'fr' : 'it';
+const root = createRoot(document.getElementById('root'));
+window.__render = async () => {
+  const content = await ProfilePage();
+  document.documentElement.lang = window.__locale;
+  root.render(<NextIntlClientProvider locale={window.__locale} messages={window.__catalogs[window.__locale]} timeZone="Europe/Rome">
+    <div className="app-shell bg-background"><AppHeader/><main className="app-main">{content}</main><BottomNav/></div>
+  </NextIntlClientProvider>);
+};
+void window.__render();
+`,
+);
+await build({
+  entryPoints: [path.join(temporary, "fixture.tsx")],
+  outfile: path.join(temporary, "bundle.js"),
+  bundle: true,
+  jsx: "automatic",
+  platform: "browser",
+  logLevel: "silent",
+  define: {
+    "process.env.NODE_ENV": '"production"',
+    "process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY": '"fixture"',
+    "process.env": "{}",
+  },
+  alias: {
+    "@": path.join(app, "src"),
+    react: path.join(app, "node_modules/react"),
+    "react-dom": path.join(app, "node_modules/react-dom"),
+    "next-intl/server": path.join(temporary, "intl.ts"),
+    "next-intl": path.join(app, "node_modules/next-intl"),
+    "next/navigation": path.join(temporary, "navigation.ts"),
+    "next/link": path.join(temporary, "link.tsx"),
+    ...Object.fromEntries(
+      [
+        "user-profile",
+        "training-schedule",
+        "account",
+        "push-notifications",
+      ].map((name) => [
+        `@/lib/queries/${name}`,
+        path.join(temporary, "queries.ts"),
+      ]),
+    ),
+    ...Object.fromEntries(
+      [
+        "profile",
+        "auth",
+        "account",
+        "plan",
+        "push-notifications",
+        "locale",
+      ].map((name) => [
+        `@/lib/actions/${name}`,
+        path.join(temporary, "actions.ts"),
+      ]),
+    ),
+  },
+});
+const staticRoot = path.join(app, ".next/static");
+const cssFiles = (await fs.readdir(staticRoot, { recursive: true })).filter(
+  (file) => file.endsWith(".css"),
+);
+const css = (
+  await Promise.all(
+    cssFiles.map((file) => fs.readFile(path.join(staticRoot, file), "utf8")),
+  )
+).join("\n");
+const fonts = [...css.matchAll(/\.([^{}\s]+)\{--font-[^}]+\}/g)]
+  .map((match) => match[1])
+  .join(" ");
+const bundle = await fs.readFile(path.join(temporary, "bundle.js"));
+const server = http.createServer(async (request, response) => {
+  const pathname = new URL(request.url, "http://localhost").pathname;
+  if (pathname === "/bundle.js") {
+    response.setHeader("Content-Type", "text/javascript");
+    return response.end(bundle);
+  }
+  if (pathname === "/style.css") {
+    response.setHeader("Content-Type", "text/css");
+    return response.end(css);
+  }
+  if (pathname.startsWith("/_next/static/")) {
+    const file = path.resolve(
+      staticRoot,
+      pathname.slice("/_next/static/".length),
+    );
+    if (file.startsWith(staticRoot + path.sep)) {
+      try {
+        return response.end(await fs.readFile(file));
+      } catch {
+        /* Missing asset. */
+      }
+    }
+    response.statusCode = 404;
+    return response.end();
+  }
+  response.setHeader("Content-Type", "text/html;charset=utf-8");
+  response.end(
+    `<!doctype html><html lang="it" class="dark ${fonts}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"></head><body><div id="root"></div><script src="/bundle.js"></script></body></html>`,
+  );
+});
+await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+const origin = `http://127.0.0.1:${server.address().port}`;
+let browser;
+try {
+  browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/*", (route) =>
+    route.request().url().startsWith(origin) ? route.continue() : route.abort(),
+  );
+  const panel = (title) =>
+    page
+      .locator("details")
+      .filter({ has: page.locator("summary").filter({ hasText: title }) });
+  const noOverflow = async () =>
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth + 1,
+      ),
+    );
+  await page.goto(origin);
+  await page.getByRole("heading", { name: "Nome di collaudo" }).waitFor();
+  assert.equal(await page.locator("header.material-bar select").count(), 0);
+  const language = panel(/^Lingua/);
+  assert.match(await language.locator("summary").innerText(), /Italiano/);
+  await language.locator("summary").click();
+  const select = page.getByRole("combobox", { name: "Lingua", exact: true });
+  await page.evaluate(() => {
+    window.__hold = true;
+  });
+  await select.selectOption("fr");
+  assert.equal(await select.isDisabled(), true);
+  await page.evaluate(() => {
+    window.__hold = false;
+    window.__finish();
+  });
+  await page.waitForFunction(() => document.documentElement.lang === "fr");
+  await panel(/^Langue/)
+    .getByRole("combobox", { name: "Langue", exact: true })
+    .waitFor();
+  assert.match(
+    await panel(/^Langue/)
+      .locator("summary")
+      .innerText(),
+    /Français/,
+  );
+  await panel(/^Sécurité/)
+    .locator("summary")
+    .waitFor();
+  await page.evaluate(() => {
+    window.__fail = true;
+  });
+  await page
+    .getByRole("combobox", { name: "Langue", exact: true })
+    .selectOption("it");
+  await panel(/^Langue/)
+    .getByRole("alert")
+    .waitFor();
+  assert.equal(await page.locator("html").getAttribute("lang"), "fr");
+  await page.evaluate(() => {
+    window.__fail = false;
+  });
+  await page
+    .getByRole("combobox", { name: "Langue", exact: true })
+    .selectOption("it");
+  await page.waitForFunction(() => document.documentElement.lang === "it");
+  assert.deepEqual(await page.evaluate(() => window.__calls), [
+    "fr",
+    "it",
+    "it",
+  ]);
+  for (const locale of ["it", "fr"]) {
+    for (const [width, height] of [
+      [320, 740],
+      [390, 844],
+      [844, 390],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.goto(`${origin}/?locale=${locale}`);
+      await page.locator("main details").last().waitFor();
+      await noOverflow();
+      await page.screenshot({
+        path: path.join(screenshots, `${locale}-${width}-collapsed.png`),
+        fullPage: true,
+      });
+      await page
+        .locator("main details summary")
+        .evaluateAll((elements) =>
+          elements.forEach((element) => element.click()),
+        );
+      await noOverflow();
+      const headings = await page
+        .locator(
+          'main [data-slot="card-title"], main summary > span > span:first-child',
+        )
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const style = getComputedStyle(element);
+            return [
+              style.fontFamily,
+              style.fontSize,
+              style.fontWeight,
+              style.lineHeight,
+            ];
+          }),
+        );
+      assert.ok(headings.length >= 8);
+      assert.ok(
+        headings.every(
+          (style) => JSON.stringify(style) === JSON.stringify(headings[0]),
+        ),
+        `Profile section headings share typography: ${JSON.stringify(headings)}`,
+      );
+      const surfaces = await page
+        .locator('main > div > [data-slot="card"]')
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const style = getComputedStyle(element);
+            return [
+              style.backgroundColor,
+              style.borderRadius,
+              style.borderColor,
+              style.boxShadow,
+            ];
+          }),
+        );
+      assert.ok(
+        surfaces.every(
+          (style) => JSON.stringify(style) === JSON.stringify(surfaces[0]),
+        ),
+        "Profile panels share surfaces",
+      );
+      const clippedButtons = await page
+        .locator('main [data-slot="button"]')
+        .evaluateAll((elements) =>
+          elements
+            .filter(
+              (element) =>
+                element.getClientRects().length &&
+                (element.scrollWidth > element.clientWidth + 1 ||
+                  element.scrollHeight > element.clientHeight + 1),
+            )
+            .map((element) => element.textContent.trim()),
+        );
+      assert.deepEqual(
+        clippedButtons,
+        [],
+        "Profile action labels remain fully visible",
+      );
+      await page.screenshot({
+        path: path.join(screenshots, `${locale}-${width}-expanded.png`),
+        fullPage: true,
+      });
+    }
+  }
+  assert.deepEqual(errors, []);
+  console.log(
+    "PASS: actual profile page with mocked data/actions; language in profile only, saved summary, pending/error/retry, Italian/French headings, shared typography/surfaces, no overflow at 320/390px and landscape. No database writes.",
+  );
+} finally {
+  await browser?.close();
+  await new Promise((resolve) => server.close(resolve));
+  assert.ok(
+    path.resolve(temporary).startsWith(path.resolve(results) + path.sep),
+  );
+  await fs.rm(temporary, { recursive: true, force: true });
+}

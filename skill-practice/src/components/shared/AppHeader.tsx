@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Bell, House } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { LocaleSwitcher } from "./LocaleSwitcher";
 
 export function AppHeader({ newsActive = false }: { newsActive?: boolean }) {
   const tr = useTranslations("ui");
@@ -18,7 +17,6 @@ export function AppHeader({ newsActive = false }: { newsActive?: boolean }) {
           <House className="h-5 w-5" aria-hidden />
         </Link>
       </Button>
-      <LocaleSwitcher />
       <Button
         asChild
         variant="ghost"
