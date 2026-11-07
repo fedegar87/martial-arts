@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Reuse the workspace's browser tooling; no app dependency or live account needed.
-const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const workspace = path.dirname(app);
 const requireTools = createRequire(path.join(workspace, "tools/video/package.json"));
 process.env.PLAYWRIGHT_BROWSERS_PATH = "0";
@@ -186,7 +186,7 @@ try {
   assert.ok(await button("Salva piano").isDisabled());
   assert.equal(await page.getByRole("button", { name: /seleziona|deseleziona/i }).count(), 0);
   await checkbox(a).check();
-  const output = path.join(workspace, "screenshots-mobile/custom-selection");
+  const output = path.join(app, "test-results/custom-selection");
   await fs.mkdir(output, { recursive: true });
   for (const width of [320, 375, 390]) {
     await page.setViewportSize({ width, height: 844 });
@@ -202,4 +202,5 @@ try {
 } finally {
   await browser?.close();
   await new Promise((resolve) => server.close(resolve));
+  await fs.rm(temporary, { recursive: true, force: true });
 }

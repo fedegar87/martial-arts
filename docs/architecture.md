@@ -22,8 +22,7 @@ Leggi prima questa sezione se sei un agent/LLM.
    [../skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md).
 5. Per UI e componenti leggi
    [../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md).
-6. Per lavoro recente di hardening/correzioni leggi
-   [../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md](../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md).
+6. Per debito ancora aperto e verifiche da completare usa le sezioni 17 e 19.
 
 Regola pratica: se il piano e il codice non coincidono, verifica il codice e
 aggiorna il documento/piano invece di copiare assunzioni vecchie.
@@ -59,13 +58,15 @@ Principi architetturali:
 
 ## 2. Mappa documenti
 
-Cartella [docs/](.) contiene tre documenti:
+Documenti correnti del workspace:
 
 | Documento | Ruolo | Stato |
 | --- | --- | --- |
 | [architecture.md](architecture.md) | Briefing tecnico canonico per LLM/maintainer | Fonte tecnica primaria |
-| [performance-assessment.md](performance-assessment.md) | Diagnosi e piano performance | Storico/deep dive; alcune sezioni sono superate da fix gia implementati |
+| [video-tutorial-setup.md](video-tutorial-setup.md) | Setup degli strumenti video | Procedura ripetibile |
 | [marketing-video-promo-guide.md](marketing-video-promo-guide.md) | Guida operativa per video promozionale | Non tecnica, nessuna fusione con architettura |
+
+I piani conclusi sono rimossi dopo il consolidamento delle decisioni; lo storico e' in Git. I report con attivita' ancora aperte e le evidenze di ricerca restano.
 
 La strategia white-label, multi-istanza e generalizzazione multi-arte marziale
 vive ora in un unico documento canonico:
@@ -83,14 +84,13 @@ martial-arts/
 |   `-- training-reminders.yml
 |-- docs/
 |   |-- architecture.md
-|   |-- performance-assessment.md
+|   |-- video-tutorial-setup.md
 |   `-- marketing-video-promo-guide.md
 |-- plan/
 |   |-- current-plan.md
 |   |-- white-label-strategy.md
 |   |-- README.md
 |   |-- CLAUDE.md
-|   |-- completed/
 |   `-- reference/
 |-- archive/
 `-- skill-practice/
@@ -100,6 +100,7 @@ martial-arts/
     |-- public/
     |-- scripts/
     |-- src/
+    |-- tests/browser/
     |-- supabase/migrations/
     `-- docs/
 ```
@@ -108,10 +109,9 @@ Cartelle importanti:
 
 - `plan/current-plan.md`: fonte prodotto/strategia, contiene anche storico
   lungo; alcune parti storiche sono deliberatamente superate.
-- `archive/`: ricerca e brief superati, read-only salvo esplicita richiesta.
+- `archive/`: ricerca di mercato e validazione, read-only salvo esplicita richiesta.
 - `skill-practice/`: unica app reale. Non e' monorepo.
-- `skill-practice/docs/`: documenti tecnici interni all'app, soprattutto UI e
-  piani di review/fix.
+- `skill-practice/docs/`: documenti correnti di UI, verifiche accessi e condizioni legali aperte.
 
 ## 4. Stack tecnico corrente
 
@@ -270,7 +270,6 @@ Supabase entrypoint:
 
 | File | Uso |
 | --- | --- |
-| `src/lib/supabase/client.ts` | Browser client per Client Components quando serve |
 | `src/lib/supabase/server.ts` | Server client con cookies da `next/headers` |
 | `src/lib/supabase/middleware.ts` | Client request-bound per proxy/session refresh |
 | `src/lib/supabase/admin.ts` | Service role server-only, usato dal cron reminder |
@@ -726,7 +725,7 @@ Push reminders:
   UID/occorrenza stabili e rifiuto di snapshot obsoleti; gli eventi rimossi
   diventano annullati. RLS nega scritture eventi ai client e accesso ai
   promemoria altrui; lettura eventi pubblici a tutti gli autenticati dell'istanza.
-- Test browser isolato: `node scripts/federation-calendar-smoke.mjs` dopo build;
+- Test browser isolato: `npm run test:federation-calendar` dopo build;
   usa il tooling Chromium del workspace e azioni/push simulate, senza account
   o invii reali. Verifica dettagli, focus, errori, selezione/rimozione, orario
   condiviso indipendente dagli allenamenti e mobile/landscape. Test puri in
@@ -750,11 +749,13 @@ Performance corrente:
 - `/skill/[skillId]` parallelizza skill, plan items, note e log oggi.
 - `/plan/custom` usa `SkillOption` DTO snello.
 
-Documentazione performance:
+Verifiche performance ancora utili:
 
-- [performance-assessment.md](performance-assessment.md) e' utile come deep
-  dive, ma alcune azioni elencate sono gia implementate. Verificare il codice
-  prima di usare quel file come backlog.
+- Misurare TTFB e timing delle query con sessione reale, distinguendo primo
+  accesso e navigazioni successive; consultare Query Performance prima di aggiungere indici.
+- Non introdurre cache del catalogo con client che dipendono da `cookies()`
+  fuori dal request scope; prima definire il modello di autorizzazione della cache.
+- Un eventuale passaggio a `getClaims` richiede verifica della configurazione JWT.
 
 Operativita:
 
@@ -840,10 +841,13 @@ Suite attuale:
 Coverage:
 
 - Copre logica pura.
-- Non copre componenti React.
+- I test in `tests/browser/` coprono componenti reali con azioni/push simulate.
 - Non copre route handlers.
 - Non copre RLS/RPC con DB reale.
-- Non c'e' Playwright E2E.
+- Non e' una suite E2E con account e database reali.
+- Comandi: `npm run test:custom-selection` e `npm run test:federation-calendar`.
+  Usano il tooling browser locale in `tools/video/`; gli artefatti sono in
+  `skill-practice/test-results/` (ignorata da Git).
 
 Quando tocchi:
 
@@ -864,16 +868,21 @@ Debito architetturale consapevole (gestito a trigger in `plan/white-label-strate
 - Nessun admin panel web per contenuti/utenti (operativita tramite script CLI in
   `skill-practice/scripts/`).
 - No i18n/terminology layer finche non si attiva una scuola non-Chang.
-- No test E2E/RLS.
+- Nessuna suite E2E autenticata/RLS persistente; procedure manuali in
+  `skill-practice/docs/access-control-checks.md`.
 
 Rischi funzionali:
 
 - Session progress storico puo essere ricalcolato su composizione corrente del
-  piano; il piano review 2026-06-11 segnala M7 come decisione aperta
-  (fix log-based vs snapshot composizione).
+  piano: resta da scegliere fra conteggio basato sui log e snapshot della composizione.
 - `getClaims` per ridurre round trip auth e' deferito perche dipende dalla
   configurazione JWT Supabase.
-- Push/cron ha finding esclusi dal piano 2026-06-11 perche non prioritari.
+- Rileggere e aggiornare in modo coerente gli errori in `lib/queries/*`, il
+  guard onboarding sui deep link e l'eventuale CSP compatibile con YouTube/Supabase.
+- Valutare atomicita' degli incrementi concorrenti delle ripetizioni e DTO
+  ridotti per `/sessions/setup`; introdurre cambi solo con un caso reale.
+- Mancano tipi Supabase `Database` generati e un ledger automatico delle
+  migrazioni applicate; il mirror manuale e il workflow SQL restano espliciti.
 
 Evoluzione multi-scuola / altre arti marziali:
 
@@ -916,8 +925,7 @@ Tecnici:
 - Package: [../skill-practice/package.json](../skill-practice/package.json)
 - Regole progetto: [../skill-practice/CLAUDE.md](../skill-practice/CLAUDE.md)
 - UI system: [../skill-practice/docs/ui-system.md](../skill-practice/docs/ui-system.md)
-- Review fixes 2026-06-11:
-  [../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md](../skill-practice/docs/plans/completed/2026-06-11-review-fixes.md)
+- Verifica accessi: [../skill-practice/docs/access-control-checks.md](../skill-practice/docs/access-control-checks.md)
 - Migrations:
   [../skill-practice/supabase/migrations](../skill-practice/supabase/migrations)
 
@@ -929,7 +937,6 @@ Prodotto/strategia:
 - Indice piani: [../plan/README.md](../plan/README.md)
 - Curriculum FESK:
   [../plan/reference/domain/curriculum-mapping-fesk.md](../plan/reference/domain/curriculum-mapping-fesk.md)
-- Performance:
-  [performance-assessment.md](performance-assessment.md)
+- Performance: stato e verifiche nella sezione 16 di questo documento.
 - Video promo:
   [marketing-video-promo-guide.md](marketing-video-promo-guide.md)

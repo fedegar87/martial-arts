@@ -2,7 +2,7 @@
 
 **Status:** piano consolidato ed eseguibile  
 **Data:** 2026-04-25  
-**Sostituisce operativamente:** `archive/2026-04-25-gui-ux-experience-audit-superseded.md` + `archive/2026-04-25-ios-design-principles-enhancement-superseded.md`  
+**Riferimento corrente:** principi di design; implementazione e regole UI in `skill-practice/docs/ui-system.md`. Gli audit superati sono nella cronologia Git.
 **Scope:** Scenario A, MVP personale FESK. Scenario B e landing pubblica restano gated.
 
 ---

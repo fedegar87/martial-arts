@@ -4,7 +4,6 @@
 **Ultimo aggiornamento:** 2026-11-04  
 **Stato codice di riferimento:** Migrazioni `0001`–`0049`, `src/lib/brand.ts`, `src/app/manifest.ts`
 **Sostituisce:** `docs/architecture-multitenancy-readiness.md` (eliminato), `plan/2026-06-13-white-label-multi-instance-strategy.md` (eliminato)  
-**Storico rollout FESK:** [completed/2026-06-13-fesk-rollout-implementation-plan.md](completed/2026-06-13-fesk-rollout-implementation-plan.md)
 
 ---
 
@@ -174,7 +173,7 @@ Non anticipare mai una fase prima che si verifichi il suo trigger concreto.
 
 ## 5. Riferimento Rapido Decisioni FESK Attive
 
-Per evitare agli agenti di dover rileggere l'intero piano storico chiuso ([completed/2026-06-13-fesk-rollout-implementation-plan.md](completed/2026-06-13-fesk-rollout-implementation-plan.md)), ecco i vincoli operativi FESK attualmente in vigore in produzione:
+Questi sono i vincoli operativi FESK attualmente in vigore in produzione:
 
 - **Prodotto e istanza:** `FESK Practice` (`info@feskfongttai.it`), deployato sull'istanza Vercel/Supabase principale; la vecchia landing personale cavallo/Confucio resta preservata su `/landing-legacy`.
 - **Accesso solo su invito pre-assegnato:** inserimento riga in `user_invites` **prima** dell'invio invito Auth (`scripts/invita-utenti.mjs`); signup senza invito `pending` viene bloccato da `handle_new_user`.

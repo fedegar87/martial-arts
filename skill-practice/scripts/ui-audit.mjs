@@ -143,8 +143,8 @@ const report = {
 
 const output = `${JSON.stringify(report, null, 2)}\n`;
 
-if (process.argv.includes("--write-baseline")) {
-  const target = join(process.cwd(), "docs", "ui-audit-baseline.json");
+if (process.argv.includes("--write-report")) {
+  const target = join(process.cwd(), "test-results", "ui-audit.json");
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, output, "utf8");
   console.log(`Wrote ${target}`);

@@ -3,7 +3,10 @@
 **Status:** Active
 **Versione brief:** v3
 **Ultimo aggiornamento:** 2026-11-07
-**Sostituisce:** `archive/05-brief-v1-superseded.md`
+
+I piani operativi conclusi sono rimossi dopo aver consolidato le decisioni nei
+documenti correnti; lo storico resta in Git. I test browser ripetibili vivono
+in `skill-practice/tests/browser/`, le procedure in `skill-practice/docs/`.
 
 ---
 
@@ -57,16 +60,16 @@ Per il razionale completo vedi `archive/`:
 | **D8** | Provisioning utenti | **Solo admin.** Niente self-signup pubblico. Admin invita via Supabase dashboard "Send invitation". Coerente con modello federazione (§1.1). Self-signup riapribile in futuro se serve |
 | **D9** | Min password length | **8 caratteri** (NIST 2024 baseline). Niente regex complex (es. una maiuscola + un numero) — NIST le ha rimosse |
 | **D10** | Documenti legali (privacy/terms/cookies/disclaimer) | **Pagine custom in-app, non iubenda.** Deviazione esplicita rispetto al §15.3 v3 (che suggeriva iubenda generator a €29/anno). Razionale: (a) MVP single-user non ha budget legale ricorrente; (b) i contenuti devono essere specifici per pratica fisica/scuola e non generici da generator; (c) tutto il testo non derivabile è marcato `[PLACEHOLDER: ...]` per revisione legale prima di apertura a utenti terzi. iubenda resta opzione di fallback se la federazione richiederà policy generata da fonte certificata |
-| **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. Design: `plan/completed/2026-05-10-calendar-unification-design.md` |
-| **D12** | Promemoria push allenamento | **Attivi in produzione dal 2026-11-04 (Web Push VAPID + Supabase `pg_cron`/`pg_net`).** Selettori attivi in `/today` e `/profile`, finestra di recupero di 90m con retry automatico, revoca subscription al logout, messaggio guida iOS Home Screen e fallback white-label da `src/lib/brand.ts`. Runbook per nuove istanze in `skill-practice/scripts/setup-push-cron.sql`. Design storico: `plan/completed/2026-05-16-training-reminder-push-notifications-plan.md`. |
+| **D11** | Calendario unificato | **`/calendar` è l'unica vista calendario dell'app.** Mostra sessioni programmate + pratica libera in una DayView, senza filtri. `/sessions/calendar` e `/journal` non esistono più (unificate il 2026-05-10). `practice_logs` ha chiave logica unica `(user_id, skill_id, date)` e indice `(user_id, date)`. |
+| **D12** | Promemoria push allenamento | **Attivi in produzione dal 2026-11-04 (Web Push VAPID + Supabase `pg_cron`/`pg_net`).** Selettori attivi in `/today` e `/profile`, finestra di recupero di 90m con retry automatico, revoca subscription al logout, messaggio guida iOS Home Screen e fallback white-label da `src/lib/brand.ts`. Runbook per nuove istanze in `skill-practice/scripts/setup-push-cron.sql`. |
 | **D13** | Aggiornamento di sicurezza framework | **Implementato localmente il 2026-09-27.** Next.js ed `eslint-config-next` aggiornati da `16.2.4` a `16.3.6`, React/React DOM da `19.2.4` a `19.2.8`, per includere le correzioni di sicurezza correnti. Lint, typecheck, 79 test e build superati; verifiche HTTP anonime di login, route protette e varianti RSC superate. Verifica interattiva con account e deploy non eseguiti. |
-| **D14** | Strategia White-Label e Multi-Arte Marziale | **Consolidata il 2026-11-04 in `plan/white-label-strategy.md`.** Unico codebase + deploy isolati Vercel/Supabase per organizzazioni esterne (fino a ~15-20 scuole, zero SaaS prematuro). Evoluzione strettamente attivata da trigger reali (zero over-engineering): Fase 1 per altre scuole Chang (separazione Schema SQL vs Seed + Tenant Brand/Asset Pack); Fase 2 per altre arti marziali come Taekwondo/Karate (`curriculum_tracks` `1..N`, `grade_levels` con `rank_order` crescente `1..N`, `skill_categories` con `tracking_mode`). Il rollout FESK (`0037`–`0048`, `brand.ts`, `manifest.ts`, inviti e promozioni) è archiviato in `plan/completed/2026-06-13-fesk-rollout-implementation-plan.md`. |
+| **D14** | Strategia White-Label e Multi-Arte Marziale | **Consolidata il 2026-11-04 in `plan/white-label-strategy.md`.** Unico codebase + deploy isolati Vercel/Supabase per organizzazioni esterne (fino a ~15-20 scuole, zero SaaS prematuro). Evoluzione strettamente attivata da trigger reali (zero over-engineering): Fase 1 per altre scuole Chang (separazione Schema SQL vs Seed + Tenant Brand/Asset Pack); Fase 2 per altre arti marziali come Taekwondo/Karate (`curriculum_tracks` `1..N`, `grade_levels` con `rank_order` crescente `1..N`, `skill_categories` con `tracking_mode`). Il riepilogo operativo FESK e' nello stesso documento. |
 
 ### 2.2 Decisioni aperte ⚠️
 
 | # | Decisione | Opzioni | Impatto | Priorità |
 |---|-----------|---------|---------|----------|
-| **D5** | **SRS "vero" per review/maintenance** | A) Rotazione semplice (ultima pratica). B) Intervalli crescenti tipo Anki/Chessable | Letteratura supporta SR per skill motorie. B = differenziatore reale ma più complesso. Sprint 3 corretto. **Sprint 1.12:** i 3 livelli (focus/review/maintenance) sono stati semplificati a 2 (focus/maintenance) — vedi `plan/completed/2026-05-04-plan-status-simplification-design.md`. SRS reale resta come decisione futura | 🟢 Sprint 3 o oltre |
+| **D5** | **SRS "vero" per review/maintenance** | A) Rotazione semplice (ultima pratica). B) Intervalli crescenti tipo Anki/Chessable | Letteratura supporta SR per skill motorie. B = differenziatore reale ma più complesso. Sprint 3 corretto. **Sprint 1.12:** i 3 livelli (focus/review/maintenance) sono stati semplificati a 2 (focus/maintenance). SRS reale resta come decisione futura | 🟢 Sprint 3 o oltre |
 | **D7** | **Player video** | YouTube embed accettato in v3. Verificare se loop/slow-mo diventano frustranti dopo 30 giorni di uso personale. Eventuale switch a MP4 self-hosted con player custom | Se uso personale rivela frustrazione → riapertura decisione | 🟢 Dopo 30 giorni di uso |
 
 ---
@@ -308,7 +311,7 @@ skill-practice/
 ├── CLAUDE.md                           # Regole di progetto (vincoli stack, struttura, scope)
 ├── docs/
 │   ├── ui-system.md
-│   └── plans/completed/ui-codebase-refactor-plan.md
+│   └── access-control-checks.md
 ├── public/
 │   ├── manifest.json
 │   ├── icons/                          # 192, 512, maskable
@@ -373,7 +376,6 @@ skill-practice/
 │   ├── lib/
 │   │   ├── supabase/
 │   │   │   ├── admin.ts                # service-role client per cron/server-only
-│   │   │   ├── client.ts               # createBrowserClient (Client Components)
 │   │   │   ├── server.ts               # createServerClient (RSC + Server Actions)
 │   │   │   └── middleware.ts           # helper per src/proxy.ts
 │   │   ├── queries/                    # Lettura da Server Components
@@ -432,8 +434,8 @@ skill-practice/
 ├── scripts/
 │   ├── generate-fesk-seed.mjs          # Genera 0004_seed_fesk.sql da curriculum-mapping-fesk.md
 │   ├── sync-federation-events.mjs     # Primo import/manuale, nessun invio push
-│   ├── federation-calendar-smoke.mjs  # Test browser isolato con azioni/push simulate
 │   └── ui-audit.mjs
+├── tests/browser/                    # Regressioni UI con azioni e push simulate
 ├── .env.local.example
 ├── next.config.ts
 ├── postcss.config.mjs                  # Tailwind v4
@@ -487,13 +489,13 @@ Aggiornamento UI 2026-05-11:
 - `src/components/ui/` resta riservato ai componenti shadcn-managed.
 - Le primitive UI custom del progetto vanno in `src/components/primitives/<Name>.tsx` con PascalCase.
 - `src/components/shared/` resta per shell/app/layout e asset identitari, non per primitive UI pure.
-- Regole UI sono in `skill-practice/docs/ui-system.md` (piano storico in `skill-practice/docs/plans/completed/ui-codebase-refactor-plan.md`).
+- Regole UI sono in `skill-practice/docs/ui-system.md`.
 
 - **Route groups `(auth)` e `(app)`**: separano pagine pubbliche da protette. `src/proxy.ts` (ex `src/middleware.ts`, rinominato in Next 16) redirige verso `/login` qualunque rotta sotto `(app)` se la sessione manca.
-- **`lib/supabase/` con tre file**: in App Router servono client diversi per Client Components, RSC/Server Actions e proxy. Un singolo `supabase.ts` rompe SSR e session refresh.
+- **`lib/supabase/`**: client distinti per RSC/Server Actions (`server.ts`), proxy (`middleware.ts`) e operazioni service role (`admin.ts`). Nessun browser client inutilizzato.
 - **`lib/queries/` + `lib/actions/`**: lettura via Server Components senza hook, mutation via Server Action. Per questo `hooks/` è ridotto a 2 file: hook tipo `useSkills`/`useUserPlan` sarebbero anti-pattern in App Router (riscaricano dati già nel server tree).
 - **Componenti raggruppati per feature** (`today/`, `library/`, `skill/`, ecc.): quando arrivano news/admin in Sprint 2-3, una directory flat esplode. Ogni nuovo componente va nella sotto-cartella della feature, non nella root di `components/`.
-- **Seed in SQL, non TypeScript**: §12 mostra TS perché è leggibile, ma il vero seed è eseguito da Supabase CLI come SQL in `supabase/migrations/0002_seed_school_skills.sql`. Il TS in §12 è documentazione di riferimento.
+- **Seed in SQL**: il curriculum FESK deriva dalla mappatura di dominio e dalle migrazioni, non da esempi TypeScript nel piano.
 - **Niente `src/data/`**: i dati statici stanno in DB (Supabase), non nel bundle.
 - **Niente `helpers/`, `services/`, `api/` custom**: la convenzione del progetto è `queries/` (read) + `actions/` (write). Punto.
 
@@ -595,7 +597,7 @@ Il filtro ricade su Tutti se il grado attivo non esiste nella nuova disciplina.
 Durante il salvataggio filtri e spunte sono bloccati; un errore conserva le scelte
 anche dopo il reset automatico dei form React. Si può salvare la
 rimozione manuale di tutte le scelte precedentemente salvate nella disciplina.
-Regressione browser in `skill-practice/scripts/custom-selection-smoke.mjs`,
+Regressione browser in `skill-practice/tests/browser/custom-selection.smoke.mjs`,
 con dipendenze di test locali già disponibili in `tools/video/`.
 Il pulsante di cancellazione va a capo sui telefoni stretti, senza uscire dallo
 schermo. Verificati lint, typecheck, 95 test, build, audit UI invariato e test
@@ -665,7 +667,7 @@ Quando l'utente completa il setup in `/sessions/setup`, una riga in `training_sc
 - Forme per sessione = `ceil((N_focus * 2 + N_maint * 1) / (weekdays.length * cycle_weeks))`
 - `cadence_weeks` rappresenta ora la "lunghezza ciclo" (label rinominata in UI come **"Lunghezza ciclo"**)
 
-Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi `plan/completed/2026-04-26-training-schedule-design.md` per la storia originale e `plan/completed/2026-05-04-plan-status-simplification-design.md` per il design corrente con 2 stati.
+Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Il modello corrente usa due stati: focus e maintenance.
 
 ---
 
@@ -675,7 +677,7 @@ Sostituisce `getTodayPractice` (§6.1) per gli utenti con schedule attiva. Vedi 
 
 Da Sprint 2.x esiste `/hub`, home permanente con 6 tile (Oggi, Programma, Scuola Chang, Progressi, Bacheca, Profilo). La landing CTA `Entra` reindirizza qui per utenti onboardati. Da `/hub` si raggiunge ogni area.
 
-In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con ideogramma 丙午 cliccabile (sinistra → torna a `/hub`) e campanella Bacheca (destra → `/news`). È non-sticky di design: l'AppHeader scrolla via per non collidere con la sticky pre-esistente su `/today`. Vedi `plan/completed/2026-05-01-hub-page-design.md` per il design storico.
+In tutte le pagine `(app)/*` tranne `/hub` è montato `AppHeader`: barra non-sticky con casetta Lucide cliccabile (sinistra → torna a `/hub`) e campanella Bacheca (destra → `/news`). È non-sticky di design: l'AppHeader scrolla via per non collidere con la sticky pre-esistente su `/today`.
 
 Correzione implementata il 2026-11-07: anche il hub mostra la campanella Bacheca,
 integrata a destra nell'intestazione esistente, senza barra aggiuntiva o Home.
@@ -820,17 +822,17 @@ PIANO LIBERO
 - **1.6 — VideoPlayer custom:** implementato in `src/components/skill/VideoPlayer.tsx`; sostituisce `YouTubeEmbed` e carica YouTube solo dopo tap.
 - **1.7 — UX Programma + Modalità di studio:** schema `0005_plan_mode.sql`, `/programma`, `/plan/exam`, `/plan/custom` e azioni RPC atomiche implementate; richiede migrations applicate per walkthrough reale.
 - **1.8 — Tab Progresso:** `/progress` e BottomNav a 4 tab implementati con SVG/Tailwind, senza dipendenze chart.
-- **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Design: `plan/completed/2026-04-26-training-schedule-design.md`. Plan: `plan/completed/2026-04-26-training-schedule-plan.md`. Nota 2026-05-10: la rotta `/sessions/calendar` originariamente prevista è stata unificata in `/calendar` (vedi 1.14).
-- **1.10 — Auth password management:** flow completo per recovery, invite e change password. Pagine `/forgot-password`, `/auth/update-password`, sezione "Sicurezza" su `/profile`. Server actions `requestPasswordReset` / `updatePassword` / `changePassword`. Modifica `auth/callback/route.ts` con allowlist `next` (anti open redirect) e proxy con lista `AUTHENTICATED_ONLY`. Logica pura testabile in `lib/auth-validation.ts`. Provisioning solo admin (D8), invito via Supabase dashboard "Send invitation". Min password length 8 (D9). Design: `plan/completed/2026-05-02-auth-password-management-design.md`.
-- **1.11 — Profilo, account, privacy e documenti legali:** `/profile` esteso con card Account (email, scuola, ruolo, member date), Programma, Allenamento, Sicurezza, Privacy/dati. Migration `0016_profile_account_privacy.sql` con trigger immutabile su `role`/`school_id` (vedi §4.4 limite admin) e tabella `account_deletion_requests`. Export JSON dati utente via `/profile/export`. Pagine pubbliche `/privacy`, `/terms`, `/cookies`, `/disclaimer` con `[PLACEHOLDER: ...]` espliciti per dati titolare/DPO/retention/sub-processor (decisione D10). Logout client-side ora pulisce localStorage/sessionStorage/Cache best-effort; service worker non cachea navigazioni autenticate. Plan completo + missing items: `plan/completed/2026-05-03-profile-account-privacy-settings-plan.md`.
-- **1.12 — Semplificazione PlanStatus (2 stati):** collassati `review` e `maintenance` in un singolo stato `maintenance`. Nuovo algoritmo distribuzione pesata 2:1 in `session-scheduler.ts`, formula deterministica per forme/sessione, nuova UI `PlanFormsSection` in `/sessions/setup` con toggle binario, label "Frequenza del ripasso" rinominata "Lunghezza ciclo". Migration `0019_simplify_plan_status.sql`. Design: `plan/completed/2026-05-04-plan-status-simplification-design.md`. Plan: `plan/completed/2026-05-04-plan-status-simplification-plan.md`.
-- **1.13 — Diario generale e segna-pratica retroattiva:** route `/journal`, componenti `components/journal/*`, query `lib/queries/journal.ts`, action retroattive `lib/actions/journal.ts`, logica pura `journal-logic.ts`. `/sessions/calendar` diventa vista filtrata sulle sessioni con stessa DayView. Migration `0021_practice_logs_unique.sql` aggiunge unique `(user_id, skill_id, date)`, indice `(user_id, date)` e RPC atomica `update_plan_item_last_practiced_at`. Design: `archive/2026-05-07-calendar-overhaul-design-superseded.md`. **Superato il 2026-05-10 da 1.14**.
+- **1.9 — Schedulazione sessioni:** `0012_training_schedule.sql` (nuova tabella + reps su `practice_logs`), route `/sessions/setup`, algoritmo `lib/session-scheduler.ts` puro, reps tracking via `incrementRep`/`decrementRep`, link nel profilo. Nota 2026-05-10: la rotta `/sessions/calendar` originariamente prevista è stata unificata in `/calendar` (vedi 1.14).
+- **1.10 — Auth password management:** flow completo per recovery, invite e change password. Pagine `/forgot-password`, `/auth/update-password`, sezione "Sicurezza" su `/profile`. Server actions `requestPasswordReset` / `updatePassword` / `changePassword`. Modifica `auth/callback/route.ts` con allowlist `next` (anti open redirect) e proxy con lista `AUTHENTICATED_ONLY`. Logica pura testabile in `lib/auth-validation.ts`. Provisioning solo admin (D8), invito via Supabase dashboard "Send invitation". Min password length 8 (D9).
+- **1.11 — Profilo, account, privacy e documenti legali:** `/profile` esteso con card Account (email, scuola, ruolo, member date), Programma, Allenamento, Sicurezza, Privacy/dati. Migration `0016_profile_account_privacy.sql` con trigger immutabile su `role`/`school_id` (vedi §4.4 limite admin) e tabella `account_deletion_requests`. Export JSON dati utente via `/profile/export`. Pagine pubbliche `/privacy`, `/terms`, `/cookies`, `/disclaimer` con `[PLACEHOLDER: ...]` espliciti per dati titolare/DPO/retention/sub-processor (decisione D10). Logout client-side ora pulisce localStorage/sessionStorage/Cache best-effort; service worker non cachea navigazioni autenticate. Le condizioni ancora aperte sono in `skill-practice/docs/legal-review-2026-11-06.md`.
+- **1.12 — Semplificazione PlanStatus (2 stati):** collassati `review` e `maintenance` in un singolo stato `maintenance`. Nuovo algoritmo distribuzione pesata 2:1 in `session-scheduler.ts`, formula deterministica per forme/sessione, nuova UI `PlanFormsSection` in `/sessions/setup` con toggle binario, label "Frequenza del ripasso" rinominata "Lunghezza ciclo". Migration `0019_simplify_plan_status.sql`.
+- **1.13 — Diario generale e segna-pratica retroattiva:** route `/journal`, componenti `components/journal/*`, query `lib/queries/journal.ts`, action retroattive `lib/actions/journal.ts`, logica pura `journal-logic.ts`. `/sessions/calendar` diventa vista filtrata sulle sessioni con stessa DayView. Migration `0021_practice_logs_unique.sql` aggiunge unique `(user_id, skill_id, date)`, indice `(user_id, date)` e RPC atomica `update_plan_item_last_practiced_at`. **Superato il 2026-05-10 da 1.14**.
 
-- **1.14 — Calendario unificato:** `/journal` e `/sessions/calendar` unificati in unica route `/calendar` (etichetta "Calendario"). Rinomina del dominio nel codice: `components/journal/* → components/calendar/*` (con `JournalCalendar → Calendar`, `JournalDayPanel → CalendarDayPanel`), `lib/queries/journal.ts → lib/queries/calendar.ts`, `lib/actions/journal.ts → lib/actions/calendar.ts`, `lib/journal-logic.ts → lib/calendar-logic.ts`, tipi `JournalDayView/JournalSkill → CalendarDayView/CalendarSkill`. Rimossi: prop `mode` di JournalCalendar, sottotitolo "X sessioni nel periodo", riepilogo periodo `SessionPeriodSummary`, bottone "Apri diario" da `/today` (resta accesso da sticky header). Aggiornati link in `/today`, `/progress`, `/profile` a `/calendar`. Design: `plan/completed/2026-05-10-calendar-unification-design.md`. Plan: `plan/completed/2026-05-10-calendar-unification-plan.md`.
+- **1.14 — Calendario unificato:** `/journal` e `/sessions/calendar` unificati in unica route `/calendar` (etichetta "Calendario"). Rinomina del dominio nel codice: `components/journal/* → components/calendar/*` (con `JournalCalendar → Calendar`, `JournalDayPanel → CalendarDayPanel`), `lib/queries/journal.ts → lib/queries/calendar.ts`, `lib/actions/journal.ts → lib/actions/calendar.ts`, `lib/journal-logic.ts → lib/calendar-logic.ts`, tipi `JournalDayView/JournalSkill → CalendarDayView/CalendarSkill`. Rimossi: prop `mode` di JournalCalendar, sottotitolo "X sessioni nel periodo", riepilogo periodo `SessionPeriodSummary`, bottone "Apri diario" da `/today` (resta accesso da sticky header). Aggiornati link in `/today`, `/progress`, `/profile` a `/calendar`.
 
   **Behavior change**: gli item che prima erano `review` (peso `0.75` in `progress-logic.ts statusMaturityScore`) ora sono `maintenance` (peso `1.0`). Risultato: `readinessPercent` cresce leggermente per utenti con piani migrati. Decisione consapevole: `maintenance` semanticamente significa "padroneggiata". Per ridurre il peso rivedere `progress-logic.ts:185`.
-- **1.15 — Top practiced skills + ottimizzazioni DB:** RPC `top_practiced_skills(user_id, limit)` per classifica skill praticate (mig 0025), aggregati `count_practice_days` + `current_practice_streak` lato SQL (mig 0022), indice composito catalogo `(school_id, discipline, minimum_grade_value DESC, display_order)` (mig 0024), wrap `(SELECT auth.uid())` su tutte le policy RLS (mig 0023). Design: `plan/completed/2026-05-11-top-practiced-skills-design.md`, plan: `plan/completed/2026-05-11-top-practiced-skills-plan.md`.
-- **1.16 — Promemoria push allenamento:** Web Push opt-in per ricordare gli esercizi odierni non completati. Migration `0026_training_reminder_push_notifications.sql`, service worker `push`/`notificationclick`, prompt in `/today`, gestione in `/profile`, cron Vercel `/api/cron/training-reminders` con `CRON_SECRET`, invio via `web-push` e VAPID. Plan: `plan/completed/2026-05-16-training-reminder-push-notifications-plan.md`.
+- **1.15 — Top practiced skills + ottimizzazioni DB:** RPC `top_practiced_skills(user_id, limit)` per classifica skill praticate (mig 0025), aggregati `count_practice_days` + `current_practice_streak` lato SQL (mig 0022), indice composito catalogo `(school_id, discipline, minimum_grade_value DESC, display_order)` (mig 0024), wrap `(SELECT auth.uid())` su tutte le policy RLS (mig 0023). plan: `docs/architecture.md`.
+- **1.16 — Promemoria push allenamento:** Web Push opt-in per ricordare gli esercizi odierni non completati. Migration `0026_training_reminder_push_notifications.sql`, service worker `push`/`notificationclick`, prompt in `/today`, gestione in `/profile`, cron Vercel `/api/cron/training-reminders` con `CRON_SECRET`, invio via `web-push` e VAPID.
 - **Refactor UI 2026-05-11:** unificazione grammatica button/segmented/chip/option card; tab disciplina come segmented control; CTA setup allenamento unificate; primitive UI in `components/primitives/`. Vedi `docs/ui-system.md`.
 - **Visual identity FESK:** tema dark/gold applicato in `globals.css`, con overlay grain e componenti core meno arrotondati.
 
@@ -896,179 +898,11 @@ Nessuna metrica rigida. Valutazione soggettiva del founder dopo qualche settiman
 
 ---
 
-## 12. SEED DATA INIZIALE (Wing Chun — storico)
+## 12. CURRICULUM E SEED
 
-> **⚠️ Superato da Sprint 1.5 (FESK curriculum).** Il seed di partenza era Wing Chun (`0002_seed_school_skills.sql`); il seed attivo è ora `0004_seed_fesk.sql`, generato da `scripts/generate-fesk-seed.mjs` a partire da `plan/reference/domain/curriculum-mapping-fesk.md`. Lo schema include `discipline` (shaolin/taichi), `practice_mode`, `name_italian` e `minimum_grade_value` (anche negativo per gradi tipo Chieh, Mezza Luna). Il blocco TS sotto resta come documentazione del modello mentale iniziale.
-
-11 skill in 4 categorie + 3 programmi d'esame. Sostituire `PLACEHOLDER_X` con URL YouTube unlisted reali. Il componente `YouTubeEmbed` deve convertire automaticamente `watch?v=` in formato `embed/`.
-
-### 12.1 Skill
-
-```typescript
-const skills = [
-  // FORME
-  {
-    id: "s1", schoolId: "school-1",
-    name: "Siu Nim Tao - Sezione 1",
-    category: "forme",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_1",
-    teacherNotes: "Concentrati sulla stabilità del cavallo. Schiena dritta, spalle rilassate.",
-    estimatedDurationSeconds: 300,
-    minimumLevel: 1, order: 1
-  },
-  {
-    id: "s2", schoolId: "school-1",
-    name: "Siu Nim Tao - Sezione 2",
-    category: "forme",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_2",
-    teacherNotes: "Rotazione polso nel Huen Sao: lenta e precisa. Non forzare.",
-    estimatedDurationSeconds: 240,
-    minimumLevel: 1, order: 2
-  },
-  {
-    id: "s3", schoolId: "school-1",
-    name: "Siu Nim Tao - Sezione 3",
-    category: "forme",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_3",
-    teacherNotes: "Fak Sao: il polso resta fermo, il gomito guida il movimento.",
-    estimatedDurationSeconds: 200,
-    minimumLevel: 2, order: 3
-  },
-  {
-    id: "s4", schoolId: "school-1",
-    name: "Chum Kiu - Sezione 1",
-    category: "forme",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_4",
-    teacherNotes: "Coordinazione passo-rotazione-tecnica. Il passo parte prima della mano.",
-    estimatedDurationSeconds: 300,
-    minimumLevel: 3, order: 4
-  },
-
-  // TECNICHE BASE
-  {
-    id: "s5", schoolId: "school-1",
-    name: "Tan Sao",
-    category: "tecniche_base",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_5",
-    teacherNotes: "Angolo 45°, gomito sulla linea centrale. Non alzare la spalla.",
-    estimatedDurationSeconds: 120,
-    minimumLevel: 1, order: 1
-  },
-  {
-    id: "s6", schoolId: "school-1",
-    name: "Bong Sao",
-    category: "tecniche_base",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_6",
-    teacherNotes: "Il gomito non scende mai sotto la spalla. Braccio rilassato.",
-    estimatedDurationSeconds: 120,
-    minimumLevel: 1, order: 2
-  },
-  {
-    id: "s7", schoolId: "school-1",
-    name: "Fook Sao",
-    category: "tecniche_base",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_7",
-    teacherNotes: "Polso rilassato, pressione costante in avanti sulla linea centrale.",
-    estimatedDurationSeconds: 120,
-    minimumLevel: 1, order: 3
-  },
-  {
-    id: "s8", schoolId: "school-1",
-    name: "Pak Sao",
-    category: "tecniche_base",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_8",
-    teacherNotes: "Contatto breve e secco. Non spingere, schiaffeggia.",
-    estimatedDurationSeconds: 90,
-    minimumLevel: 1, order: 4
-  },
-
-  // COMBINAZIONI
-  {
-    id: "s9", schoolId: "school-1",
-    name: "Tan Sao + Bong Sao drill",
-    category: "combinazioni",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_9",
-    teacherNotes: "Transizione fluida. Nessuna pausa tra le due tecniche.",
-    estimatedDurationSeconds: 180,
-    minimumLevel: 1, order: 1
-  },
-  {
-    id: "s10", schoolId: "school-1",
-    name: "Lap Sao + contropugno",
-    category: "combinazioni",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_10",
-    teacherNotes: "Il Lap tira, il pugno parte simultaneamente. Non in sequenza.",
-    estimatedDurationSeconds: 180,
-    minimumLevel: 2, order: 2
-  },
-
-  // CONDIZIONAMENTO
-  {
-    id: "s11", schoolId: "school-1",
-    name: "Stance training (Yee Ji Kim Yeung Ma)",
-    category: "condizionamento",
-    videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER_11",
-    teacherNotes: "2 minuti minimo. Schiena dritta. Ginocchia verso l'interno.",
-    estimatedDurationSeconds: 180,
-    minimumLevel: 1, order: 1
-  },
-]
-```
-
-### 12.2 Programmi d'esame
-
-```typescript
-const examPrograms = [
-  {
-    id: "exam-1", schoolId: "school-1",
-    levelNumber: 1,
-    levelName: "1° Livello",
-    description: "Fondamenti: Siu Nim Tao sez. 1-2, tecniche base, stance",
-    skills: [
-      { skillId: "s1", defaultStatus: "focus" },
-      { skillId: "s2", defaultStatus: "focus" },
-      { skillId: "s5", defaultStatus: "focus" },
-      { skillId: "s6", defaultStatus: "focus" },
-      { skillId: "s7", defaultStatus: "focus" },
-      { skillId: "s8", defaultStatus: "focus" },
-      { skillId: "s9", defaultStatus: "maintenance" },
-      { skillId: "s11", defaultStatus: "maintenance" },
-    ]
-  },
-  {
-    id: "exam-2", schoolId: "school-1",
-    levelNumber: 2,
-    levelName: "2° Livello",
-    description: "Siu Nim Tao completa, combinazioni, inizio Chum Kiu",
-    skills: [
-      { skillId: "s3", defaultStatus: "focus" },
-      { skillId: "s10", defaultStatus: "focus" },
-      { skillId: "s1", defaultStatus: "maintenance" },
-      { skillId: "s2", defaultStatus: "maintenance" },
-      { skillId: "s5", defaultStatus: "maintenance" },
-      { skillId: "s6", defaultStatus: "maintenance" },
-      { skillId: "s9", defaultStatus: "maintenance" },
-    ]
-  },
-  {
-    id: "exam-3", schoolId: "school-1",
-    levelNumber: 3,
-    levelName: "3° Livello",
-    description: "Chum Kiu, applicazioni avanzate",
-    skills: [
-      { skillId: "s4", defaultStatus: "focus" },
-      { skillId: "s3", defaultStatus: "maintenance" },
-      { skillId: "s10", defaultStatus: "maintenance" },
-      { skillId: "s1", defaultStatus: "maintenance" },
-      { skillId: "s2", defaultStatus: "maintenance" },
-    ]
-  },
-]
-```
-
-> Ricorda §4.1: in SQL `examPrograms[].skills` diventa la junction table `exam_skill_requirements`, non un JSONB.
-
-> **Nota:** il blocco TS sopra è documentazione di riferimento. Il seed reale in `supabase/migrations/0004_seed_fesk.sql` non usa più `review` (solo `focus`/`maintenance`), quindi non richiede modifica DB per la semplificazione di Sprint 1.12.
+Il curriculum corrente e' FESK: [mappatura](reference/domain/curriculum-mapping-fesk.md),
+generatore `skill-practice/scripts/generate-fesk-seed.mjs` e migrazioni SQL.
+Il vecchio esempio Wing Chun e' stato rimosso; lo storico resta in Git.
 
 ---
 
@@ -1219,7 +1053,7 @@ MVP personale, founder unico utente, ma le **scaffolding legali sono già in app
 - `/cookies` — cookie/storage policy
 - `/disclaimer` — avvertenze pratica fisica
 
-Tutto il testo non derivabile dal codice (titolare, DPO, retention, sub-processor, contatti, dati fiscali) è marcato con `[PLACEHOLDER: ...]`. **Le pagine non sono valide come documento legale finché i placeholder non vengono compilati e revisionati**, vedi `plan/completed/2026-05-03-profile-account-privacy-settings-plan.md` §"Explicit Missing Items To Complete".
+Tutto il testo non derivabile dal codice (titolare, DPO, retention, sub-processor, contatti, dati fiscali) è marcato con `[PLACEHOLDER: ...]`. **Le pagine non sono valide come documento legale finché i placeholder non vengono compilati e revisionati**; vedere `skill-practice/docs/legal-review-2026-11-06.md` per le condizioni aperte.
 
 In `/profile` esiste la sezione **Privacy e dati** con:
 
@@ -1260,9 +1094,9 @@ Stop e consultare un avvocato data protection prima di shippare. Required:
 
 ### 15.6 Landing page e hub
 
-Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`. Vedi `plan/completed/2026-04-26-landing-page-design.md`.
+Per MVP personale: **landing minimale (hero+CTA) implementata** come "lock screen" identitaria su `/`.
 
-Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 6 tile che mostrano le aree dell'app e fungono da crocevia panoramico. Vedi `plan/completed/2026-05-01-hub-page-design.md`.
+Da Sprint 2.x la CTA "Entra" della landing reindirizza a `/hub` (era `/today`) per utenti onboardati. L'hub è una home permanente con 6 tile che mostrano le aree dell'app e fungono da crocevia panoramico.
 
 Il flusso completo: landing `/` → Entra → `/hub` → scegli area → BottomNav per saltare fra aree → casetta Lucide in `AppHeader` per tornare al hub. Login/onboarding redirigono a `/hub`. Logout torna a `/` (landing).
 
@@ -1371,129 +1205,16 @@ Quando si va in pre-vendita:
 
 ---
 
-## 17. ESECUZIONE PER AI AGENT
+## 17. MANUTENZIONE
 
-### 17.1 Gerarchia documenti
+1. Leggere la richiesta corrente, questo piano, la strategia white-label e
+   `docs/architecture.md`; verificare il codice prima di riaprire vecchie attivita'.
+2. Svolgere un intervento autorizzato alla volta, proporzionato all'uso attuale.
+3. Eseguire i controlli pertinenti: lint, typecheck, test e build per il codice.
+4. Creare commit mirati e fare push su `main`, escludendo modifiche estranee.
+   Vercel pubblica automaticamente; verificare CI e dominio pubblico.
+5. Aggiornare i documenti correnti ed eliminare i piani conclusi e i file
+   temporanei. Migrazioni, test di regressione e procedure ripetibili restano.
 
-| Livello | File | Scopo | Lettore |
-|---------|------|-------|---------|
-| Strategico | `plan/current-plan.md` (questo) | Cosa, perché, decisioni | Founder + agent orchestratore |
-| Workspace | `CLAUDE.md` (root) | Convenzioni globali, fonte di verità | Ogni agent |
-| Operativo | `skill-practice/CLAUDE.md` | Convenzioni implementative concrete | Agent esecutore di codice |
-| Tattico | Singolo task | Unità atomica di lavoro | Sub-agent atomico |
-
-In conflitto vince ciò che è più alto. Vedi `CLAUDE.md` (root) per la regola completa.
-
-### 17.2 Sprint 1 come task atomici
-
-> **Storico:** questa tabella descrive la suddivisione iniziale di Sprint 1 (bootstrap → deploy). I task sono stati eseguiti; alcuni riferimenti (es. `library/exam/[examId]/page.tsx`, `library/all/page.tsx`) sono superati dagli sprint operativi 1.5–1.15 che hanno ristrutturato `/library`, `/plan`, `/programma`. Per lo stato attuale vedi §9 Sprint 1.x e §5.
-
-Ogni task eseguibile da un sub-agent in isolamento. Ordine = dipendenze.
-
-| # | Task | Deliverable | Sub-agent type | Acceptance criteria |
-|---|------|-------------|----------------|---------------------|
-| 1 | Bootstrap progetto | `skill-practice/` con Next.js + Tailwind + shadcn + next-pwa configurati | general-purpose | `npm run build` passa, `npm run dev` mostra placeholder |
-| 2 | Schema DB | `supabase/migrations/0001_schema.sql` con 6 tabelle + RLS | general-purpose | `supabase db reset` esegue, RLS attiva su tutte le tabelle |
-| 3 | Seed data | `supabase/migrations/0002_seed_school_skills.sql` con i dati storici di §12 | general-purpose | 11 skill + 3 esami + junction `exam_skill_requirements` popolata |
-| 4 | Supabase clients | `lib/supabase/{client,server,middleware}.ts` | general-purpose | I 3 client esportano funzioni separate, tipi corretti |
-| 5 | Proxy auth (ex middleware) | `src/proxy.ts` con redirect a `/login` per `(app)/*` (Next 16 file convention) | general-purpose | Request a `/today` senza sessione → 307 a `/login` |
-| 6 | Login page | `(auth)/login/page.tsx` con form email/password | frontend-design | Login funzionante con utente Supabase |
-| 7 | Onboarding | `(app)/onboarding/page.tsx` con selezione esame | frontend-design | UserProfile creato, redirect a `/today` |
-| 8 | YouTubeEmbed | `components/skill/YouTubeEmbed.tsx` | general-purpose | Converte `watch?v=` in `embed/`, responsive 16:9, `rel=0` |
-| 9 | practice-logic | `lib/practice-logic.ts` puro + test | general-purpose | Test unitario: input N skill con stati → output corretto |
-| 10 | Today page | `(app)/today/page.tsx` | frontend-design | Mostra focus + review + maintenance del giorno |
-| 11 | PracticeCheckButton | Server Action `actions/practice.ts` + componente client | general-purpose | Click → riga in `practice_logs`, `lastPracticedAt` aggiornato |
-| 12 | Library "mio livello" | `(app)/library/page.tsx` | frontend-design | Mostra skill con `minimumLevel <= user.assignedLevel` |
-| 13 | Library "per esame" | `(app)/library/exam/[examId]/page.tsx` | frontend-design | Skill richieste dall'esame, organizzate per categoria |
-| 14 | Library "tutto" | `(app)/library/all/page.tsx` con filtri categoria | frontend-design | Tutte le skill accessibili, filtrate |
-| 15 | Skill detail | `(app)/skill/[skillId]/page.tsx` | frontend-design | Video play, "Aggiungi al piano" funzionante |
-| 16 | Profile page | `(app)/profile/page.tsx` | frontend-design | Nome, livello, esame, progresso settimanale |
-| 17 | BottomNav | `(app)/layout.tsx` con nav | frontend-design | 3 tab funzionanti, active state |
-| 18 | PWA manifest | `public/manifest.json` + icone (SVG ora; PNG 192/512/maskable per polish) | general-purpose | Manifest valido, installabile su Android. Lighthouse PWA ≥90 richiede service worker → Sprint 2 con `@serwist/next` |
-| 19 | Security headers | `next.config.js` da §14.5 | general-purpose | securityheaders.com grade A |
-| 20 | Deploy | Vercel + env vars | general-purpose | URL Vercel pubblico funzionante, login OK |
-
-Dipendenze critiche:
-- 4-5 dipendono da 2 (clients usano lo schema)
-- 6-7 dipendono da 5 (auth flow richiede middleware)
-- 10-16 dipendono da 4-9 (UI usa clients + logic)
-- 20 è ultimo (richiede tutto verde)
-
-### 17.3 Definition of Done per task
-
-Ogni task chiuso solo quando:
-
-1. Codice scritto e committato
-2. `npm run build` passa
-3. `npm run lint` passa
-4. Test manuale del golden path
-5. Auto-deploy Vercel passa (se applicabile)
-6. Tutti gli acceptance criteria del task verificati
-
-### 17.4 Workflow consigliato
-
-**Procedura concordata per gli interventi di manutenzione (2026-09-28):** nella fase di test con pochi istruttori, procedere con un intervento di codice alla volta, proporzionato alle esigenze attuali.
-
-1. Spiegare in modo semplice il problema e la soluzione proposta, poi attendere l'approvazione dell'utente.
-2. Dopo l'approvazione, implementare l'intervento ed eseguire i controlli pertinenti.
-3. Creare commit mirati ed eseguire il push su `main`, il branch principale confermato dall'utente. Commit e push fanno parte dell'intervento approvato; escludere le modifiche estranee già presenti nel workspace.
-4. Comunicare l'esito, spiegare il prossimo intervento e attendere il nuovo via libera prima di implementarlo.
-
-Questa procedura ha precedenza sulle opzioni generali riportate di seguito per gli interventi di questa fase.
-
-**Opzione A — orchestrato con GSD** (più strutturato, audit trail completo):
-- `/gsd:new-project` per inizializzare GSD nel `skill-practice/`
-- `/gsd:plan-phase` per planificare ogni gruppo di task (Sprint 1 ≈ 3 fasi: bootstrap+DB, auth+core, UI+deploy)
-- `/gsd:execute-phase` per esecuzione con commit atomici
-- `/gsd:verify-work` al termine di ogni fase
-
-**Opzione B — leggera** (più rapida):
-- Passare la tabella di §17.2 a un agent unico
-- Istruzione: "Esegui in ordine, fermati a fine task 5, 11, 17 e 20 per conferma"
-- Acceptance criteria di colonna 5 sono il check automatico
-
-### 17.5 Runbook operativo (post-launch)
-
-| Operazione | Come fare |
-|------------|-----------|
-| Aggiungere una skill | Insert in `skills` via Supabase dashboard. Per associarla a un esame: insert in `exam_skill_requirements` |
-| Aggiungere un esame | Insert in `exam_programs` + N row in `exam_skill_requirements` |
-| Cambiare livello utente | Update `user_profiles.assigned_level` via dashboard |
-| Sostituire video di una skill | Update `skills.video_url` con nuovo URL YouTube |
-| Reset piano utente | Delete da `user_plan_items` con quel `user_id` + `source = 'exam_program'`, poi rigenerare via app (cambio esame) |
-| Vedere log pratica | Query Supabase: `select * from practice_logs where user_id = ... order by date desc` |
-| Promuovere admin | Update `user_profiles.role = 'admin'` (predisposto, attivo da Sprint 3) |
-| Backup DB | Automatico Supabase. Snapshot manuale dal dashboard prima di migrazioni rischiose |
-
-### 17.6 Quando aggiornare questo piano
-
-Vedi `CLAUDE.md` root §"Quando aggiornare il piano". In sintesi:
-
-- Decisione aperta in §2.2 chiusa → spostala in §2.1
-- Stack item cambia → §3 + giustificazione in §2.1
-- Nuova rotta/tabella/componente core → §4 o §5
-- Sprint chiuso → §9
-- Brief tecnico sostituito → vecchio in `archive/`, nuovo in `plan/current-plan.md`
-
----
-
-## 18. RIASSUNTO ESECUTIVO
-
-**Cosa stai costruendo:** la versione digitale del quaderno tecnico della federazione di kung fu, con video al posto delle foto e proposta di pratica giornaliera.
-
-**Per chi:** te stesso ora. Federazione e allievi nel medio termine (architettura predisposta, non implementata).
-
-**Costi:** 0€ per partire (vedi §13).
-
-**Da fare prima di scrivere codice:** seguire la checklist setup §13.3 (~30 min). Tutte le decisioni bloccanti sono chiuse.
-
-**Decisioni già chiuse (vedi §2.1):** D1 Supabase Auth, D2 no competitor reale, D3 valutazione soggettiva, D4 bacheca → Sprint 2.
-
-**Esecuzione Sprint 1:** 20 task atomici in §17.2, eseguibili da sub-agent con acceptance criteria espliciti. Workflow GSD raccomandato (§17.4 Opzione A).
-
-**Da fare durante l'uso reale:**
-- Valutare soggettivamente l'utilità dell'app (§11.1)
-- Riesaminare D7 (player video) se loop/slow-mo diventano frustranti
-- Decidere D5 (SRS reale) e D6 (note post-pratica) sulla base dell'uso
-
-**Cosa NON fare ora:** competere con budoo su admin, costruire community, aggiungere AI, scalare oltre il founder prima della validazione.
+Lo storico delle implementazioni si consulta con `git log -- <percorso>` e
+`git show <commit>:<percorso>`, senza duplicarlo in cartelle di piani completati.

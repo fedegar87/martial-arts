@@ -6,13 +6,13 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const requireTools = createRequire(path.join(path.dirname(app), "tools/video/package.json"));
 process.env.PLAYWRIGHT_BROWSERS_PATH = "0";
 const { build } = requireTools("esbuild");
 const { chromium } = requireTools("playwright");
 const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "federation-calendar-"));
-const screenshots = path.join(os.tmpdir(), "federation-calendar-smoke");
+const screenshots = path.join(app, "test-results/federation-calendar");
 await fs.mkdir(screenshots, { recursive: true });
 await fs.writeFile(path.join(temporary, "actions.ts"), `
 async function record(name, data) {

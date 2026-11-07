@@ -57,7 +57,7 @@ Regole UI:
 - `src/components/primitives/` contiene wrapper e primitive UI custom del progetto, senza dominio: `Chip`, `OptionCard`, `SegmentedNav`, eventuali wrapper conferma.
 - `src/components/shared/` contiene componenti trasversali di shell/app/layout o asset identitari, non primitive UI pure.
 - Fuori da `src/components/ui/`, i file componenti restano PascalCase.
-- Le regole operative complete sono in `docs/ui-system.md` (piano storico in `docs/plans/completed/ui-codebase-refactor-plan.md`).
+- Le regole operative complete sono in `docs/ui-system.md`.
 
 ---
 
@@ -91,6 +91,8 @@ Regole UI:
 - IDs: `uuid` lato Postgres, `string` lato TS.
 
 ---
+
+I test browser ripetibili vivono in `tests/browser/`; i test unitari restano accanto alla logica pura. I piani operativi conclusi si eliminano dopo aver aggiornato i documenti correnti.
 
 ## Ciclo di lavoro consigliato
 

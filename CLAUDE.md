@@ -42,5 +42,5 @@ Le convenzioni delle cartelle di `plan/` (attivi, completed, reference) sono in 
 - Una decisione aperta in §2.2 viene chiusa → spostala in §2.1 con risoluzione
 - Si aggiunge/rimuove una rotta, tabella, componente core → aggiorna §4 o §5
 - Cambia uno stack item → aggiorna §3 + spiega in §2.1 perché
-- Si chiude uno Sprint → aggiorna §9 **e** sposta il/i piano/design relativo da `plan/` a `plan/completed/`, aggiornando `plan/README.md`
-- Brief tecnico sostituito → vecchio in `archive/` con suffisso `-superseded.md`, nuovo in `plan/current-plan.md`, riferimento nel front-matter
+- Si chiude uno Sprint → aggiorna §9 e i documenti correnti, poi elimina i piani operativi conclusi. Lo storico resta in Git; non creare cartelle `completed/`.
+- Brief tecnico sostituito → aggiorna `plan/current-plan.md`, conserva le decisioni ancora valide ed elimina il documento superato.

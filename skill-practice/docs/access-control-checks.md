@@ -1,7 +1,8 @@
-# FESK Rollout - Access-Control Smoke Checklist
+# Verifica accessi FESK
 
-Run after migrations `0037-0041` are applied (see `scripts/verify-rollout.sql`) and the
-branded build is deployed. Use a test cohort, not the founder account. "Pass" means the
+Run against the current numbered migrations (see `scripts/verify-rollout.sql`) after
+the branded build is deployed. This is a repeatable procedure, not a rollout plan.
+Use a test cohort, not the founder account. "Pass" means the
 "must NOT" never happens via the UI OR a raw request. Test the raw path too: a logged-in
 student's bearer token plus a direct PostgREST call is the real adversary, not just the UI.
 

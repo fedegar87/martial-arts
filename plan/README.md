@@ -1,32 +1,24 @@
-# Indice Cartella `plan/`
+# Documenti di prodotto e riferimenti
 
-Mappa di navigazione per agenti AI e maintainer. Indica quali documenti sono attivi e dove vive lo storico.
+## Documenti correnti
 
-## Ordine di Lettura Attivo
+1. [current-plan.md](current-plan.md): prodotto, decisioni, vincoli e priorita'.
+2. [white-label-strategy.md](white-label-strategy.md): strategia canonica per
+   altre scuole e arti marziali, attivata solo da esigenze reali.
+3. [../docs/architecture.md](../docs/architecture.md): codice, operativita' e
+   questioni tecniche ancora aperte.
 
-1. [current-plan.md](current-plan.md)
-   - Piano prodotto master, storico decisioni (`D1`–`D14`), stack e cronologia sprint.
+## Riferimenti
 
-2. [white-label-strategy.md](white-label-strategy.md)
-   - **Strategia architetturale canonica** per evoluzione multi-scuola, white-label (altre scuole Kung Fu Chang) e altre arti marziali (es. Taekwondo/Karate con `1..N` percorsi e propri gradi/categorie).
-   - Contiene le regole anti-overengineering, la fotografia reale post-migrazione `0048`, la roadmap attivata da trigger reali e il riepilogo operativo FESK.
+- [Curriculum FESK](reference/domain/curriculum-mapping-fesk.md).
+- [Identita' visiva e design](reference/design/).
+- [Business e validazione](reference/business/), inclusa la
+  [strategia di monetizzazione](reference/business/monetization-strategy.md)
+  da rivalutare dopo l'uso operativo reale.
 
-3. [../docs/architecture.md](../docs/architecture.md)
-   - Briefing tecnico completo dell'app (`skill-practice/`) aggiornato allo stato corrente del codice.
+## Manutenzione
 
-## Piani Parcheggiati (Non bloccanti)
-
-| File | Stato | Note |
-|---|---|---|
-| [2026-05-02-monetization-strategy.md](2026-05-02-monetization-strategy.md) | Parcheggiato | Analisi monetizzazione FESK; da rivalutare dopo l'uso operativo reale. |
-
-## Piani Completati e Riferimenti Perenni
-
-- **Storico sprint e rollout implementati:** [completed/](completed/) — incluso il rollout FESK chiuso in [completed/2026-06-13-fesk-rollout-implementation-plan.md](completed/2026-06-13-fesk-rollout-implementation-plan.md).
-- **Dominio FESK:** [reference/domain/curriculum-mapping-fesk.md](reference/domain/curriculum-mapping-fesk.md).
-- **Design & Visual Identity:** [reference/design/](reference/design/).
-- **Business & Validation Lab:** [reference/business/](reference/business/).
-
-## Regola per Agenti AI
-
-Non anticipare refactoring multi-tenant o astrazioni multi-disciplina finché l'utente non dichiara attivo il relativo trigger reale descritto in [white-label-strategy.md](white-label-strategy.md).
+I piani operativi si eliminano dopo aver consolidato le decisioni nei documenti
+correnti. Lo storico e' recuperabile con `git log -- <percorso>` e
+`git show <commit>:<percorso>`. Le procedure di verifica e i test utili restano.
+Non anticipare le fasi white-label senza il relativo trigger reale.

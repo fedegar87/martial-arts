@@ -1,48 +1,24 @@
 # Skill Practice
 
-PWA per la pratica guidata di arti marziali tradizionali, oggi centrata sul curriculum FESK Shaolin + T'ai Chi e predisposta per federazione/scuole.
+PWA per la pratica guidata del curriculum FESK Shaolin + T'ai Chi.
 
-## Struttura repository
+## Orientarsi nel repository
 
-```
-martial-arts/
-├── CLAUDE.md                    ← Istruzioni workspace per Claude (gerarchia fonti)
-├── plan/
-│   ├── current-plan.md          ← PIANO ATTIVO. Inizia da qui.
-│   ├── white-label-strategy.md  ← Strategia white-label e multi-arte marziale
-│   ├── README.md                ← Indice dei piani (completati / reference / attivi)
-│   ├── completed/               ← Design + plan di sprint chiusi (storico implementato)
-│   └── reference/               ← Documenti perenni (curriculum, identity, positioning, gui/ios)
-├── docs/                        ← Architettura e assessment del workspace
-│   ├── architecture.md                  Architettura attuale di skill-practice
-│   ├── performance-assessment.md        Diagnosi performance + piano
-│   └── marketing-video-promo-guide.md   Guida produzione video promo
-├── archive/                     ← Ricerca storica e brief superati (read-only)
-│   ├── 01-research-market.md           Ricerca mercato piattaforme skill-training
-│   ├── 02-research-vertical.md         Deep-dive scuole MA come entry vertical
-│   ├── 03-analysis-operational.md      JTBD, MVP concepts, interview scripts
-│   ├── 04-validation-framework.md      Doppio binario validazione + product blueprint
-│   ├── 05-brief-v1-superseded.md       Brief tecnico v1 (sostituito dal piano attivo)
-│   ├── 06-research-verification.md     Ricerca indipendente di stress-test
-│   └── 2026-05-07-calendar-overhaul-design-superseded.md  Design calendario superato da 1.14
-├── skill-practice/              ← Progetto Next.js (scaffold in Sprint 1)
-│   ├── CLAUDE.md                ← Regole concrete d'implementazione
-│   └── docs/plans/              ← Piani di progetto (con sotto-cartella completed/)
-└── README.md
-```
+| Percorso | Contenuto |
+| --- | --- |
+| [plan/current-plan.md](plan/current-plan.md) | Prodotto, decisioni e priorita' attuali |
+| [plan/white-label-strategy.md](plan/white-label-strategy.md) | Strategia per altre scuole e arti marziali |
+| [docs/architecture.md](docs/architecture.md) | Architettura, operativita' e debito tecnico aperto |
+| [skill-practice/](skill-practice/) | App Next.js, migrazioni e test |
+| [plan/reference/](plan/reference/) | Curriculum, identita' visiva e ricerca business |
+| [archive/](archive/) e [docs/research/](docs/research/) | Evidenze di ricerca e validazione |
+| [tools/video/](tools/video/) | Strumenti per tutorial e video promozionali |
 
-## Quick start
+Setup e controlli dell'app: [skill-practice/README.md](skill-practice/README.md).
+Setup video: [docs/video-tutorial-setup.md](docs/video-tutorial-setup.md).
+Regole di manutenzione: [CLAUDE.md](CLAUDE.md) e [plan/CLAUDE.md](plan/CLAUDE.md).
 
-Per preparare e produrre il video tutorial dell'app: [setup video locale](docs/video-tutorial-setup.md), con strumenti in `tools/video/`.
-
-1. Leggi `plan/current-plan.md` — è autosufficiente
-2. Verifica le **decisioni aperte** marcate con ⚠️ nella sezione 2
-3. La cartella `archive/` serve solo per il razionale — non è richiesta per implementare
-
-## Cronologia analisi
-
-I documenti in `archive/` sono numerati in ordine cronologico (Marzo-Aprile 2026). Il numero indica la sequenza di pensiero, non la priorità di lettura.
-
-Il brief tecnico è stato iterato:
-- **v1** (`05-brief-v1-superseded.md`): single-user puro, generico
-- **v3** (`plan/current-plan.md`): multi-user predisposto, framing "quaderno digitale", decisioni aperte esplicite
+I piani conclusi e i documenti superati si consultano nella cronologia Git,
+senza conservarne copie nel repository corrente. Restano le decisioni attuali,
+le procedure ripetibili e i test di regressione. Gli artefatti di collaudo
+sono esclusi da Git e raccolti in `skill-practice/test-results/`.
