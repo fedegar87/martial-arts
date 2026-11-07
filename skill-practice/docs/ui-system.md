@@ -95,6 +95,20 @@ Lo stato completato e' uno stato, non una CTA primaria.
 - Usare la classe condivisa da `src/lib/ui-classes.ts`.
 - Promuovere a `CompletionButton` solo se emergono almeno 3 callsite con logica comune oltre lo styling.
 
+## Disclosure
+
+`Disclosure` e' la primitiva condivisa per le cinque sezioni secondarie del
+Profilo. Riusa `Card` con `details`/`summary` nativi: titolo e riepilogo visibili,
+chevron, target minimo 56 px e focus interno al bordo. Le sezioni si aprono
+indipendentemente e i figli restano montati, conservando i campi alla chiusura.
+Il toggle funziona anche senza JavaScript; `revealKey` riapre la sezione quando
+arriva un nuovo esito dell'azione, senza controllare lo stato nativo del toggle.
+
+Identita' e gradi restano visibili; Allenamento, Calendario ed Esci mantengono
+accessi diretti. Non annidare altri accordion intorno a questi controlli.
+I riepiloghi devono rappresentare lo stato salvato, non le bozze dei form;
+eventuali richieste pendenti devono essere riconoscibili anche a sezione chiusa.
+
 ## Tailwind locale
 
 Ammesso nei componenti dominio:

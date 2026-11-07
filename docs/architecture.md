@@ -624,7 +624,7 @@ Cartelle:
 
 - `src/components/ui/`: componenti shadcn-managed.
 - `src/components/primitives/`: primitive custom senza dominio (`Chip`,
-  `OptionCard`, `SegmentedNav`, `FormSelect`).
+  `OptionCard`, `SegmentedNav`, `FormSelect`, `Disclosure`).
 - `src/components/shared/`: shell, header, skeleton, empty state, asset app.
 - `src/components/<domain>/`: componenti di feature.
 
@@ -636,6 +636,11 @@ Regole:
   `src/lib/ui-classes.ts`.
 - `FormSelect` usa font mobile-safe per evitare zoom iOS.
 - Header e bottom sheets gestiscono safe-area PWA.
+- Il Profilo mostra subito identita' e gradi; `Disclosure` raccoglie dettagli
+  account, programma, promemoria, sicurezza e privacy/dati senza smontare i form.
+  Gli esiti riaprono la sezione; riepiloghi di modalita' e promemoria indicano
+  dati salvati. Allenamento/Calendario ed Esci restano direttamente accessibili.
+  Query, azioni server e autorizzazioni conservano il comportamento esistente.
 - Non aggiungere primitive se il pattern non ha almeno 3 callsite reali, salvo
   eccezione motivata.
 

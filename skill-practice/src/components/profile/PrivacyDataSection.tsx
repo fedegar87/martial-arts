@@ -5,7 +5,7 @@ import { Download, FileText, Trash2 } from "lucide-react";
 import { requestAccountDeletion } from "@/lib/actions/account";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Disclosure } from "@/components/primitives/Disclosure";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 
 type Props = {
@@ -20,11 +20,12 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
   const hasPendingDeletion = Boolean(pendingDeletionRequestedAt);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Privacy e dati</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Disclosure
+      title="Privacy e dati"
+      summary={hasPendingDeletion ? "Richiesta di cancellazione in attesa" : "Documenti e gestione dei dati"}
+      revealKey={state}
+    >
+      <div className="space-y-4">
         <div className="space-y-2">
           <Button asChild variant="outline" className="w-full justify-start">
             <a href="/profile/export">
@@ -92,8 +93,8 @@ export function PrivacyDataSection({ pendingDeletionRequestedAt }: Props) {
             </Alert>
           )}
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </Disclosure>
   );
 }
 

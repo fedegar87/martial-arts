@@ -335,7 +335,7 @@ skill-practice/
 │   │   └── api/cron/training-reminders/route.ts
 │   ├── components/
 │   │   ├── ui/                         # shadcn-managed (non modificare a mano)
-│   │   ├── primitives/                 # Primitive UI custom (Chip, OptionCard, SegmentedNav, FormSelect)
+│   │   ├── primitives/                 # Primitive UI custom (Chip, OptionCard, SegmentedNav, FormSelect, Disclosure)
 │   │   ├── nav/BottomNav.tsx
 │   │   ├── landing/                    # Hero / CTA / lock screen
 │   │   ├── hub/                        # Tile, grid, background
@@ -533,10 +533,11 @@ Collaudo Chromium dei componenti a 320/375/390 px: nessuna sessione prevista,
 avanzamento zero/parziale/completo, valori accessibili, calendario con/senza
 pratica e link ad Allenamento da 44 px. Skeleton del ciclo allineato al riepilogo.
 
-Deploy rinviato esplicitamente dall'utente: `skill-practice/vercel.json` imposta
-temporaneamente `git.deploymentEnabled: false` per consentire commit e push su
-`main` senza auto-deploy. Rimuovere il blocco nel commit del rilascio finale,
-quando autorizzato dall'utente; la produzione resta su P2.2/P3 (`c896244`).
+Durante P4 il deploy e' stato rinviato esplicitamente dall'utente:
+`skill-practice/vercel.json` ha usato temporaneamente `git.deploymentEnabled:
+false` per consentire commit e push senza pubblicazione. Il blocco viene rimosso
+nel rilascio finale del Profilo, autorizzato il 2026-11-07, che include anche P4,
+P5, la correzione della selezione personale e i materiali glass.
 
 ### P5 — Navigazione (implementato il 2026-11-07)
 
@@ -692,7 +693,23 @@ Toggle in alto: `[ Il mio livello ]  [ Per esame ]  [ Tutto ]`
 
 ### 7.4 Tab "Profilo"
 
-Nome, livello, esame in preparazione, progresso settimanale, settings.
+Riorganizzazione implementata il 2026-11-07: nome, email, scuola e gradi visibili;
+Dettagli account, Programma, Promemoria, Sicurezza e Privacy/dati apribili
+indipendentemente. Allenamento e Calendario conservano collegamenti diretti;
+Esci resta visibile. `primitives/Disclosure.tsx` usa details/summary nativi,
+stile Card condiviso e riapertura sugli esiti delle azioni, senza smontare i
+campi. Riepiloghi visibili per modalita' programma e promemoria effettivamente
+salvati; richiesta di cancellazione pendente riconoscibile anche da chiusa.
+Nessuna nuova query, dipendenza, autorizzazione o migrazione. Verificati lint,
+typecheck, 95 test, build e audit UI (solo la nuova primitiva aggiunge un
+tap-feedback nella superficie consentita). Collaudo Chromium della pagina reale
+con query/azioni simulate: cinque sezioni indipendenti, bozze, feedback asincrono,
+riepiloghi salvati, tastiera, gradi bloccati, dati mancanti/lunghi, cancellazione
+pendente, 320/375/390 px e landscape. Verificato anche il rendering server della
+Disclosure senza JavaScript. Nessuna scrittura al database nel collaudo.
+Piano operativo temporaneo e artefatti intermedi rimossi; regole nella guida UI.
+Commit, push e rilascio finale Vercel autorizzati: rimosso il blocco temporaneo
+degli auto-deploy. Esito del deployment tracciato dall'integrazione Vercel/GitHub.
 
 ### 7.5 Design rules
 

@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Disclosure } from "@/components/primitives/Disclosure";
 
 type Props = {
   settings: TrainingReminderSettingsModel;
@@ -34,6 +35,7 @@ export function TrainingReminderSettings({
     settings.enabled && settings.activeSubscriptionCount > 0,
   );
   const [reminderTime, setReminderTime] = useState(settings.reminderTime);
+  const [savedReminderTime, setSavedReminderTime] = useState(settings.reminderTime);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -66,6 +68,7 @@ export function TrainingReminderSettings({
         }
 
         setEnabled(true);
+        setSavedReminderTime(reminderTime);
         setMessage("Promemoria attivati.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Attivazione non riuscita.");
@@ -107,6 +110,7 @@ export function TrainingReminderSettings({
           return;
         }
 
+        setSavedReminderTime(reminderTime);
         setMessage("Orario aggiornato.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Salvataggio non riuscito.");
@@ -115,79 +119,84 @@ export function TrainingReminderSettings({
   };
 
   return (
-    <div className="border-border space-y-3 border-t pt-3">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium">Promemoria</p>
+    <Disclosure
+      title="Promemoria"
+      summary={enabled ? `Attivi · ${savedReminderTime}` : "Disattivati"}
+      revealKey={message}
+    >
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-muted-foreground text-xs">
+              {enabled
+                ? "Attivi nei giorni con esercizi ancora da fare."
+                : "Disattivati per questo dispositivo."}
+            </p>
+          </div>
+          {enabled ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isPending}
+              onClick={handleDisable}
+            >
+              <BellOff className="h-3.5 w-3.5" aria-hidden />
+              Disattiva
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isPending || !hasSchedule}
+              onClick={handleEnable}
+            >
+              <Bell className="h-3.5 w-3.5" aria-hidden />
+              Attiva
+            </Button>
+          )}
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="training-reminder-time">Orario</Label>
+          <div className="flex gap-2">
+            <Input
+              id="training-reminder-time"
+              type="time"
+              value={reminderTime}
+              onChange={(event) => setReminderTime(event.target.value)}
+              disabled={!hasSchedule || isPending}
+              className="max-w-32"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={!hasSchedule || isPending || !enabled}
+              onClick={handleSave}
+              aria-label="Salva orario promemoria"
+            >
+              <Save className="h-4 w-4" aria-hidden />
+            </Button>
+          </div>
           <p className="text-muted-foreground text-xs">
-            {enabled
-              ? "Attivi nei giorni con esercizi ancora da fare."
-              : "Disattivati per questo dispositivo."}
+            Fuso orario rilevato: {localTimeZone || settings.timeZone}.
           </p>
         </div>
-        {enabled ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isPending}
-            onClick={handleDisable}
-          >
-            <BellOff className="h-3.5 w-3.5" aria-hidden />
-            Disattiva
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isPending || !hasSchedule}
-            onClick={handleEnable}
-          >
-            <Bell className="h-3.5 w-3.5" aria-hidden />
-            Attiva
-          </Button>
+
+        {!hasSchedule && (
+          <p className="text-muted-foreground text-xs">
+            Disponibile dopo aver impostato una cadenza di allenamento.
+          </p>
+        )}
+
+        {message && (
+          <Alert>
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
         )}
       </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="training-reminder-time">Orario</Label>
-        <div className="flex gap-2">
-          <Input
-            id="training-reminder-time"
-            type="time"
-            value={reminderTime}
-            onChange={(event) => setReminderTime(event.target.value)}
-            disabled={!hasSchedule || isPending}
-            className="max-w-32"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={!hasSchedule || isPending || !enabled}
-            onClick={handleSave}
-            aria-label="Salva orario promemoria"
-          >
-            <Save className="h-4 w-4" aria-hidden />
-          </Button>
-        </div>
-        <p className="text-muted-foreground text-xs">
-          Fuso orario rilevato: {localTimeZone || settings.timeZone}.
-        </p>
-      </div>
-
-      {!hasSchedule && (
-        <p className="text-muted-foreground text-xs">
-          Disponibile dopo aver impostato una cadenza di allenamento.
-        </p>
-      )}
-
-      {message && (
-        <Alert>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      )}
-    </div>
+    </Disclosure>
   );
 }

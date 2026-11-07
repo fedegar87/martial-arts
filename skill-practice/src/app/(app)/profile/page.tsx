@@ -12,6 +12,7 @@ import { ChangePasswordSection } from "@/components/profile/ChangePasswordSectio
 import { PlanModeSection } from "@/components/profile/PlanModeSection";
 import { PrivacyDataSection } from "@/components/profile/PrivacyDataSection";
 import { TrainingReminderSettings } from "@/components/profile/TrainingReminderSettings";
+import { Disclosure } from "@/components/primitives/Disclosure";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,32 +35,12 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold">{profile.display_name}</h1>
+        <h1 className="text-2xl font-semibold wrap-anywhere">{profile.display_name}</h1>
         <p className="text-muted-foreground text-sm">
-          Profilo, sicurezza e dati dell&apos;account.
+          <span className="block wrap-anywhere">{profile.email ?? "Email non disponibile"}</span>
+          <span className="block wrap-anywhere">{profile.school_name ?? "Scuola non assegnata"}</span>
         </p>
       </header>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Account</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="divide-border divide-y text-sm">
-            <InfoRow label="Email" value={profile.email ?? "non disponibile"} />
-            <InfoRow
-              label="Scuola"
-              value={profile.school_name ?? "non assegnata"}
-            />
-            <InfoRow label="Ruolo" value={<RoleBadge role={profile.role} />} />
-            <InfoRow label="Membro dal" value={formatDate(profile.created_at)} />
-          </dl>
-          <p className="text-muted-foreground mt-3 flex gap-2 text-xs">
-            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-            Ruolo e scuola sono gestiti dagli amministratori.
-          </p>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -74,14 +55,23 @@ export default async function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Programma</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PlanModeSection planMode={profile.plan_mode} />
-        </CardContent>
-      </Card>
+      <Disclosure title="Dettagli account">
+        <dl className="divide-border divide-y text-sm">
+          <InfoRow label="Ruolo" value={<RoleBadge role={profile.role} />} />
+          <InfoRow label="Membro dal" value={formatDate(profile.created_at)} />
+        </dl>
+        <p className="text-muted-foreground mt-3 flex gap-2 text-xs">
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          Ruolo e scuola sono gestiti dagli amministratori.
+        </p>
+      </Disclosure>
+
+      <Disclosure
+        title="Programma"
+        summary={profile.plan_mode === "custom" ? "Selezione personale" : "Programma esame"}
+      >
+        <PlanModeSection planMode={profile.plan_mode} />
+      </Disclosure>
 
       <Card>
         <CardHeader>
@@ -103,15 +93,16 @@ export default async function ProfilePage() {
               Calendario
             </Link>
           </Button>
-          {pushEnabled && reminderSettings && (
-            <TrainingReminderSettings
-              settings={reminderSettings}
-              hasSchedule={Boolean(schedule)}
-              publicVapidKey={pushVapidKey}
-            />
-          )}
-	        </CardContent>
-	      </Card>
+        </CardContent>
+      </Card>
+
+      {pushEnabled && reminderSettings && (
+        <TrainingReminderSettings
+          settings={reminderSettings}
+          hasSchedule={Boolean(schedule)}
+          publicVapidKey={pushVapidKey}
+        />
+      )}
 
       <ChangePasswordSection />
 
