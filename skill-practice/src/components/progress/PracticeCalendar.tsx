@@ -1,4 +1,6 @@
 import { CalendarDays } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/progress/SectionHeader";
 import type { PracticeDay } from "@/lib/queries/progress";
 
@@ -16,66 +18,81 @@ export function PracticeCalendar({ days }: Props) {
       <SectionHeader
         icon={CalendarDays}
         title="Calendario pratica"
-        right={<span className="text-xs text-muted-foreground">ultimi 90 giorni</span>}
+        right={practicedCount > 0
+          ? <span className="text-xs text-muted-foreground">ultimi 90 giorni</span>
+          : undefined}
       />
-      <div className="space-y-1">
-        <div className="grid grid-cols-[1.75rem_1fr] gap-2">
-          <div aria-hidden />
-          <div
-            aria-hidden
-            className="grid gap-1 text-[0.62rem] leading-none text-muted-foreground"
-            style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
-          >
-            {monthLabels.map((label, index) => (
-              <span key={index} className="truncate">
-                {label ?? ""}
-              </span>
-            ))}
-          </div>
+      {practicedCount === 0 ? (
+        <div className="space-y-3">
+          <p className="text-muted-foreground text-sm">
+            Nessuna pratica registrata negli ultimi 90 giorni.
+          </p>
+          <Button asChild variant="outline" size="sm" className="min-h-11">
+            <Link href="/today">Vai ad Allenamento</Link>
+          </Button>
         </div>
-        <div className="grid grid-cols-[1.75rem_1fr] gap-2">
-          <div
-            aria-hidden
-            className="grid grid-rows-7 gap-1 text-right text-[0.62rem] leading-none text-muted-foreground"
-          >
-            {WEEKDAY_LABELS.map((label, index) => (
-              <span key={index} className="flex items-center justify-end">
-                {label}
-              </span>
-            ))}
-          </div>
-          <div
-            role="img"
-            aria-label={`Mappa pratica ultimi 90 giorni: ${practicedCount} giorni con pratica`}
-            className="grid gap-1"
-            style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
-          >
-            {weeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="grid grid-rows-7 gap-1">
-                {week.map((day, dayIndex) =>
-                  day ? (
-                    <div
-                      key={day.date}
-                      aria-hidden
-                      title={`${formatDate(day.date)}: ${day.practiced ? "praticato" : "non praticato"}`}
-                      className={`aspect-square min-h-2 rounded-sm border ${cellStyle(day.practiced)}`}
-                    />
-                  ) : (
-                    <div
-                      key={`blank-${weekIndex}-${dayIndex}`}
-                      aria-hidden
-                      className="aspect-square min-h-2 rounded-sm border border-transparent"
-                    />
-                  ),
-                )}
+      ) : (
+        <>
+          <div className="space-y-1">
+            <div className="grid grid-cols-[1.75rem_1fr] gap-2">
+              <div aria-hidden />
+              <div
+                aria-hidden
+                className="grid gap-1 text-[0.62rem] leading-none text-muted-foreground"
+                style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+              >
+                {monthLabels.map((label, index) => (
+                  <span key={index} className="truncate">
+                    {label ?? ""}
+                  </span>
+                ))}
               </div>
-            ))}
+            </div>
+            <div className="grid grid-cols-[1.75rem_1fr] gap-2">
+              <div
+                aria-hidden
+                className="grid grid-rows-7 gap-1 text-right text-[0.62rem] leading-none text-muted-foreground"
+              >
+                {WEEKDAY_LABELS.map((label, index) => (
+                  <span key={index} className="flex items-center justify-end">
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <div
+                role="img"
+                aria-label={`Mappa pratica ultimi 90 giorni: ${practicedCount} ${practicedCount === 1 ? "giorno" : "giorni"} con pratica`}
+                className="grid gap-1"
+                style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+              >
+                {weeks.map((week, weekIndex) => (
+                  <div key={weekIndex} className="grid grid-rows-7 gap-1">
+                    {week.map((day, dayIndex) =>
+                      day ? (
+                        <div
+                          key={day.date}
+                          aria-hidden
+                          title={`${formatDate(day.date)}: ${day.practiced ? "praticato" : "non praticato"}`}
+                          className={`aspect-square min-h-2 rounded-sm border ${cellStyle(day.practiced)}`}
+                        />
+                      ) : (
+                        <div
+                          key={`blank-${weekIndex}-${dayIndex}`}
+                          aria-hidden
+                          className="aspect-square min-h-2 rounded-sm border border-transparent"
+                        />
+                      ),
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        {practicedCount} giorni con pratica negli ultimi 90.
-      </p>
+          <p className="text-sm text-muted-foreground">
+            {practicedCount} {practicedCount === 1 ? "giorno" : "giorni"} con pratica negli ultimi 90.
+          </p>
+        </>
+      )}
     </section>
   );
 }

@@ -8,7 +8,7 @@ export default function Loading() {
         <Skeleton className="h-8 w-36" />
         <Skeleton className="h-8 w-36 rounded-md" />
       </header>
-      <ProgressSectionSkeleton heightClass="h-16" />
+      <ProgressSectionSkeleton heightClass="h-10" />
       <ProgressSectionSkeleton heightClass="h-16" />
       <ProgressSectionSkeleton heightClass="h-40" />
       <ProgressSectionSkeleton heightClass="h-56" />

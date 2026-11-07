@@ -151,7 +151,10 @@ Note:
 - `next dev` forza Webpack; Turbopack dev aveva dato problemi locali.
 - `next build` usa il comportamento standard di Next 16.
 - `next-pwa` non e' installato.
-- `vercel.json` contiene `{"regions":["fra1"]}`.
+- `vercel.json` fissa la regione `fra1`. Durante P4 l'utente ha richiesto commit
+  e push senza deploy: `git.deploymentEnabled` e' temporaneamente `false`.
+  Rimuovere il blocco solo al rilascio finale autorizzato; la produzione resta
+  al commit P2.2/P3 `c896244` fino a quel momento.
 - `next.config.ts` contiene solo security headers globali.
 
 ## 5. Convenzioni architetturali vincolanti
@@ -360,6 +363,11 @@ Progresso:
 
 - `/progress` mostra ciclo attivo, giorni praticati, streak, calendario 90
   giorni e top skill praticate.
+- P4 (2026-11-07) sostituisce i due contatori del ciclo con un solo riepilogo
+  fino a oggi e una barra accessibile; nessuna sessione prevista mostra un
+  messaggio anziche' 0/0. Il calendario vuoto mostra un messaggio e un link ad
+  Allenamento al posto della griglia. Nessuna sezione "Da rinfrescare", nuova
+  metrica o intensita' calendario; query e criteri di completamento invariati.
 - Aggregati globali/streak sono RPC SQL, non download storico completo.
 
 ## 9. Modello dati

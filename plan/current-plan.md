@@ -518,6 +518,26 @@ privacy pre-play, più player, errori e smontaggio). Verificato anche un video
 dimostrativo YouTube reale con cambio confermato a 0,5×. Non è un collaudo
 autenticato su telefono fisico. Nessuna nuova dipendenza o migrazione.
 
+### P4 — Progressi essenziali (implementato il 2026-11-07)
+
+Il riepilogo del ciclo usa un solo contatore delle sessioni completate rispetto
+a quelle previste fino a oggi, accompagnato da una barra accessibile. Nessuna
+percentuale visibile o metrica aggiuntiva; prima della prima sessione prevista
+mostra un messaggio anziché 0/0. Il calendario senza pratica nei 90 giorni mostra
+un messaggio e un link ad Allenamento al posto della griglia vuota.
+Esclusi "Da rinfrescare", copertura del piano e nuove intensità/legende calendario.
+Nessuna modifica alle query o alla logica di completamento.
+
+Verificati lint, typecheck, 95 test, build locale e audit UI senza nuovi rilievi.
+Collaudo Chromium dei componenti a 320/375/390 px: nessuna sessione prevista,
+avanzamento zero/parziale/completo, valori accessibili, calendario con/senza
+pratica e link ad Allenamento da 44 px. Skeleton del ciclo allineato al riepilogo.
+
+Deploy rinviato esplicitamente dall'utente: `skill-practice/vercel.json` imposta
+temporaneamente `git.deploymentEnabled: false` per consentire commit e push su
+`main` senza auto-deploy. Rimuovere il blocco nel commit del rilascio finale,
+quando autorizzato dall'utente; la produzione resta su P2.2/P3 (`c896244`).
+
 ### 6.1 "Oggi fai questo" (`practice-logic.ts`)
 
 Input: tutte le `UserPlanItem` non nascoste dell'utente.

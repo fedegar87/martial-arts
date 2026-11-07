@@ -26,7 +26,7 @@ export default async function ProgressPage() {
         </Button>
       </header>
 
-      <Suspense fallback={<ProgressSectionSkeleton heightClass="h-16" />}>
+      <Suspense fallback={<ProgressSectionSkeleton heightClass="h-10" />}>
         <ActiveCycleSection profile={profile} />
       </Suspense>
       <Suspense fallback={<ProgressSectionSkeleton heightClass="h-16" />}>
