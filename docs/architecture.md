@@ -211,7 +211,7 @@ Pagine:
 | `/sessions/setup` | protetta | Giorni, durata, ciclo e reps |
 | `/calendar` | protetta | Sessioni, pratica libera, eventi federali e promemoria scelti |
 | `/progress` | protetta | Progresso, streak, calendario, top skill |
-| `/news` | protetta | Bacheca scuola |
+| `/news` | protetta | Bacheca: comunicazioni scuola e anteprima prossimi eventi |
 | `/profile` | protetta | Profilo, gradi, account, sicurezza, privacy, reminder |
 | `/onboarding` | protetta | Setup iniziale profilo/piano |
 
@@ -236,7 +236,7 @@ Loading states:
 Navigazione corrente (P5, 2026-11-07): la barra inferiore contiene Allenamento,
 Programma, Scuola, Progressi e Profilo. Nell'header, nascosto sul hub, Home resta
 a sinistra e Bacheca e' raggiungibile dalla campanella a destra, con stato attivo
-su `/news`. Le nuove comunicazioni sono segnalate dal banner in Allenamento;
+su `/news` e `/calendar`. Le nuove comunicazioni sono segnalate dal banner in Allenamento;
 nessun badge globale o lettura DB aggiuntiva nel layout.
 Nel hub la stessa campanella compare a destra dell'intestazione, senza barra
 aggiuntiva o pulsante Home; resta anche la tile Bacheca. Entrambe le campanelle
@@ -663,10 +663,17 @@ Regole:
 - `FormSelect` usa font mobile-safe per evitare zoom iOS.
 - Header e bottom sheets gestiscono safe-area PWA.
 - Il Profilo mostra subito identita' e gradi; Lingua usa `Disclosure` con il solo titolo e `FormSelect` con la lingua corrente selezionata, senza riepilogo o etichette visibili ripetute. L'header autenticato contiene solo Home e Bacheca. `Disclosure` raccoglie dettagli
-  account, programma, promemoria, sicurezza e privacy/dati senza smontare i form.
-  Gli esiti riaprono la sezione; riepiloghi di modalita' e promemoria indicano
-  dati salvati. Allenamento/Calendario ed Esci restano direttamente accessibili.
+  account, promemoria, sicurezza e privacy/dati senza smontare i form.
+  Gli esiti riaprono la sezione; riepiloghi dei promemoria indicano
+  dati salvati. Programma e Allenamento sono nelle rispettive aree; Esci resta visibile.
   Query, azioni server e autorizzazioni conservano il comportamento esistente.
+- Bacheca condivide `news/BulletinHeader` tra `/news` e `/calendar`, comprese le
+  rispettive loading UI: Avvisi e Calendario sono le due viste della stessa
+  area. `/news` carica avvisi e snapshot eventi in parallelo e mostra fino a tre
+  prossimi appuntamenti, inclusi quelli in corso o annullati con promemoria scelto.
+  Riusa `CalendarEventCard` per dettagli/promemoria; le azioni rivalidano entrambe
+  le rotte. Il calendario conserva sessioni e pratica e non marca gli avvisi letti.
+  Campanella attiva su entrambe, nessun tab Allenamento attivo su `/calendar`.
 - Non aggiungere primitive se il pattern non ha almeno 3 callsite reali, salvo
   eccezione motivata.
 

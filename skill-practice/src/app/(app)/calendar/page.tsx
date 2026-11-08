@@ -1,6 +1,7 @@
 import type { UiTranslator } from "@/lib/i18n/config";
 
 import { Calendar, type CalendarView } from "@/components/calendar/Calendar";
+import { BulletinHeader } from "@/components/news/BulletinHeader";
 import { addDaysToDateKey, localDateKey } from "@/lib/date";
 import {
   getCalendarDataInRange,
@@ -43,12 +44,10 @@ export default async function CalendarPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold">{tr("calendar")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {tr("calendarDescription")}
-        </p>
-      </header>
+      <BulletinHeader active="calendar" />
+      <p className="text-muted-foreground text-sm">
+        {tr("calendarDescription")}
+      </p>
 
       {calendarData.eventsUnavailable && (
         <p className="text-muted-foreground text-sm" role="status">

@@ -33,13 +33,29 @@ const catalogs = Object.fromEntries(
 await fs.writeFile(
   path.join(temporary, "queries.ts"),
   `
+import {buildCalendarDayViewsInRange} from '@/lib/calendar-logic';
 export const getCurrentProfileAccount = async () => ({
-  id: 'fixture', display_name: 'Nome di collaudo', email: 'allievo@example.test', school_name: 'Scuola di collaudo',
+  id: 'fixture', school_id:'school-fixture', display_name: 'Nome di collaudo', email: 'allievo@example.test', school_name: 'Scuola di collaudo',
   role: 'student', assigned_level_shaolin: 5, assigned_level_taichi: 0, profile_locked: true, plan_mode: 'exam', created_at: '2026-01-01T12:00:00Z'
 });
 export const getTrainingSchedule = async () => null;
 export const getPendingAccountDeletionRequest = async () => null;
 export const getTrainingReminderSettings = async () => ({enabled:false, activeSubscriptionCount:0, reminderTime:'09:00', timeZone:'Europe/Rome', includeExerciseNames:true});
+export const getCurrentProfile = getCurrentProfileAccount;
+export const listNewsForSchool = async () => window.__scenario === 'empty' ? [] : [{
+  id:'news-1', type:'announcement', pinned:true, title:'Avviso di collaudo', body:'Comunicazione della scuola. '.repeat(12), published_at:'2026-11-01T12:00:00Z'
+}];
+const events = Array.from({length:4}, (_,i) => ({
+  id:'event-'+i, title:'Stage di collaudo '+i, description:'Dettagli dello stage', location:'Arlon',
+  starts_on:'2026-12-0'+(i+1), ends_on:'2026-12-0'+(i+2), starts_at:'2026-12-0'+(i+1)+'T09:00:00Z',
+  ends_at:'2026-12-0'+(i+2)+'T16:00:00Z', all_day:false, cancelled:false, reminderSelected:false, canRemind:true
+}));
+export const getFederationCalendarData = async () => ({events:window.__scenario === 'empty' ? [] : events, unavailable:window.__scenario === 'unavailable', reminderTime:'09:00'});
+export const getCalendarSkillOptions = async () => [];
+export const getCalendarDataInRange = async ({from,to}) => ({
+  days:buildCalendarDayViewsInRange(from,to,{rows:[],logs:[],skillById:new Map(),todayKey:'2026-11-08',repsPerForm:1,hasSchedule:false,scheduleStart:null,scheduleEnd:null}).map(day=>({...day, events:[]})),
+  eventsUnavailable:false,eventReminderTime:'09:00'
+});
 `,
 );
 await fs.writeFile(
@@ -52,9 +68,12 @@ export async function setLocale(value) {
   window.__locale = value;
 }
 const unexpected = async () => { throw Error('Unexpected account mutation'); };
+export const markNewsAsSeen = async () => { window.__seen = (window.__seen ?? 0) + 1; };
 export { unexpected as changePassword, unexpected as signOut, unexpected as requestAccountDeletion,
   unexpected as updateProfileGrade, unexpected as switchToCustomMode, unexpected as revokePushSubscriptionOnSignOut,
-  unexpected as enableTrainingReminders, unexpected as disableTrainingReminders, unexpected as updateTrainingReminderSettings };
+  unexpected as enableTrainingReminders, unexpected as disableTrainingReminders, unexpected as updateTrainingReminderSettings,
+  unexpected as addFreePracticeForDate, unexpected as removeFreePracticeForDate, unexpected as setPracticeCompletionForDate,
+  unexpected as enableFederationEventReminder, unexpected as disableFederationEventReminder };
 `,
 );
 await fs.writeFile(
@@ -69,7 +88,7 @@ await fs.writeFile(
   path.join(temporary, "navigation.ts"),
   `
 export const useRouter = () => ({refresh: () => { void window.__render(); }});
-export const usePathname = () => '/profile';
+export const usePathname = () => location.pathname === '/' ? '/profile' : location.pathname;
 export const redirect = () => { throw Error('Unexpected redirect'); };
 `,
 );
@@ -87,16 +106,20 @@ import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {NextIntlClientProvider} from 'next-intl';
 import ProfilePage from '@/app/(app)/profile/page';
-import {AppHeader} from '@/components/shared/AppHeader';
+import NewsPage from '@/app/(app)/news/page';
+import CalendarPage from '@/app/(app)/calendar/page';
+import {AppHeaderConditional} from '@/components/shared/AppHeaderConditional';
 import {BottomNav} from '@/components/nav/BottomNav';
 window.__catalogs = ${JSON.stringify(catalogs)};
-window.__locale = new URLSearchParams(location.search).get('locale') === 'fr' ? 'fr' : 'it';
+window.__locale = new URLSearchParams(location.search).get('locale') ?? (document.cookie.includes('fixture_locale=fr') ? 'fr' : 'it');
+document.cookie = 'fixture_locale='+window.__locale+';path=/';
+window.__scenario = new URLSearchParams(location.search).get('scenario');
 const root = createRoot(document.getElementById('root'));
 window.__render = async () => {
-  const content = await ProfilePage();
+  const content = location.pathname === '/news' ? await NewsPage() : location.pathname === '/calendar' ? await CalendarPage({searchParams:Promise.resolve(Object.fromEntries(new URLSearchParams(location.search)))}) : await ProfilePage();
   document.documentElement.lang = window.__locale;
   root.render(<NextIntlClientProvider locale={window.__locale} messages={window.__catalogs[window.__locale]} timeZone="Europe/Rome">
-    <div className="app-shell bg-background"><AppHeader/><main className="app-main">{content}</main><BottomNav/></div>
+    <div className="app-shell bg-background"><AppHeaderConditional/><main className="app-main">{content}</main><BottomNav/></div>
   </NextIntlClientProvider>);
 };
 void window.__render();
@@ -128,6 +151,9 @@ await build({
         "training-schedule",
         "account",
         "push-notifications",
+        "news",
+        "federation-events",
+        "calendar",
       ].map((name) => [
         `@/lib/queries/${name}`,
         path.join(temporary, "queries.ts"),
@@ -141,6 +167,9 @@ await build({
         "plan",
         "push-notifications",
         "locale",
+        "news",
+        "calendar",
+        "federation-events",
       ].map((name) => [
         `@/lib/actions/${name}`,
         path.join(temporary, "actions.ts"),
@@ -215,6 +244,16 @@ try {
   await page.goto(origin);
   await page.getByRole("heading", { name: "Nome di collaudo" }).waitFor();
   assert.equal(await page.locator("header.material-bar select").count(), 0);
+  assert.equal(
+    await page
+      .locator(
+        'main a[href="/calendar"], main a[href="/sessions/setup"], main a[href="/programma"], main a[href="/plan/exam"]',
+      )
+      .count(),
+    0,
+  );
+  assert.equal(await panel(/^Programma|^Programme/).count(), 0);
+  assert.equal(await page.locator("main details").count(), 5);
   const language = panel(/^Lingua/);
   assert.equal(await language.locator("summary").innerText(), "Lingua");
   await language.locator("summary").click();
@@ -305,7 +344,7 @@ try {
             ];
           }),
         );
-      assert.ok(headings.length >= 8);
+      assert.equal(headings.length, 6);
       assert.ok(
         headings.every(
           (style) => JSON.stringify(style) === JSON.stringify(headings[0]),
@@ -363,9 +402,116 @@ try {
       }
     }
   }
+  for (const locale of ["it", "fr"]) {
+    const tr = catalogs[locale].ui;
+    for (const [width, height] of [
+      [320, 740],
+      [390, 844],
+      [844, 390],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.goto(`${origin}/news?locale=${locale}`);
+      const navigation = page.getByRole("navigation", {
+        name: tr.news,
+        exact: true,
+      });
+      await navigation.waitFor();
+      assert.equal(
+        await navigation
+          .locator("a > span")
+          .evaluateAll((elements) =>
+            elements.every(
+              (element) =>
+                element.scrollWidth <= element.clientWidth + 1 &&
+                element.getBoundingClientRect().height < 30,
+            ),
+          ),
+        true,
+        "Bulletin labels fit on one line on narrow phones",
+      );
+      assert.equal(
+        await navigation
+          .getByRole("link", { name: tr.announcements })
+          .getAttribute("aria-current"),
+        "page",
+      );
+      assert.equal(
+        await page.locator('#upcoming-events + [data-slot="card"] li').count(),
+        3,
+      );
+      assert.equal(await page.locator("article").count(), 1);
+      await page.waitForFunction(() => window.__seen === 1);
+      await noOverflow();
+      await page.screenshot({
+        path: path.join(screenshots, `${locale}-bulletin-${width}.png`),
+        fullPage: true,
+      });
+      const event = page.getByRole("button", { name: /Stage di collaudo 0/ });
+      await event.click();
+      await page
+        .getByRole("dialog")
+        .getByText("Dettagli dello stage")
+        .waitFor();
+      await noOverflow();
+      await page.getByRole("button", { name: tr.close, exact: true }).click();
+      assert.equal(
+        await event.evaluate((element) => element === document.activeElement),
+        true,
+      );
+      await navigation
+        .getByRole("link", { name: tr.calendar, exact: true })
+        .click();
+      const calendarNav = page.getByRole("navigation", {
+        name: tr.news,
+        exact: true,
+      });
+      await calendarNav.waitFor();
+      assert.equal(
+        await calendarNav
+          .getByRole("link", { name: tr.calendar, exact: true })
+          .getAttribute("aria-current"),
+        "page",
+      );
+      assert.equal(
+        await page
+          .locator('header.material-bar a[href="/news"]')
+          .getAttribute("aria-current"),
+        "page",
+      );
+      assert.equal(
+        await page.locator('.app-nav a[aria-current="page"]').count(),
+        0,
+      );
+      assert.equal(await page.evaluate(() => window.__seen ?? 0), 0);
+      await noOverflow();
+      await page.screenshot({
+        path: path.join(
+          screenshots,
+          `${locale}-bulletin-calendar-${width}.png`,
+        ),
+        fullPage: true,
+      });
+      await calendarNav.getByRole("link", { name: tr.announcements }).click();
+      await page.locator("article").waitFor();
+    }
+    await page.goto(`${origin}/news?locale=${locale}&scenario=empty`);
+    await page.getByText(tr.noUpcomingEvents, { exact: true }).waitFor();
+    await page.getByText(tr.noNews, { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => window.__seen ?? 0), 0);
+    await page.goto(`${origin}/news?locale=${locale}&scenario=unavailable`);
+    await page
+      .getByRole("status")
+      .getByText(tr.eventsUnavailable, { exact: true })
+      .waitFor();
+    assert.equal(
+      await page.getByText(tr.noUpcomingEvents, { exact: true }).count(),
+      0,
+    );
+    await page.locator("article").waitFor();
+  }
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: actual profile page with mocked data/actions; language panel has a single visible label and current selection, pending/error/retry, Italian/French headings, shared typography/surfaces, no overflow at 320/390px and landscape. No database writes.",
+    "PASS: actual profile page with mocked data/actions; language panel has a single visible label and current selection, pending/error/retry, Italian/French headings, shared typography/surfaces, no overflow at 320/390px and landscape. Bulletin navigation, event preview/details, empty/unavailable states and unread isolation passed. No database writes.",
   );
 } finally {
   await browser?.close();

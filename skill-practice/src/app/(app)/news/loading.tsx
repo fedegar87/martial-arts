@@ -1,5 +1,11 @@
 import { AppRouteSkeleton } from "@/components/shared/AppRouteSkeleton";
+import { BulletinHeader } from "@/components/news/BulletinHeader";
 
 export default function Loading() {
-  return <AppRouteSkeleton variant="list" />;
+  return (
+    <AppRouteSkeleton
+      variant="list"
+      header={<BulletinHeader active="communications" />}
+    />
+  );
 }

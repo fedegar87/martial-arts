@@ -103,6 +103,8 @@ export async function updateTrainingReminderSettings({
 
   revalidatePath("/today");
   revalidatePath("/profile");
+  revalidatePath("/calendar");
+  revalidatePath("/news");
   return { success: true };
 }
 

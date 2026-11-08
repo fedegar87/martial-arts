@@ -1,25 +1,21 @@
 import { Disclosure } from "@/components/primitives/Disclosure";
 import { ChangePasswordSection } from "@/components/profile/ChangePasswordSection";
 import { GradeEditor } from "@/components/profile/GradeEditor";
-import { PlanModeSection } from "@/components/profile/PlanModeSection";
 import { PrivacyDataSection } from "@/components/profile/PrivacyDataSection";
 import { SignOutButton } from "@/components/profile/SignOutButton";
 import { TrainingReminderSettings } from "@/components/profile/TrainingReminderSettings";
 import { LocaleSwitcher } from "@/components/shared/LocaleSwitcher";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UiTranslator } from "@/lib/i18n/config";
 import { getPendingAccountDeletionRequest } from "@/lib/queries/account";
 import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getCurrentProfileAccount } from "@/lib/queries/user-profile";
-import type { TrainingSchedule, UserRole } from "@/lib/types";
-import { wrappingButtonClassName } from "@/lib/ui-classes";
-import { CalendarDays, CalendarPlus, ShieldCheck } from "lucide-react";
+import type { UserRole } from "@/lib/types";
+import { ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -32,7 +28,7 @@ export default async function ProfilePage() {
   const pushEnabled = Boolean(pushVapidKey);
   const [schedule, reminderSettings, pendingDeletionRequest] =
     await Promise.all([
-      getTrainingSchedule(profile.id),
+      pushEnabled ? getTrainingSchedule(profile.id) : Promise.resolve(null),
       pushEnabled
         ? getTrainingReminderSettings(profile.id)
         : Promise.resolve(null),
@@ -89,48 +85,6 @@ export default async function ProfilePage() {
         <LocaleSwitcher variant="settings" />
       </Disclosure>
 
-      <Disclosure
-        title={tr("program")}
-        summary={
-          profile.plan_mode === "custom"
-            ? tr("customSelection")
-            : tr("examProgram")
-        }
-      >
-        <PlanModeSection planMode={profile.plan_mode} />
-      </Disclosure>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{tr("training")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="text-muted-foreground text-sm">
-            {scheduleSummary(tr, schedule)}
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            className={`${wrappingButtonClassName} w-full justify-start text-left`}
-          >
-            <Link href="/sessions/setup">
-              <CalendarPlus className="mr-2 h-4 w-4" />
-              {schedule ? tr("editTraining") : tr("setupTraining")}
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className={`${wrappingButtonClassName} w-full justify-start text-left`}
-          >
-            <Link href="/calendar">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              {tr("calendar")}
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
-
       {pushEnabled && reminderSettings && (
         <TrainingReminderSettings
           settings={reminderSettings}
@@ -182,31 +136,4 @@ function formatDate(tr: UiTranslator, value: string): string {
     month: "2-digit",
     year: "numeric",
   }).format(new Date(value));
-}
-
-function scheduleSummary(
-  tr: UiTranslator,
-  schedule: TrainingSchedule | null,
-): string {
-  if (!schedule) return tr("noTrainingSchedule");
-
-  const days = [...schedule.weekdays]
-    .sort((a, b) => a - b)
-    .map((day) =>
-      new Intl.DateTimeFormat(tr("locale"), {
-        weekday: "short",
-        timeZone: "UTC",
-      }).format(new Date(Date.UTC(2026, 0, 4 + day))),
-    )
-    .join(", ");
-  const cadence =
-    schedule.cadence_weeks === 1
-      ? tr("everyWeek")
-      : tr("everyWeeks", { p0: schedule.cadence_weeks });
-
-  return tr("scheduleSummary", {
-    p0: days,
-    p1: cadence,
-    p2: schedule.reps_per_form,
-  });
 }

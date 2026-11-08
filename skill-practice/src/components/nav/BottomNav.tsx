@@ -29,7 +29,7 @@ function NAV_ITEMS(tr: UiTranslator): NavItem[] {
       label: tr("training"),
       shortLabel: tr("training"),
       Icon: CalendarDays,
-      match: ["/calendar", "/sessions"],
+      match: ["/sessions"],
     },
     {
       href: "/programma",

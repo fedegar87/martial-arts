@@ -1,6 +1,6 @@
 # UI system operativo
 
-Versione: 2026-11-07.
+Versione: 2026-11-08.
 
 Questo documento e' la guida rapida per scegliere componenti UI, classi locali e cartelle. Il piano completo e' in `docs/ui-codebase-refactor-plan.md`.
 
@@ -97,15 +97,15 @@ Lo stato completato e' uno stato, non una CTA primaria.
 
 ## Disclosure
 
-`Disclosure` e' la primitiva condivisa per le sei sezioni secondarie del
+`Disclosure` e' la primitiva condivisa per le cinque sezioni secondarie del
 Profilo. Riusa `Card` con `details`/`summary` nativi: titolo e riepilogo visibili,
 chevron, target minimo 56 px e focus interno al bordo. Le sezioni si aprono
 indipendentemente e i figli restano montati, conservando i campi alla chiusura.
 Il toggle funziona anche senza JavaScript; `revealKey` riapre la sezione quando
 arriva un nuovo esito dell'azione, senza controllare lo stato nativo del toggle.
 
-Identita' e gradi restano visibili; Allenamento, Calendario ed Esci mantengono
-accessi diretti. Non annidare altri accordion intorno a questi controlli.
+Identita', gradi ed Esci restano visibili. Programma e Allenamento sono nelle
+rispettive aree, senza pannelli duplicati nel Profilo; Calendario e' nella Bacheca.
 I riepiloghi devono rappresentare lo stato salvato, non le bozze dei form;
 eventuali richieste pendenti devono essere riconoscibili anche a sezione chiusa.
 
@@ -115,8 +115,15 @@ il nome accessibile del campo resta Lingua. Il selettore non compare nella barra
 dell'app. Titoli dei pannelli e `CardTitle` condividono font, dimensione, peso
 e interlinea; errori delle impostazioni usano `Alert`.
 Le azioni del profilo usano `wrappingButtonClassName` da `ui-classes.ts` per
-conservare altezza minima e testo completo anche con etichette francesi lunghe;
-le due modalita' programma hanno colonne di uguale larghezza e si impilano su mobile.
+conservare altezza minima e testo completo anche con etichette francesi lunghe.
+
+Bacheca usa `news/BulletinHeader` per titolo e `SegmentedNav` Avvisi /
+Calendario, anche durante il caricamento. Avvisi mostra fino a tre eventi
+dal calendario federale, con date visibili e lo stesso `CalendarEventCard` per
+dettagli e promemoria; sotto resta l'elenco degli avvisi, con evidenza dei fissati.
+Stato vuoto ed errore eventi sono distinti. Calendario mantiene le viste settimana
+e mese e la pratica personale. La campanella e' attiva su entrambe le pagine;
+la barra inferiore non evidenzia Allenamento mentre si consulta la Bacheca.
 
 Nel Calendario gli eventi federali riusano celle e giorno esistenti: un solo
 indicatore, elenco essenziale e dettagli su richiesta nel `material-sheet`.

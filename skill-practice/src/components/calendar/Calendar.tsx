@@ -221,7 +221,7 @@ function DayCell({
   const cellLabel = dayCellLabel(tr, date, day);
   const content = (
     <>
-      <span className="flex items-center justify-between gap-1">
+      <span className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <span
           className={cn(
             "font-mono text-sm font-semibold leading-none sm:text-base",

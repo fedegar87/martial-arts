@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Versione brief:** v3
-**Ultimo aggiornamento:** 2026-11-07
+**Ultimo aggiornamento:** 2026-11-08
 
 I piani operativi conclusi sono rimossi dopo aver consolidato le decisioni nei
 documenti correnti; lo storico resta in Git. I test browser ripetibili vivono
@@ -359,7 +359,7 @@ skill-practice/
 │   │   │   ├── progress/page.tsx         # Tab Progressi (Sprint 1.8)
 │   │   │   ├── skill/[skillId]/page.tsx
 │   │   │   ├── profile/
-│   │   │   │   ├── page.tsx            # Account, gradi, programma, sicurezza, privacy
+│   │   │   │   ├── page.tsx            # Account, gradi, lingua, sicurezza, privacy
 │   │   │   │   └── export/route.ts     # Export JSON dati utente (Sprint 1.11)
 │   │   │   ├── sessions/setup/page.tsx   # Setup schedule allenamento
 │   │   │   └── news/page.tsx             # Bacheca (D4)
@@ -382,8 +382,8 @@ skill-practice/
 │   │   ├── plan/                       # Editor piano (exam/custom)
 │   │   ├── progress/                   # Visualizzazioni progresso
 │   │   ├── skill/                      # VideoPlayer (unica variante attiva), badge livello/stato
-│   │   ├── profile/                    # GradeEditor, PlanModeSection, ChangePasswordSection, PrivacyDataSection, TrainingReminderSettings, SignOutButton
-│   │   ├── news/                       # Lista bacheca + badge unread
+│   │   ├── profile/                    # GradeEditor, ChangePasswordSection, PrivacyDataSection, TrainingReminderSettings, SignOutButton
+│   │   ├── news/                       # BulletinHeader, comunicazioni + badge unread
 │   │   ├── legal/                      # LegalLinks, LegalPage
 │   │   ├── pwa/                        # ServiceWorkerRegister, TrainingReminderPrompt
 │   │   └── shared/                     # AppHeader (House Lucide), AppHeaderConditional, AppRouteSkeleton, EmptyState, MetricStrip
@@ -699,7 +699,7 @@ La tile Bacheca resta. I due accessi superiori usano `Button` ghost con target
 48×48 px e nome accessibile; nessun badge, contatore, query o notifica aggiunti.
 Verificati lint, typecheck, build e collaudo Chromium con pagina reale/query
 simulate: link e focus da tastiera, tile esistente, assenza della barra globale
-sul hub, stato attivo su `/news`, nomi lunghi e layout 320/375/390/844 px.
+sul hub, stato attivo su `/news` e `/calendar`, nomi lunghi e layout 320/375/390/844 px.
 
 ### 7.1 Bottom navigation
 
@@ -709,12 +709,21 @@ sul hub, stato attivo su `/news`, nomi lunghi e layout 320/375/390/844 px.
 
 La barra conserva 5 slot e include Profilo. Bacheca si raggiunge dalla campanella nell'header, dagli avvisi in Allenamento e dalla tile del hub. Non è presente un pallino globale dei non letti; il layout non aggiunge query.
 
-`/calendar` non occupa uno slot BottomNav: è il calendario generale dell'app. Si raggiunge da `/today` (sticky header), `/progress` (bottone "Apri calendario") e `/profile` (card Allenamento).
+`/calendar` non occupa uno slot BottomNav: è il calendario generale dell'app. Si raggiunge dalla Bacheca, da `/today` (sticky header) e da `/progress` (bottone "Apri calendario").
+
+Revisione richiesta il 2026-11-08: Bacheca riunisce Avvisi (`/news`) e
+Calendario (`/calendar`) con intestazione e navigazione condivise
+`components/news/BulletinHeader.tsx`. Comunicazioni mostra anche fino a tre
+prossimi eventi federali, con date e dettagli/promemoria del calendario esistente.
+Nessuna duplicazione degli eventi in `news_items` o nuova rotta/tabella.
+Il calendario mantiene allenamenti e pratica libera; aprirlo non segna le
+comunicazioni come lette. La campanella e' attiva su entrambe le viste.
 
 Dal 2026-11-07 comprende gli eventi del calendario ufficiale FESK nell'anno
 corrente e successivo. Un'icona nella cella segnala gli eventi; titolo, orario
 italiano e luogo compaiono nel giorno, i dettagli nel Sheet condiviso. Nessun
-filtro, nuova dashboard o copia in Bacheca. Eventi e pratica restano indipendenti.
+filtro o nuova dashboard. L'anteprima in Bacheca riusa lo stesso snapshot.
+Eventi e pratica restano indipendenti.
 Home usa `House` Lucide e lo stesso `Button` ghost della campanella; la landing
 usa `Button` per Entra e conserva il logo integro, senza blur sul marchio.
 
@@ -769,17 +778,18 @@ Toggle in alto: `[ Il mio livello ]  [ Per esame ]  [ Tutto ]`
 ### 7.4 Tab "Profilo"
 
 Riorganizzazione implementata il 2026-11-07: nome, email, scuola e gradi visibili;
-Dettagli account, Lingua, Programma, Promemoria, Sicurezza e Privacy/dati apribili
-indipendentemente. Allenamento e Calendario conservano collegamenti diretti;
+Dettagli account, Lingua, Promemoria, Sicurezza e Privacy/dati apribili
+indipendentemente. Dal 2026-11-08 Programma e Allenamento sono rimossi dal
+profilo: hanno gia' le proprie aree; Calendario si raggiunge dalla Bacheca.
 Esci resta visibile. `primitives/Disclosure.tsx` usa details/summary nativi,
 stile Card condiviso e riapertura sugli esiti delle azioni, senza smontare i
 campi. Lingua mostra solo il titolo e, all'apertura, `FormSelect` con la lingua
 corrente selezionata, senza riepilogo o etichette visibili ripetute;
 il selettore e' assente dall'header autenticato. Titoli dei pannelli e delle card
-condividono tipografia e interlinea. Riepiloghi visibili per modalita' programma e promemoria effettivamente
+condividono tipografia e interlinea. Riepiloghi visibili per promemoria effettivamente
 salvati; richiesta di cancellazione pendente riconoscibile anche da chiusa.
 Nessuna nuova query, dipendenza, autorizzazione o migrazione. Verificati lint,
-typecheck, 95 test, build e audit UI (solo la nuova primitiva aggiunge un
+typecheck, 107 test, build e audit UI (solo la nuova primitiva aggiunge un
 tap-feedback nella superficie consentita). Collaudo Chromium della pagina reale
 con query/azioni simulate: cinque sezioni indipendenti, bozze, feedback asincrono,
 riepiloghi salvati, tastiera, gradi bloccati, dati mancanti/lunghi, cancellazione

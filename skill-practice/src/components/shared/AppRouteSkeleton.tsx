@@ -1,18 +1,21 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 
 type AppRouteSkeletonProps = {
   variant?: "default" | "list" | "detail" | "calendar" | "form";
+  header?: ReactNode;
 };
 
 export function AppRouteSkeleton({
   variant = "default",
+  header,
 }: AppRouteSkeletonProps) {
   const tr = useTranslations("ui");
   return (
     <section className="space-y-6" role="status" aria-busy="true">
       <span className="sr-only">{tr("loading")}</span>
-      <HeaderSkeleton />
+      {header ?? <HeaderSkeleton />}
       {variant === "detail" ? (
         <DetailSkeleton />
       ) : variant === "calendar" ? (

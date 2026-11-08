@@ -97,6 +97,7 @@ export async function enableFederationEventReminder({
   if (error && error.code !== "23505")
     return { error: tr("reminderSaveFailed") };
   revalidatePath("/calendar");
+  revalidatePath("/news");
   revalidatePath("/profile");
   return { success: true };
 }
@@ -118,5 +119,6 @@ export async function disableFederationEventReminder(
     .eq("event_id", eventId);
   if (error) return { error: tr("reminderRemovalFailed") };
   revalidatePath("/calendar");
+  revalidatePath("/news");
   return { success: true };
 }
