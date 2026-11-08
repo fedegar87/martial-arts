@@ -843,19 +843,23 @@ Verifiche esterne da non dimenticare:
   di 0055. Collaudo Auth e rilascio del codice sono verifiche separate.
 - VAPID/CRON env devono essere configurate su Vercel per abilitare reminder.
 
-### Correzioni locali del 2026-11-08
+### Correzioni del 2026-11-08
 
 `0052_protect_profile_access` estende il trigger del profilo ai campi di accesso
 amministrativi. `0053_finite_training_dates` limita le nuove date al dominio
-ISO 0001–9999 e rifiuta input non finiti nella RPC streak; i CHECK restano
-NOT VALID per non bloccare il rilascio su dati storici, da riesaminare separatamente.
+ISO 0001–9999 e rifiuta input non finiti nella RPC streak. I CHECK sono introdotti
+NOT VALID; `0055_validate_training_dates` li valida dopo il controllo delle date
+storiche, con esecuzione riuscita confermata dall'utente.
 `0054_guard_exam_promotion` aggiunge l'esame atteso e un lock sulla riga profilo,
 preserva gli helper correnti 0042 e rimuove la firma RPC a due argomenti.
 Il runner prepara un file di esami fissati: un retry obsoleto viene rifiutato.
 I sender normalizzano il fuso anche per la data di consegna e isolano gli errori
 per proprietario/evento; lo scheduler controlla le date e conta i giorni per settimane
 intere, con al massimo sei iterazioni residue. Nessuna nuova tabella o dipendenza.
-Stato locale: non implica applicazione delle migrazioni o verifica del provider.
+Rilascio: commit applicativo `413573f972e0ad39d8ab60670c82d62b346a064e`
+pubblicato su `main`, controllo GitHub `quality` e deploy Vercel `Production`
+riusciti. La pagina pubblica `/login` risponde HTTP 200. Applicazione delle
+migrazioni confermata dall'utente; collaudo reale del provider/email ancora pendente.
 
 ## 18. Testing
 

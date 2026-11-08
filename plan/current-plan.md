@@ -102,8 +102,11 @@ la presenza di `0051`, l'esecuzione riuscita di `0052`–`0054` e tutti i 12 con
 di `verify-hardening.sql` positivi. La `0055` completa la validazione dei CHECK
 dopo il controllo positivo delle date storiche; esecuzione riuscita confermata
 dall'utente. Le migrazioni fino a `0055` risultano eseguite su sua conferma.
-Commit, push e deploy delle correzioni autorizzati dall'utente dopo le verifiche
-locali; rilascio in corso, esito Vercel ancora da verificare.
+Commit applicativo `413573f972e0ad39d8ab60670c82d62b346a064e` pubblicato su
+`main` il 2026-11-08. Controllo GitHub `quality` superato; integrazione Vercel
+con deployment `DudmbVwhAT5F219A791vNEbkNFBu` in ambiente `Production`
+completato con successo per lo stesso commit. La pagina pubblica
+`https://fesk-practice.vercel.app/login` risponde HTTP 200.
 Configurazioni confermate dall'utente: signup pubblico e anonimo disattivati,
 Site URL e redirect callback aggiornati, recovery bilingue salvato, password
 corrente obbligatoria e riautenticazione aggiuntiva disattivata; variabili Vercel
