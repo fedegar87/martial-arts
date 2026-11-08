@@ -8,6 +8,33 @@ import {
 } from "./session-scheduler.ts";
 import { buildSessionPeriodProgress } from "./session-progress.ts";
 import type { Discipline, PracticeLog, Skill, TrainingSchedule } from "./types.ts";
+import { isDateKey } from "./date.ts";
+
+test("scheduler ignores invalid or nonfinite schedule dates", () => {
+  for (const start_date of ["-infinity", "infinity", "2026-02-30", "0000-01-01", "10000-01-01"]) {
+    assert.deepEqual(getScheduledSession("2026-05-04", makeSchedule({ start_date }), []), { kind: "no_schedule" });
+  }
+  assert.equal(isDateKey("2024-02-29"), true);
+  assert.equal(isDateKey("2026-02-29"), false);
+  assert.equal(isDateKey("0001-01-01"), true);
+  assert.equal(isDateKey("9999-12-31"), true);
+});
+
+test("weekly arithmetic preserves the scheduler's day-by-day session index", () => {
+  const start = "2026-01-01";
+  for (const weekdays of [[1], [1, 3, 5], [1, 2, 3, 4, 5, 6, 7]]) {
+    const schedule = makeSchedule({ start_date: start, end_date: "2027-01-01", weekdays });
+    let expectedIndex = -1;
+    for (let offset = 0; offset < 90; offset++) {
+      const date = addDaysIso(start, offset);
+      const weekday = new Date(`${date}T00:00:00Z`).getUTCDay() || 7;
+      if (weekdays.includes(weekday)) expectedIndex++;
+      const session = getScheduledSession(date, schedule, []);
+      if (session.kind === "training") assert.equal(session.sessionIndex, expectedIndex);
+      else assert.equal(session.kind, "rest_day");
+    }
+  }
+});
 
 function makeSchedule(over: Partial<TrainingSchedule> = {}): TrainingSchedule {
   return {

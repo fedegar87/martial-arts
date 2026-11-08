@@ -144,9 +144,14 @@ Non anticipare mai una fase prima che si verifichi il suo trigger concreto.
 
 ### Fase 0 — Oggi: FESK e scuole affiliate FESK
 - **Trigger:** stato attuale.
-- **Lavoro codice richiesto:** **nessuno.** Tutte le associazioni affiliate FESK condividono lo stesso programma e usano l'istanza corrente tramite `user_invites` e gli script `invita-utenti.mjs` / `promote-after-exam.mjs`.
-- **Unica regola:** rispettare l'igiene del §0 (niente nuovi hardcoding FESK sparsi).
+- **Refactoring brand/dominio richiesto:** **nessuno.** Tutte le associazioni affiliate FESK condividono lo stesso programma e usano l'istanza corrente tramite `user_invites` e gli script `invita-utenti.mjs` / `promote-after-exam.mjs`.
+- **Regola di codice:** rispettare l'igiene del §0 (niente nuovi hardcoding FESK sparsi).
 - **Trigger Arlon attivato il 2026-11-07:** predisposizione i18n italiano/francese, compresi contenuti authored e promemoria, senza creare tenant, fork o deploy aggiuntivi. Traduzioni tecniche da validare con la scuola; documenti legali ancora nel testo italiano di riferimento. Vedi `skill-practice/docs/i18n.md`.
+
+Prima degli inviti reali restano i gate operativi: migrazioni applicate e
+verificate, collaudo Auth/scope/lingua in ambiente dedicato, traduzioni tecniche
+validate e revisione dei documenti legali già prevista. Le correzioni locali
+0052–0054 e lo stato di rilascio sono in `plan/current-plan.md` (D16).
 
 ### Fase 1 — Prima scuola Kung Fu Chang esterna a FESK (~2–4 giorni)
 - **Trigger:** accordo concreto con una seconda scuola/federazione che condivide l'impianto Shaolin + T'ai Chi ma richiede brand, testi e catalogo video propri.

@@ -69,6 +69,13 @@ Dashboard -> **Authentication -> Email Templates -> Invite user**:
 - **Subject**: `Benvenuto nel Tempio Digitale FESK`
 - **Message body**: incolla il contenuto di `invite.html` (questa cartella).
 
+Per **Reset password**:
+
+- **Subject**: `Reimposta password / Réinitialiser le mot de passe`.
+- **Message body**: incolla `recovery.html`, variante bilingue italiana/francese.
+  Il link resta su `/auth/confirm` con `type=recovery`; il template non seleziona
+  automaticamente la lingua del profilo. Conservare i segnaposto Supabase.
+
 ## Fase 5 — Test
 
 Da `skill-practice/`, con `test.json` = `[{ "email": "tua-mail@...", "name": "Test" }]`:

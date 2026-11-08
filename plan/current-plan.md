@@ -84,6 +84,32 @@ estratti nel catalogo italiano e dichiarati come testo di riferimento anche in
 modalità francese; traduzione/revisione per apertura in Belgio ancora da completare.
 Procedura e terminologia: `skill-practice/docs/i18n.md`.
 
+**D16 — Consolidamento accessi e procedure (2026-11-08):** correzioni locali
+circoscritte dopo le revisioni EGM/Security Audit, senza nuove tabelle/dipendenze.
+Migrazioni `0052` (campi amministrativi del profilo), `0053` (dominio date e guardia
+streak), `0054` (promozione con esame atteso e lock, runner/bulk aggiornati).
+Grant password firmato e legato alla sessione, origine reset configurata; cron con
+fuso normalizzato e isolamento degli errori per proprietario/evento. Procedure
+invito, rollout e rollback aggiornate; guida Auth in `skill-practice/docs/auth-checks.md`.
+SQL `0001`–`0054` e regressioni superati su PostgreSQL isolato con dati sintetici;
+Verifica locale successiva autorizzata dall'utente in deroga al sandbox della
+skill: 112 test, lint completo, typecheck e build Turbopack superati in una copia
+senza `.env`, con soli valori fittizi e accessi esterni limitati ai Google Fonts
+necessari alla build. Superati 7 controlli HTTP anonimi su loopback; la chiave
+server fittizia non compare nei 32 bundle JavaScript client controllati.
+Il collaudo reale del provider/email resta pendente. L'utente ha confermato
+la presenza di `0051`, l'esecuzione riuscita di `0052`–`0054` e tutti i 12 controlli
+di `verify-hardening.sql` positivi. La `0055` completa la validazione dei CHECK
+dopo il controllo positivo delle date storiche; esecuzione riuscita confermata
+dall'utente. Le migrazioni fino a `0055` risultano eseguite su sua conferma.
+Commit, push e deploy delle correzioni autorizzati dall'utente dopo le verifiche
+locali; rilascio in corso, esito Vercel ancora da verificare.
+Configurazioni confermate dall'utente: signup pubblico e anonimo disattivati,
+Site URL e redirect callback aggiornati, recovery bilingue salvato, password
+corrente obbligatoria e riautenticazione aggiuntiva disattivata; variabili Vercel
+Production per origine e chiave server presenti. Resta il collaudo del flusso.
+Test SQL ripetibili in `skill-practice/tests/sql/`, test unitari accanto ai sorgenti.
+
 ### 2.2 Decisioni aperte ⚠️
 
 | # | Decisione | Opzioni | Impatto | Priorità |
@@ -498,7 +524,11 @@ Sequenza aggiornata al 2026-06-03. **0001–0028 applicate** via SQL Editor Supa
 | 0032 | `extra_weapon_fundamentals` | 4 skill "fondamentali" armi fuori programma cinture: categoria `preparatori` ("Altro"), grado-sentinella `99` (`EXTRA_GRADE_VALUE`), sezione "Altro" in libreria |
 | 0049 | `federation_calendar` | Eventi pubblici federali, promemoria selettivi con RLS, sync atomica service role e deduplica delivery per evento |
 | 0050 | `i18n_content_and_notifications` | Traduzioni authored e lingua promemoria; applicata su conferma utente |
-| 0051 | `invite_locale` | Lingua assegnata con i gradi nell'invito e inizializzazione preferenza account; applicazione Supabase da confermare |
+| 0051 | `invite_locale` | Lingua assegnata con i gradi nell'invito e inizializzazione preferenza account; controlli positivi confermati dall'utente |
+| 0052 | `protect_profile_access` | Campi amministrativi del profilo protetti; esecuzione e controlli confermati dall'utente |
+| 0053 | `finite_training_dates` | Dominio delle date e guardia streak; esecuzione e controlli confermati dall'utente |
+| 0054 | `guard_exam_promotion` | Esame atteso e lock nelle promozioni; esecuzione e controlli confermati dall'utente |
+| 0055 | `validate_training_dates` | Validazione dei CHECK sulle date storiche; esecuzione riuscita confermata dall'utente |
 
 > **0028 applicata il 2026-06-03** (single-tenant: no-op, verificato con smoke test). Quando arriverà la 2ª federazione, l'invito utenti deve passare `school_id` (e `display_name`) nei `user_metadata`, altrimenti con più scuole `handle_new_user` fallisce di proposito.
 

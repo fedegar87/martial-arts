@@ -4,6 +4,7 @@ import {
   buildTrainingReminderPayload,
   isAllowedPushEndpoint,
   isReminderTimeDue,
+  normalizeTimeZone,
 } from "@/lib/push-notifications";
 import {
   getScheduledPlanItems,
@@ -70,15 +71,20 @@ export async function sendDueTrainingReminders(
     }
     result.duePreferences++;
 
-    const userResult = await sendReminderForUser(
-      supabase,
-      preference,
-      vapid,
-      now,
-    );
-    result.sent += userResult.sent;
-    result.skipped += userResult.skipped;
-    result.failed += userResult.failed;
+    try {
+      const userResult = await sendReminderForUser(
+        supabase,
+        preference,
+        vapid,
+        now,
+      );
+      result.sent += userResult.sent;
+      result.skipped += userResult.skipped;
+      result.failed += userResult.failed;
+    } catch {
+      console.error("Training reminder: owner processing failed");
+      result.failed++;
+    }
   }
 
   return result;
@@ -90,7 +96,7 @@ async function sendReminderForUser(
   vapid: VapidDetails,
   now: Date,
 ): Promise<Pick<ReminderRunResult, "sent" | "skipped" | "failed">> {
-  const date = localDateKey(now, preference.time_zone);
+  const date = localDateKey(now, normalizeTimeZone(preference.time_zone));
   const userId = preference.user_id;
   const sourceFilter = await getPlanSourceForUser(supabase, userId);
 

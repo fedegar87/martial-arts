@@ -4,13 +4,15 @@ import { getTranslations } from "next-intl/server";
 
 import {
   PASSWORD_UPDATE_COOKIE,
+  configuredAppOrigin,
   safeRedirectPath,
   validateEmail,
   validatePasswordMatch,
   validatePasswordStrength,
 } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/server";
-import { cookies, headers } from "next/headers";
+import { verifyPasswordUpdateGrant } from "@/lib/password-update-grant";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export type AuthFormState = { error: string } | { success: string } | null;
@@ -41,6 +43,7 @@ export async function login(
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  (await cookies()).delete(PASSWORD_UPDATE_COOKIE);
   redirect("/");
 }
 
@@ -59,7 +62,12 @@ export async function requestPasswordReset(
   const failureMessage = tr("requestFailed");
 
   try {
-    const origin = await getAppOrigin();
+    const origin = configuredAppOrigin(
+      process.env.NEXT_PUBLIC_SITE_URL,
+      process.env.APP_ORIGIN,
+      process.env.NODE_ENV === "production",
+    );
+    if (!origin) return { error: failureMessage };
     const redirectTo = `${origin}/auth/callback?next=/auth/update-password`;
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -88,7 +96,17 @@ export async function updatePassword(
   const tr = await getTranslations("ui");
   const cookieStore = await cookies();
 
-  if (!cookieStore.has(PASSWORD_UPDATE_COOKIE)) {
+  const supabase = await createClient();
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  if (
+    claimsError ||
+    !claimsData ||
+    !verifyPasswordUpdateGrant(
+      cookieStore.get(PASSWORD_UPDATE_COOKIE)?.value,
+      claimsData.claims,
+    )
+  ) {
+    cookieStore.delete(PASSWORD_UPDATE_COOKIE);
     return {
       error: tr("expiredPasswordLink"),
     };
@@ -107,7 +125,6 @@ export async function updatePassword(
     return { error: matchCheck.error ?? tr("passwordMismatch") };
   }
 
-  const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
@@ -179,26 +196,4 @@ function loginErrorMessage(tr: UiTranslator, message: string): string {
     return tr("tooManyAttempts");
   }
   return tr("loginFailed");
-}
-
-async function getAppOrigin(): Promise<string> {
-  const configuredOrigin =
-    process.env.NEXT_PUBLIC_SITE_URL ?? process.env.APP_ORIGIN;
-
-  if (configuredOrigin) {
-    return configuredOrigin.replace(/\/+$/, "");
-  }
-
-  const headerList = await headers();
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-
-  if (!host) {
-    return "http://localhost:3000";
-  }
-
-  const proto =
-    headerList.get("x-forwarded-proto") ??
-    (host.startsWith("localhost") ? "http" : "https");
-
-  return `${proto}://${host}`;
 }

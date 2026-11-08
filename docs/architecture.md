@@ -250,8 +250,12 @@ Auth:
 - Reset password passa da `/auth/callback` o `/auth/confirm`, poi forza
   `/auth/update-password`.
 - Durante una sessione recovery, il cookie `auth_password_update` confina
-  l'utente a `/auth/update-password`; le route protette redirectano li finche
-  la password non viene aggiornata.
+  la navigazione a `/auth/update-password` mentre il grant valido è presente.
+  Il grant HMAC è legato a utente/session_id verificati, dura 15 minuti ed è
+  verificato anche nella pagina e nell'azione. Il proxy elimina marker invalidi;
+  cancellare/scadere il cookie non revoca la sessione e non impone un blocco
+  permanente. Il reset usa solo l'origine configurata, mai gli header del chiamante.
+  Verifiche provider e collaudo: `skill-practice/docs/auth-checks.md`.
 - Il login consuma `next` solo se `safeRedirectPath` lo valida come path interno
   protetto. Previene open redirect.
 
@@ -501,7 +505,11 @@ Sequenza presente nel repo:
 | 0048 | Fix attribuzione video Mei Hua |
 | 0049 | Calendario federale, sync atomica service role, promemoria e delivery eventi |
 | 0050 | Traduzioni authored e lingua dei promemoria |
-| 0051 | Lingua iniziale nell'invito e preferenza account; applicazione Supabase da confermare |
+| 0051 | Lingua iniziale nell'invito e preferenza account; controlli positivi confermati dall'utente |
+| 0052 | Protezione dei campi amministrativi del profilo; esecuzione e controlli confermati dall'utente |
+| 0053 | Dominio delle date e guardia streak; esecuzione e controlli confermati dall'utente |
+| 0054 | Promozione vincolata all'esame atteso; esecuzione e controlli confermati dall'utente |
+| 0055 | Validazione dei CHECK dopo controllo delle date storiche; esecuzione riuscita confermata dall'utente |
 
 Stato applicazione DB:
 
@@ -806,7 +814,8 @@ Difese in posto:
 - La migration 0036 hardenizza `handle_new_user` ignorando metadata tenant in
   single-tenant; verificare sul DB reale se e' gia applicata.
 - Redirect post-auth validati contro path interni.
-- Recovery password confinato a update-password.
+- Grant recovery firmato e vincolato alla sessione, con gate di navigazione temporaneo.
+  Non è una restrizione permanente della sessione lato provider.
 - Security headers in `next.config.ts`: HSTS, X-Frame-Options, nosniff,
   Referrer-Policy, Permissions-Policy.
 - Export dati fallisce con 500 se una sezione query fallisce.
@@ -829,16 +838,36 @@ Verifiche esterne da non dimenticare:
 
 - Supabase "require current password" per cambio password attuale dipende da
   configurazione server.
-- Stato applicazione reale delle migration 0033-0036 va verificato su Supabase.
+- L'utente ha confermato presenza di 0051, esecuzione di 0052–0054 e tutti i 12
+  controlli di `verify-hardening.sql` positivi, seguiti dall'esecuzione riuscita
+  di 0055. Collaudo Auth e rilascio del codice sono verifiche separate.
 - VAPID/CRON env devono essere configurate su Vercel per abilitare reminder.
+
+### Correzioni locali del 2026-11-08
+
+`0052_protect_profile_access` estende il trigger del profilo ai campi di accesso
+amministrativi. `0053_finite_training_dates` limita le nuove date al dominio
+ISO 0001–9999 e rifiuta input non finiti nella RPC streak; i CHECK restano
+NOT VALID per non bloccare il rilascio su dati storici, da riesaminare separatamente.
+`0054_guard_exam_promotion` aggiunge l'esame atteso e un lock sulla riga profilo,
+preserva gli helper correnti 0042 e rimuove la firma RPC a due argomenti.
+Il runner prepara un file di esami fissati: un retry obsoleto viene rifiutato.
+I sender normalizzano il fuso anche per la data di consegna e isolano gli errori
+per proprietario/evento; lo scheduler controlla le date e conta i giorni per settimane
+intere, con al massimo sei iterazioni residue. Nessuna nuova tabella o dipendenza.
+Stato locale: non implica applicazione delle migrazioni o verifica del provider.
 
 ## 18. Testing
 
 Suite attuale:
 
 - `auth-validation.test.ts`
+- `password-update-grant.test.ts` (contesto `react-server` separato)
 - `calendar-logic.test.ts`
+- `federation-event-logic.test.ts`
 - `grades.test.ts`
+- `ical-events.test.ts`
+- `i18n.test.ts`
 - `landing.test.ts`
 - `onboarding-state.test.ts`
 - `practice-logic.test.ts`
@@ -846,14 +875,23 @@ Suite attuale:
 - `push-notifications.test.ts`
 - `seed-fesk.test.ts`
 - `session-scheduler.test.ts`
+- `skill-presentation.test.ts`
+- `skill-video.test.ts`
 - `youtube.test.ts`
+- `youtube-api.test.ts`
 
 Coverage:
 
 - Copre logica pura.
 - I test in `tests/browser/` coprono componenti reali con azioni/push simulate.
 - Non copre route handlers.
-- Non copre RLS/RPC con DB reale.
+- Verifica locale del 2026-11-08: 112 test, lint, typecheck e build superati in
+  copia senza segreti, con eccezione esplicita dell'utente al sandbox della skill.
+  Sette GET anonime su loopback verificano moduli, redirect protetti e callback
+  incompleti. Non sono prove di consegna email o di recovery autenticato reale.
+- `tests/sql/` verifica le migrazioni e regressioni RLS/RPC su PostgreSQL
+  usa-e-getta, con Auth simulata e grant dichiarati. Non osserva le impostazioni
+  del provider, l'API PostgREST o i grant della produzione.
 - Non e' una suite E2E con account e database reali.
 - Comandi: `npm run test:custom-selection` e `npm run test:federation-calendar`.
   Usano il tooling browser locale in `tools/video/`; gli artefatti sono in
@@ -885,8 +923,9 @@ Rischi funzionali:
 
 - Session progress storico puo essere ricalcolato su composizione corrente del
   piano: resta da scegliere fra conteggio basato sui log e snapshot della composizione.
-- `getClaims` per ridurre round trip auth e' deferito perche dipende dalla
-  configurazione JWT Supabase.
+- Il gate generale conserva `getUser`; l'ottimizzazione globale dei round trip
+  resta differita. Le correzioni locali usano `getClaims` per verificare l'identità
+  e il session_id del grant password, senza sostituire il gate generale.
 - Rileggere e aggiornare in modo coerente gli errori in `lib/queries/*`, il
   guard onboarding sui deep link e l'eventuale CSP compatibile con YouTube/Supabase.
 - Valutare atomicita' degli incrementi concorrenti delle ripetizioni e DTO
@@ -958,4 +997,5 @@ La preferenza account prevale sul cookie/browser. `setLocale` richiede login e
 fa upsert dei soli user_id/locale; non attiva push. Migration
 `0051_invite_locale.sql` aggiunge `user_invites.locale` e copia la lingua nella
 preferenza al provisioning; RPC e script amministrativi accettano it/fr.
-Applicazione della 0051 su Supabase da confermare; codice UI compatibile con 0050.
+Controlli della 0051 su Supabase positivi su conferma dell'utente; codice UI
+compatibile con 0050. Il collaudo di un nuovo invito resta separato.

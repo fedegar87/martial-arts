@@ -2,11 +2,22 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   isAllowedNextPath,
+  configuredAppOrigin,
   safeRedirectPath,
   validateEmail,
   validatePasswordMatch,
   validatePasswordStrength,
 } from "./auth-validation.ts";
+
+test("password recovery uses only a fixed, valid configured origin", () => {
+  assert.equal(configuredAppOrigin("https://practice.example/", undefined, true), "https://practice.example");
+  assert.equal(configuredAppOrigin(" ", "https://fallback.example", true), "https://fallback.example");
+  assert.equal(configuredAppOrigin(undefined, undefined, true), null);
+  assert.equal(configuredAppOrigin(undefined, undefined, false), "http://localhost:3000");
+  for (const value of ["http://practice.example", "https://user:pass@practice.example", "https://practice.example/path", "https://practice.example?next=evil", "//practice.example"]) {
+    assert.equal(configuredAppOrigin(value, undefined, true), null);
+  }
+});
 
 test("validatePasswordStrength: accepts 8 chars", () => {
   assert.deepEqual(validatePasswordStrength("12345678"), { valid: true });

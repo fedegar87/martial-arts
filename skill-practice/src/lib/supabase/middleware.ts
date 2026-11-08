@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { PASSWORD_UPDATE_COOKIE, PROTECTED_PREFIXES } from "@/lib/auth-validation";
+import { verifyPasswordUpdateGrant } from "@/lib/password-update-grant";
 
 const AUTHENTICATED_ONLY = ["/auth/update-password"];
 
@@ -48,16 +49,30 @@ export async function updateSession(request: NextRequest) {
     if (isProtected) {
       url.searchParams.set("next", path + request.nextUrl.search);
     }
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+    return response;
   }
 
-  // Sessione di solo-recovery: finche il cambio password non e completato,
-  // l'utente resta confinato alla pagina update-password (no accesso all'app).
-  if (user && isProtected && request.cookies.has(PASSWORD_UPDATE_COOKIE)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/update-password";
-    url.search = "";
-    return NextResponse.redirect(url);
+  const marker = request.cookies.get(PASSWORD_UPDATE_COOKIE)?.value;
+  if (user && (isProtected || requiresAuth) && marker) {
+    const { data, error } = await supabase.auth.getClaims();
+    const valid = !error && data && verifyPasswordUpdateGrant(marker, data.claims);
+    if (valid && isProtected) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/update-password";
+      url.search = "";
+      const response = NextResponse.redirect(url);
+      supabaseResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+      return response;
+    }
+    if (!valid) {
+      request.cookies.delete(PASSWORD_UPDATE_COOKIE);
+      const refreshed = NextResponse.next({ request });
+      supabaseResponse.cookies.getAll().forEach((cookie) => refreshed.cookies.set(cookie));
+      refreshed.cookies.set(PASSWORD_UPDATE_COOKIE, "", { maxAge: 0, path: "/" });
+      return refreshed;
+    }
   }
 
   return supabaseResponse;

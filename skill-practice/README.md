@@ -92,3 +92,43 @@ CRON_SECRET=<stesso valore configurato su Vercel>
 ```
 
 `CRON_SECRET` deve essere presente anche nelle Environment Variables del progetto Vercel per l'ambiente Production.
+
+## Consolidamento accessi (locale, 2026-11-08)
+
+Istanza FESK: l'utente ha confermato i controlli 0051, l'esecuzione di 0052–0054
+e le 12 righe positive di `scripts/verify-hardening.sql`. Le date storiche risultano
+regolari secondo quel controllo; `0055_validate_training_dates.sql` completa la
+validazione dei CHECK, con esecuzione riuscita confermata dall'utente. Il rilascio
+del codice applicativo e il collaudo Auth sono separati dal setup SQL;
+lo stato operativo è registrato in `../plan/current-plan.md` (D16).
+
+Per istanze ancora da aggiornare, applicare solo le migrazioni mancanti in ordine:
+0051, 0052, 0053, 0054; eseguire 0055 dopo il controllo positivo delle date storiche.
+La 0054 cambia la firma della RPC amministrativa di promozione: usare il runner
+aggiornato e un piano con UUID degli esami fissati. I CHECK date 0053 proteggono le
+nuove scritture; riesaminare le anomalie storiche prima di `VALIDATE CONSTRAINT`.
+Gate SQL aggiornato: `scripts/verify-rollout.sql`. Recupero e configurazione Auth:
+[docs/auth-checks.md](docs/auth-checks.md). Rollback i18n protetto dopo 0051.
+
+`tests/sql/` contiene bootstrap Auth simulato, catena completa di migrazioni e
+regressioni. Richiede PostgreSQL usa-e-getta con sole fixture, mai un DB reale.
+In questa attività è stato eseguito con immagine locale `postgres:16-alpine`, rete
+Docker `none`, ambiente esplicito vuoto, sorgenti in sola lettura, scratch tmpfs
+256 MiB, memoria 512 MiB, 1 CPU, 48 processi, file 64 MiB e timeout 120 s.
+`run-security-hardening.sh` assume mount RO `/migrations`, `/tests`, `/rollback.sql`
+e `/verify-rollout.sql`, utente `postgres` e directory scrivibile `/scratch`.
+I risultati non attestano grant/configurazioni effettivi della produzione.
+
+TypeScript ed ESLint sono stati usati come analizzatori statici tramite API dei
+pacchetti installati, senza eseguire script/configurazione JavaScript del progetto
+o moduli applicativi. Il compilatore TypeScript non emette file e ha i plugin
+disabilitati; ESLint usa direttamente i preset installati di Next/TypeScript.
+Verifica successiva completata con autorizzazione esplicita dell'utente a usare
+Node locale fuori dal sandbox della skill: copia senza `.env`, nessuna credenziale
+reale, soli valori fittizi, richieste esterne limitate ai Google Fonts della build.
+Superati 112 test, lint completo, typecheck, build Turbopack e 7 controlli HTTP
+anonimi su loopback. Per evitare problemi del wrapper shell Windows, i comandi
+Node equivalenti agli script npm sono stati invocati direttamente; entrambi i
+gruppi di test usano `--test-isolation=none`, con `react-server` solo per il grant.
+La copia temporanea non è un artefatto di rilascio: usa configurazioni fittizie.
+Restano separati deploy e collaudo reale di invito/recupero con il provider.

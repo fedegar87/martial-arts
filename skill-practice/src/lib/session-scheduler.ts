@@ -1,3 +1,4 @@
+import { isDateKey } from "./date.ts";
 import type {
   Discipline,
   PlanMode,
@@ -30,6 +31,14 @@ export function getScheduledSession(
   items: ItemWithSkill[],
 ): ScheduledSession {
   if (schedule == null) return { kind: "no_schedule" };
+  if (
+    !isDateKey(date) ||
+    !isDateKey(schedule.start_date) ||
+    !isDateKey(schedule.end_date) ||
+    schedule.end_date <= schedule.start_date ||
+    schedule.weekdays.length === 0 ||
+    schedule.weekdays.some((day) => !Number.isInteger(day) || day < 1 || day > 7)
+  ) return { kind: "no_schedule" };
   if (date > schedule.end_date) return { kind: "expired", endDate: schedule.end_date };
   if (date < schedule.start_date) {
     return {
@@ -162,11 +171,13 @@ function countTrainingDaysInclusive(
   end: string,
   weekdays: number[],
 ): number {
-  let count = 0;
-  let cur = start;
-  while (cur <= end) {
-    if (weekdays.includes(isoWeekday(cur))) count++;
-    cur = addDays(cur, 1);
+  const days = Math.round(
+    (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86400000,
+  ) + 1;
+  const selected = new Set(weekdays);
+  let count = Math.floor(days / 7) * selected.size;
+  for (let offset = 0; offset < days % 7; offset++) {
+    if (selected.has(isoWeekday(addDays(start, offset)))) count++;
   }
   return count;
 }

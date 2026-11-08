@@ -1,5 +1,23 @@
 export const PASSWORD_UPDATE_COOKIE = "auth_password_update";
 
+export function configuredAppOrigin(
+  siteUrl: string | undefined,
+  appOrigin: string | undefined,
+  production: boolean,
+): string | null {
+  const value = siteUrl?.trim() || appOrigin?.trim();
+  if (!value) return production ? null : "http://localhost:3000";
+  try {
+    const url = new URL(value);
+    const local = !production && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+    if ((url.protocol !== "https:" && !(local && url.protocol === "http:")) ||
+      url.username || url.password || url.pathname !== "/" || url.search || url.hash) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 72;
 
