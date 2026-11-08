@@ -5,7 +5,8 @@
 //   node scripts/onboard-users.mjs people.json --apply                  # APPLY, invite: manda email set-password (richiede SMTP)
 //   node scripts/onboard-users.mjs people.json --apply --password-test  # APPLY, password temporanea (nessuna email; per test)
 //
-// people.json: [{ "email", "name"?, "shaolin"?, "taichi"?, "all_access"? }, ...]
+// people.json: [{ "email", "name"?, "shaolin"?, "taichi"?, "all_access"?, "locale"? }, ...]
+//   locale = "it" (default) oppure "fr"; richiede migration 0051.
 //   shaolin/taichi = grado intero (0 = non praticato). Default 8 / 0. all_access:true = istruttore/operatore.
 //
 // Env (process.env o .env.local in skill-practice/): NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -48,6 +49,7 @@ function normalizeItem(raw) {
     level_shaolin: raw.shaolin ?? raw.level_shaolin ?? raw.assigned_level_shaolin ?? 8,
     level_taichi: raw.taichi ?? raw.level_taichi ?? raw.assigned_level_taichi ?? 0,
     all_access: Boolean(raw.all_access ?? raw.instructor ?? false),
+    locale: String(raw.locale ?? "it").trim().toLowerCase(),
   };
 }
 
@@ -56,6 +58,7 @@ function rpcPayload(it) {
     email: it.email,
     level_shaolin: it.level_shaolin,
     level_taichi: it.level_taichi,
+    locale: it.locale,
   };
   if (it.display_name) p.display_name = it.display_name;
   if (it.all_access) p.all_access = true;
@@ -109,6 +112,7 @@ async function main() {
     else seen.add(it.email);
     if (!isValidGrade(it.level_shaolin)) problems.push(`${it.email}: grado shaolin non valido (${it.level_shaolin})`);
     if (!isValidGrade(it.level_taichi)) problems.push(`${it.email}: grado taichi non valido (${it.level_taichi})`);
+    if (!["it", "fr"].includes(it.locale)) problems.push(`${it.email}: locale deve essere it o fr`);
   }
   if (problems.length) {
     console.error("Errori di validazione:\n  - " + problems.join("\n  - "));
@@ -121,7 +125,7 @@ async function main() {
   console.log(`Onboarding ${items.length} utenti | modalita: ${mode} | ${apply ? "APPLY" : "DRY-RUN"}`);
   for (const it of items) {
     console.log(
-      `  - ${it.email} | ${it.display_name ?? "(no name)"} | shaolin=${it.level_shaolin} taichi=${it.level_taichi}${it.all_access ? " | ALL-ACCESS" : ""}`,
+      `  - ${it.email} | ${it.display_name ?? "(no name)"} | shaolin=${it.level_shaolin} taichi=${it.level_taichi} | lingua=${it.locale}${it.all_access ? " | ALL-ACCESS" : ""}`,
     );
   }
 
@@ -133,6 +137,8 @@ async function main() {
   const supabase = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  const { error: schemaError } = await supabase.from("user_invites").select("locale").limit(0);
+  if (schemaError) throw new Error("Verifica accesso Supabase e applicazione della migration 0051_invite_locale.sql prima di invitare utenti.", { cause: schemaError });
 
   // 1) Righe invito (idempotente; salta gli accepted)
   const { data: inviteRows, error: inviteErr } = await supabase.rpc("bulk_upsert_user_invites", {

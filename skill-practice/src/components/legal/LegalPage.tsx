@@ -1,5 +1,4 @@
 import { LegalLinks } from "@/components/legal/LegalLinks";
-import { LocaleSwitcher } from "@/components/shared/LocaleSwitcher";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -20,9 +19,6 @@ export function LegalPage({ title, description, sections }: Props) {
     <main className="bg-background min-h-dvh px-4 py-8 text-foreground">
       <article className="mx-auto max-w-3xl space-y-8">
         <header className="space-y-3">
-          <div className="flex justify-end">
-            <LocaleSwitcher />
-          </div>
           <Link
             href="/"
             className="text-muted-foreground text-sm hover:underline"

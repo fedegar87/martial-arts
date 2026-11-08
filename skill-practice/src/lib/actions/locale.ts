@@ -10,13 +10,11 @@ export async function setLocale(value: string): Promise<void> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) {
-    const { error } = await supabase
-      .from("notification_preferences")
-      .update({ locale: value })
-      .eq("user_id", user.id);
-    if (error) throw new Error("Unable to save language preference");
-  }
+  if (!user) throw new Error("Authentication required");
+  const { error } = await supabase
+    .from("notification_preferences")
+    .upsert({ user_id: user.id, locale: value }, { onConflict: "user_id" });
+  if (error) throw new Error("Unable to save language preference");
   (await cookies()).set(LOCALE_COOKIE, value, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,

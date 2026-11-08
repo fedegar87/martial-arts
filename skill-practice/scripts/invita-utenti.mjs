@@ -13,7 +13,8 @@
 //
 // COME SI USA
 //   1) Apri questo file e modifica SOLO il blocco PERSONE qui sotto.
-//      Per ogni persona cambi: nome, cognome, email, shaolin, taichi, istruttore.
+//      Per ogni persona cambi: nome, cognome, email, shaolin, taichi, istruttore, lingua.
+//      lingua: "it" (default) oppure "fr". Richiede migration 0051_invite_locale.sql.
 //      Per piu' persone, DUPLICA il blocco { ... } (uno per persona, separati da virgola).
 //   2) Lancia i comandi dalla cartella skill-practice/.
 //
@@ -70,6 +71,7 @@ const PERSONE = [
   //   shaolin: "8 chi",
   //   taichi: "non praticato",
   //   istruttore: false,
+  //   lingua: "it",
   // },
 ];
 
@@ -127,6 +129,8 @@ function clampGrade(v, field, email) {
 
 function normalize(p) {
   const email = String(p.email ?? "").trim().toLowerCase();
+  const locale = String(p.lingua ?? p.locale ?? "it").trim().toLowerCase();
+  if (!["it", "fr"].includes(locale)) throw new Error(`${email}: lingua deve essere it o fr`);
   const display_name = [p.nome, p.cognome].map((x) => (x ?? "").toString().trim()).filter(Boolean).join(" ") || null;
   return {
     email,
@@ -134,6 +138,7 @@ function normalize(p) {
     level_shaolin: parseGrade(p.shaolin, "shaolin", email || "(senza email)"),
     level_taichi: parseGrade(p.taichi, "taichi", email || "(senza email)"),
     all_access: Boolean(p.istruttore),
+    locale,
   };
 }
 
@@ -184,7 +189,7 @@ async function main() {
   console.log(`${items.length} persone | ${apply ? "INVIO" : "ANTEPRIMA"}${reinvite ? " | RE-INVITE" : ""}`);
   for (const it of items) {
     console.log(
-      `  - ${it.email} | ${it.display_name ?? "(senza nome)"} | Shaolin: ${gradeLabel(it.level_shaolin)} | T'ai Chi: ${gradeLabel(it.level_taichi)}${it.all_access ? " | ACCESSO COMPLETO" : ""}`,
+      `  - ${it.email} | ${it.display_name ?? "(senza nome)"} | Shaolin: ${gradeLabel(it.level_shaolin)} | T'ai Chi: ${gradeLabel(it.level_taichi)} | lingua: ${it.locale}${it.all_access ? " | ACCESSO COMPLETO" : ""}`,
     );
   }
 
@@ -200,6 +205,8 @@ async function main() {
     process.exit(1);
   }
   const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { error: schemaError } = await supabase.from("user_invites").select("locale").limit(0);
+  if (schemaError) throw new Error("Verifica accesso Supabase e applicazione della migration 0051_invite_locale.sql prima di invitare utenti.", { cause: schemaError });
 
   const report = [];
   for (const it of items) {
@@ -221,7 +228,7 @@ async function main() {
         if (delInv) throw new Error(`pulizia invito fallita: ${delInv.message}`);
       }
 
-      const payload = { email: it.email, level_shaolin: it.level_shaolin, level_taichi: it.level_taichi };
+      const payload = { email: it.email, level_shaolin: it.level_shaolin, level_taichi: it.level_taichi, locale: it.locale };
       if (it.display_name) payload.display_name = it.display_name;
       if (it.all_access) payload.instructor = true;
 

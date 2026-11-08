@@ -135,6 +135,7 @@ export type UserInvite = {
   email: string;
   access_group_id: string | null;
   display_name: string | null;
+  locale: "it" | "fr";
   assigned_level_shaolin: number;
   assigned_level_taichi: number;
   role: UserRole;

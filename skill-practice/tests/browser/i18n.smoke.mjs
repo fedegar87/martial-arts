@@ -63,22 +63,9 @@ try {
   await page
     .getByText("Accédez à votre cahier technique numérique.", { exact: true })
     .waitFor();
-  await page
-    .getByRole("combobox", { name: "Langue", exact: true })
-    .selectOption("it");
-  await page.waitForFunction(() => document.documentElement.lang === "it");
-  await page.getByRole("button", { name: "Accedi", exact: true }).waitFor();
+  assert.equal(await page.getByRole("combobox").count(), 0);
   await page.reload();
-  assert.equal(await page.locator("html").getAttribute("lang"), "it");
-  const cookie = (await context.cookies()).find(
-    (item) => item.name === "practice_locale",
-  );
-  assert.equal(cookie.value, "it");
-  assert.equal(cookie.httpOnly, true);
-  await page
-    .getByRole("combobox", { name: "Lingua", exact: true })
-    .selectOption("fr");
-  await page.waitForFunction(() => document.documentElement.lang === "fr");
+  assert.equal(await page.locator("html").getAttribute("lang"), "fr");
   await page
     .getByRole("link", { name: "Mot de passe oublié ?", exact: true })
     .click();
@@ -93,10 +80,12 @@ try {
     .getByRole("heading", { name: "Confidentialité", exact: true })
     .waitFor();
   await page.getByText(/Le texte juridique original est en italien/).waitFor();
+  assert.equal(await page.getByRole("combobox").count(), 0);
   assert.match(await page.title(), /Confidentialité/);
   await page.goto(origin);
   await page.getByRole("link", { name: "Entrer", exact: true }).waitFor();
   assert.equal(await page.locator("html").getAttribute("lang"), "fr");
+  assert.equal(await page.getByRole("combobox").count(), 0);
   assert.match(
     await page.locator('meta[name="description"]').getAttribute("content"),
     /Pratique guidée/,
@@ -123,7 +112,7 @@ try {
   });
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: actual Next.js SSR/hydration, French browser detection, Italian/French cookie switching and reload, French auth navigation and metadata, explicit legal fallback, 320px layout. No account or database writes.",
+    "PASS: actual Next.js SSR/hydration, French browser detection and reload, no language selector on public pages, French auth navigation and metadata, explicit legal fallback, 320px layout. No account or database writes.",
   );
 } finally {
   await browser?.close();

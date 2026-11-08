@@ -67,7 +67,13 @@ Per il razionale completo vedi `archive/`:
 
 **D15 — Multilingua (2026-11-07, richiesta esplicita per Arlon):** italiano e francese
 con `next-intl`, cataloghi per chiavi in `src/lib/i18n/`, locale da cookie tecnico
-`practice_locale` o `Accept-Language`, selettore nella sezione Lingua del profilo e nelle pagine pubbliche. La barra superiore autenticata conserva soltanto Home e Bacheca.
+`practice_locale` o `Accept-Language` per gli anonimi. Dal 2026-11-08 il selettore
+compare solo nel Profilo e la preferenza autenticata e' salvata nell'account
+(`notification_preferences.locale`), con precedenza sul browser e sul cookie.
+`user_invites.locale` assegna `it`/`fr` insieme ai gradi; il provisioning inizializza
+la preferenza senza attivare notifiche. Migrazione `0051_invite_locale.sql` da
+applicare prima di usare la lingua negli inviti; script di invito aggiornati.
+La barra superiore autenticata conserva soltanto Home e Bacheca.
 URL, identità e logica FESK restano comuni. I contenuti authored hanno traduzioni
 JSONB per lingua su tecniche, esami e news, con fallback al testo originale;
 nomi cinesi, note personali e dati tecnici non sono tradotti automaticamente.
@@ -491,6 +497,8 @@ Sequenza aggiornata al 2026-06-03. **0001–0028 applicate** via SQL Editor Supa
 | 0031 | `more_skill_video_urls` | Video FESK aggiuntivi + primi 2 skill a doppio video (Tan Tao Tui Pang Fa, Shuang Tao 1 Lu) |
 | 0032 | `extra_weapon_fundamentals` | 4 skill "fondamentali" armi fuori programma cinture: categoria `preparatori` ("Altro"), grado-sentinella `99` (`EXTRA_GRADE_VALUE`), sezione "Altro" in libreria |
 | 0049 | `federation_calendar` | Eventi pubblici federali, promemoria selettivi con RLS, sync atomica service role e deduplica delivery per evento |
+| 0050 | `i18n_content_and_notifications` | Traduzioni authored e lingua promemoria; applicata su conferma utente |
+| 0051 | `invite_locale` | Lingua assegnata con i gradi nell'invito e inizializzazione preferenza account; applicazione Supabase da confermare |
 
 > **0028 applicata il 2026-06-03** (single-tenant: no-op, verificato con smoke test). Quando arriverà la 2ª federazione, l'invito utenti deve passare `school_id` (e `display_name`) nei `user_metadata`, altrimenti con più scuole `handle_new_user` fallisce di proposito.
 

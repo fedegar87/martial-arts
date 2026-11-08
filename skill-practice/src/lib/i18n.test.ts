@@ -39,6 +39,10 @@ test("locale selection validates cookies and respects browser weights and region
   assert.equal(resolveLocale(null, "fr;q=0,it;q=0.5"), "it");
   assert.equal(resolveLocale(null, "fr;q=bogus,en;q=1"), DEFAULT_LOCALE);
   assert.equal(resolveLocale("../../fr", null), DEFAULT_LOCALE);
+  assert.equal(resolveLocale("it", "it-IT", "fr"), "fr");
+  assert.equal(resolveLocale("fr", "fr-BE", "it"), "it");
+  assert.equal(resolveLocale("it", "fr", "de"), "it");
+  assert.equal(resolveLocale(null, "fr-BE", null), "fr");
 });
 
 test("catalogs have matching keys and every ICU message formats without errors", () => {

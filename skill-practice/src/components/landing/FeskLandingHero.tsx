@@ -1,4 +1,3 @@
-import { LocaleSwitcher } from "@/components/shared/LocaleSwitcher";
 import { brand } from "@/lib/brand";
 import { EnterButton } from "./EnterButton";
 
@@ -15,9 +14,6 @@ export function FeskLandingHero({ ctaHref }: { ctaHref: string }) {
       "
     >
       <div className="landing-hero__content w-full max-w-md flex flex-col items-center text-center">
-        <div className="mb-6 self-end">
-          <LocaleSwitcher />
-        </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/icons/icon-512.png"

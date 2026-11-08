@@ -500,6 +500,8 @@ Sequenza presente nel repo:
 | 0047 | `list_locked_skill_outline`: anteprima solo-titolo delle skill future bloccate |
 | 0048 | Fix attribuzione video Mei Hua |
 | 0049 | Calendario federale, sync atomica service role, promemoria e delivery eventi |
+| 0050 | Traduzioni authored e lingua dei promemoria |
+| 0051 | Lingua iniziale nell'invito e preferenza account; applicazione Supabase da confermare |
 
 Stato applicazione DB:
 
@@ -875,7 +877,7 @@ Debito architetturale consapevole (gestito a trigger in `plan/white-label-strate
 - `types.ts` e' manuale, puo divergere dallo schema DB.
 - Nessun admin panel web per contenuti/utenti (operativita tramite script CLI in
   `skill-practice/scripts/`).
-- i18n italiano/francese attivata per Arlon con `next-intl`: cataloghi UI in `src/lib/i18n/`, cookie/browser, date localizzate, brand con testi per lingua e resolver di contenuti authored. Migration `0050_i18n_content_and_notifications.sql`: traduzioni JSONB di skills/esami/news e lingua dei promemoria; applicazione in Supabase confermata dall'utente il 2026-11-07. Restano da inserire/validare i contenuti tecnici francesi e da tradurre/rivedere i testi legali. Procedura: `skill-practice/docs/i18n.md`.
+- i18n italiano/francese attivata per Arlon con `next-intl`: cataloghi UI in `src/lib/i18n/`, preferenza account/cookie/browser, date localizzate, brand con testi per lingua e resolver di contenuti authored. Migration `0050_i18n_content_and_notifications.sql`: traduzioni JSONB di skills/esami/news e lingua dei promemoria; applicazione in Supabase confermata dall'utente il 2026-11-07. Restano da inserire/validare i contenuti tecnici francesi e da tradurre/rivedere i testi legali. Procedura: `skill-practice/docs/i18n.md`.
 - Nessuna suite E2E autenticata/RLS persistente; procedure manuali in
   `skill-practice/docs/access-control-checks.md`.
 
@@ -948,3 +950,12 @@ Prodotto/strategia:
 - Performance: stato e verifiche nella sezione 16 di questo documento.
 - Video promo:
   [marketing-video-promo-guide.md](marketing-video-promo-guide.md)
+
+Lingua account (2026-11-08): selettore solo nel Profilo. `getCurrentUserLocale`
+legge `notification_preferences.locale` con utente autenticato e RLS, senza
+dipendere da `getLocale` (evita ricorsione nella configurazione next-intl).
+La preferenza account prevale sul cookie/browser. `setLocale` richiede login e
+fa upsert dei soli user_id/locale; non attiva push. Migration
+`0051_invite_locale.sql` aggiunge `user_invites.locale` e copia la lingua nella
+preferenza al provisioning; RPC e script amministrativi accettano it/fr.
+Applicazione della 0051 su Supabase da confermare; codice UI compatibile con 0050.

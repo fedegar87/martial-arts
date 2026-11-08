@@ -18,7 +18,9 @@ export function isLocale(value: unknown): value is Locale {
 export function resolveLocale(
   cookie: unknown,
   acceptLanguage: string | null,
+  accountLocale?: unknown,
 ): Locale {
+  if (isLocale(accountLocale)) return accountLocale;
   if (isLocale(cookie)) return cookie;
   const languages = (acceptLanguage ?? "")
     .split(",")

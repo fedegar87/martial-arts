@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { UserProfile } from "@/lib/types";
+import { isLocale } from "@/lib/i18n/config";
 
 export type CurrentProfileAccount = UserProfile & {
   email: string | null;
@@ -14,6 +15,22 @@ export const getCurrentUser = cache(async () => {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
+});
+
+export const getCurrentUserLocale = cache(async () => {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notification_preferences")
+    .select("locale")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (error)
+    throw new Error("Impossibile caricare la lingua del profilo", {
+      cause: error,
+    });
+  return isLocale(data?.locale) ? data.locale : null;
 });
 
 export const getCurrentProfile = cache(
@@ -48,11 +65,12 @@ export const getCurrentProfileAccount = cache(
       .maybeSingle();
 
     if (error) {
-      throw new Error("Impossibile caricare i dati del profilo", { cause: error });
+      throw new Error("Impossibile caricare i dati del profilo", {
+        cause: error,
+      });
     }
     const row = data as
-      | (UserProfile & { school?: { name: string | null } | null })
-      | null;
+      (UserProfile & { school?: { name: string | null } | null }) | null;
     if (!row) return null;
 
     const { school, ...profile } = row;

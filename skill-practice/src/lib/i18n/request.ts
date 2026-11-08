@@ -4,12 +4,18 @@ import { cookies, headers } from "next/headers";
 import { LOCALE_COOKIE, resolveLocale } from "./config";
 import italian from "./it.json";
 import legalItalian from "./legal-it.json";
+import { getCurrentUserLocale } from "@/lib/queries/user-profile";
 
 export default getRequestConfig(async () => {
-  const [store, requestHeaders] = await Promise.all([cookies(), headers()]);
+  const [store, requestHeaders, accountLocale] = await Promise.all([
+    cookies(),
+    headers(),
+    getCurrentUserLocale(),
+  ]);
   const locale = resolveLocale(
     store.get(LOCALE_COOKIE)?.value,
     requestHeaders.get("accept-language"),
+    accountLocale,
   );
   const selected = (await import(`./${locale}.json`)).default;
   return {

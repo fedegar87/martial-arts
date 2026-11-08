@@ -82,7 +82,7 @@ export default async function ProfilePage() {
       </Disclosure>
 
       <Disclosure title={tr("language")}>
-        <LocaleSwitcher variant="settings" />
+        <LocaleSwitcher />
       </Disclosure>
 
       {pushEnabled && reminderSettings && (
