@@ -164,9 +164,12 @@ Mappa delle superfici (token in `globals.css`):
 - nota / contenuto incassato = `--surface-inset` (classe `surface-inset`)
 
 I materiali di barre e pannelli sono definiti soltanto in `globals.css`, tramite
-i token `--material-*`, derivati dalle superfici del tema. Barre: opacita' 86%,
-blur 16 px e saturazione 120%; navigazione: opacita' 88%; pannelli: opacita' 95%,
-blur 18 px e saturazione 115%. Bordi luminosi al 5% e ombre contenute. Le
+i token `--material-*`, derivati dalle superfici del tema. Barre: opacita' 74%,
+blur 22 px e saturazione 145%; navigazione: opacita' 76%; pannelli: opacita' 84%,
+blur 26 px e saturazione 135%. Bordi luminosi superiori al 10%, velatura top-lit
+e ombre stratificate; lo sfondo pagina (`body`) e `[data-slot="card"]` includono
+una leggera illuminazione direzionale superiore disattivata automaticamente con
+`prefers-reduced-transparency`, `prefers-contrast: more` e `forced-colors`. Le
 etichette secondarie delle barre hanno un colore locale leggermente piu' chiaro
 per mantenere il contrasto anche sopra contenuti chiari.
 
