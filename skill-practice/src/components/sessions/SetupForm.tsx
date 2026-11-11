@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { setupTrainingSchedule } from "@/lib/actions/training-schedule";
+import { addDaysToDateKey, localDateKey } from "@/lib/date";
 import type {
   Discipline,
   PlanMode,
@@ -18,7 +19,9 @@ import type {
 import { useActionState, useCallback, useState } from "react";
 import { CadencePicker } from "./CadencePicker";
 import { DurationPicker } from "./DurationPicker";
-import { PlanFormsSection } from "./PlanFormsSection";
+import {
+  countPlanItems, PlanFormsSection, type PlanCounts,
+} from "./PlanFormsSection";
 import { RepsStepper } from "./RepsStepper";
 import { SessionPreview } from "./SessionPreview";
 import { WeekdayChips } from "./WeekdayChips";
@@ -67,7 +70,7 @@ export function SetupForm({
   const [state, action, pending] = useActionState(setupTrainingSchedule, null);
   const availableExamDisciplines = availableDisciplines(disciplineCounts);
   const [examScope, setExamScope] = useState<ExamDisciplineScope>(() =>
-    initialExamScope(current, availableExamDisciplines),
+    planMode === "exam" ? initialExamScope(current, availableExamDisciplines) : "both",
   );
   const [weekdays, setWeekdays] = useState<number[]>(
     current?.weekdays ?? [1, 3, 5],
@@ -84,7 +87,7 @@ export function SetupForm({
   );
 
   const handleCountsChange = useCallback(
-    (counts: { focus: number; maintenance: number }) => {
+    (counts: PlanCounts) => {
       setPlanCounts(counts);
     },
     [],
@@ -94,17 +97,23 @@ export function SetupForm({
     planMode === "exam" && availableExamDisciplines.length > 0;
   const isSingleDiscipline =
     showExamScope && availableExamDisciplines.length === 1;
-  const totalOcc = planCounts.focus * 2 + planCounts.maintenance * 1;
   const cycleDays = weekdays.length * cadence;
+  const focusWeight = Math.min(2, cycleDays);
+  const totalOcc = planCounts.focus * focusWeight + planCounts.maintenance;
+  const formOcc = planCounts.formFocus * focusWeight + planCounts.formMaintenance;
   const previewCount =
-    cycleDays > 0 ? Math.max(1, Math.ceil(totalOcc / cycleDays)) : 1;
+    cycleDays > 0 ? Math.ceil(totalOcc / cycleDays) : 0;
+  // Estimate three minutes per exercise or individual form repetition.
+  const previewMinutes = cycleDays > 0
+    ? Math.ceil(((formOcc * reps + totalOcc - formOcc) * 3) / cycleDays)
+    : 0;
   const canSubmit = weekdays.length > 0;
-  const endDate = new Date();
-  endDate.setUTCDate(endDate.getUTCDate() + duration * 7);
-  const endLabel = endDate.toLocaleDateString(tr("locale"), {
+  const endDate = addDaysToDateKey(localDateKey(), duration * 7 - 1);
+  const endLabel = new Date(`${endDate}T00:00:00Z`).toLocaleDateString(tr("locale"), {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "UTC",
   });
 
   return (
@@ -196,7 +205,7 @@ export function SetupForm({
         </CardHeader>
         <CardContent className="space-y-3">
           <RepsStepper value={reps} onChange={setReps} />
-          <SessionPreview formCount={previewCount} reps={reps} />
+          <SessionPreview exerciseCount={previewCount} minutes={previewMinutes} />
         </CardContent>
       </Card>
 
@@ -323,12 +332,9 @@ function totalCount(counts: Record<Discipline, number>): number {
 function countsForScope(
   items: ItemWithSkill[],
   scope: ExamDisciplineScope,
-): { focus: number; maintenance: number } {
+): PlanCounts {
   const filtered = items.filter(
     (it) => scope === "both" || it.skill.discipline === scope,
   );
-  return {
-    focus: filtered.filter((i) => i.status === "focus").length,
-    maintenance: filtered.filter((i) => i.status === "maintenance").length,
-  };
+  return countPlanItems(filtered);
 }

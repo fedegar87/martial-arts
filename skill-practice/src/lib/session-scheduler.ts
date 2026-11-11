@@ -36,7 +36,9 @@ export function getScheduledSession(
     !isDateKey(schedule.start_date) ||
     !isDateKey(schedule.end_date) ||
     schedule.end_date <= schedule.start_date ||
+    ![1, 2, 4].includes(schedule.cadence_weeks) ||
     schedule.weekdays.length === 0 ||
+    new Set(schedule.weekdays).size !== schedule.weekdays.length ||
     schedule.weekdays.some((day) => !Number.isInteger(day) || day < 1 || day > 7)
   ) return { kind: "no_schedule" };
   if (date > schedule.end_date) return { kind: "expired", endDate: schedule.end_date };
@@ -73,9 +75,11 @@ export function listSessionsInRange(
   items: ItemWithSkill[],
 ): Array<{ date: string; session: ScheduledSession }> {
   const out: Array<{ date: string; session: ScheduledSession }> = [];
+  if (!isDateKey(from) || !isDateKey(to)) return out;
   let cur = from;
   while (cur <= to) {
     out.push({ date: cur, session: getScheduledSession(cur, schedule, items) });
+    if (cur === to) break;
     cur = addDays(cur, 1);
   }
   return out;
@@ -125,6 +129,17 @@ function distributeTokensToSlots(
       attempts++;
     }
     slots[target].push(tokens[i]);
+  }
+  // Resolving a repeated skill can overload a slot; restore even session sizes.
+  while (true) {
+    const smallest = slots.reduce((best, slot, i) =>
+      slot.length < slots[best].length ? i : best, 0);
+    const largest = slots.reduce((best, slot, i) =>
+      slot.length > slots[best].length ? i : best, 0);
+    if (slots[largest].length - slots[smallest].length <= 1) break;
+    const movable = slots[largest].findIndex((item) =>
+      !slots[smallest].some((other) => other.skill_id === item.skill_id));
+    slots[smallest].push(...slots[largest].splice(movable, 1));
   }
   return slots;
 }

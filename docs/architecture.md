@@ -1,6 +1,6 @@
 # Architettura e briefing operativo per LLM
 
-Data aggiornamento: 2026-11-07. Repo: `martial-arts/`, app principale:
+Data aggiornamento: 2026-11-11. Repo: `martial-arts/`, app principale:
 `skill-practice/`.
 
 Questo documento e' la mappa tecnica canonica dell'app. Serve a dare contesto
@@ -862,6 +862,18 @@ riusciti. La pagina pubblica `/login` risponde HTTP 200. Applicazione delle
 migrazioni confermata dall'utente; collaudo reale del provider/email ancora pendente.
 
 ## 18. Testing
+
+Verifica allenamenti del 2026-11-11: matrice scheduler su due cicli,
+15.327 scenari Server Action con I/O simulato, componente setup reale in
+Chromium it/fr e RPC reali su PostgreSQL in memoria, con tutte le migrazioni
+fino a 0056. Regole, comandi e limiti in
+[training-schedule-checks.md](../skill-practice/docs/training-schedule-checks.md).
+Il ribilanciamento conserva i pesi focus/mantenimento, evita duplicati e limita
+a uno lo scarto nel numero di esercizi fra le sessioni. Target giornalieri
+conservati anche dopo azzeramento, anteprima coerente con piano personale,
+forme/tecniche e fine inclusiva. La 0056 ripristina gli item manuali nascosti
+quando esplicitamente riselezionati, preservando lo status; solo verifica
+locale completata; migrazione applicata a Supabase su conferma dell'utente.
 
 Suite attuale:
 

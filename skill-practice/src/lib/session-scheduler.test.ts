@@ -141,6 +141,14 @@ test("returns no_schedule when schedule is null", () => {
   assert.equal(result.kind, "no_schedule");
 });
 
+test("session ranges reject invalid dates and stop at the last supported date", () => {
+  const schedule = makeSchedule({ start_date: "9999-12-01", end_date: "9999-12-31" });
+  assert.deepEqual(listSessionsInRange("invalid", "2026-05-01", schedule, []), []);
+  assert.deepEqual(listSessionsInRange("2026-05-01", "2026-02-30", schedule, []), []);
+  assert.deepEqual(listSessionsInRange("2026-05-02", "2026-05-01", schedule, []), []);
+  assert.deepEqual(listSessionsInRange("9999-12-30", "9999-12-31", schedule, []).map((row) => row.date), ["9999-12-30", "9999-12-31"]);
+});
+
 test("returns expired when date is past end_date", () => {
   const schedule = makeSchedule({ end_date: "2026-05-01" });
   const result = getScheduledSession("2026-05-02", schedule, []);
@@ -413,4 +421,179 @@ test("cycleSize=1 con focus skill non duplica nella sessione", () => {
     `duplicates in cycleSize=1 session: ${ids.join(",")}`,
   );
   assert.equal(ids.length, 1, `expected 1 occurrence (clamped from 2), got ${ids.length}`);
+});
+
+test("collisioni focus non sovraccaricano una sessione del ciclo", () => {
+  const schedule = makeSchedule({ weekdays: [1], cadence_weeks: 2 });
+  const items = [
+    item("a-focus", "focus"),
+    item("b-maintenance", "maintenance"),
+    item("c-maintenance", "maintenance"),
+  ];
+  const sessions = listSessionsInRange("2026-04-27", "2026-05-10", schedule, items)
+    .flatMap(({ session }) => session.kind === "training" ? [session] : []);
+
+  assert.deepEqual(sessions.map((session) => session.focus.length + session.maintenance.length), [2, 2]);
+  assert.deepEqual(countOccurrencesInCycle(schedule, items), new Map([
+    ["a-focus", 2],
+    ["b-maintenance", 1],
+    ["c-maintenance", 1],
+  ]));
+});
+
+const schedulerWeekdayCases = [[1], [1, 3, 5], [1, 2, 3, 4, 5, 6, 7]];
+const schedulerCadenceCases = [1, 2, 4] as const;
+const schedulerPlanCases = [
+  { focus: 0, maintenance: 0 },
+  { focus: 1, maintenance: 0 },
+  { focus: 0, maintenance: 1 },
+  { focus: 1, maintenance: 2 },
+  { focus: 2, maintenance: 1 },
+  { focus: 7, maintenance: 6 },
+  { focus: 6, maintenance: 7 },
+  { focus: 7, maintenance: 7 },
+  { focus: 14, maintenance: 0 },
+  { focus: 0, maintenance: 14 },
+];
+
+for (const weekdays of schedulerWeekdayCases) {
+  for (const cadence_weeks of schedulerCadenceCases) {
+    test(`matrice scheduler: ${weekdays.length} giorni, ciclo ${cadence_weeks} settimane, dieci composizioni`, () => {
+      const schedule = makeSchedule({ weekdays, cadence_weeks });
+      const slotCount = weekdays.length * cadence_weeks;
+
+      for (const planCase of schedulerPlanCases) {
+        const context = `${planCase.focus} focus, ${planCase.maintenance} maintenance`;
+        const items = Array.from({ length: planCase.focus + planCase.maintenance }, (_, index) =>
+          item(`form-${String(index).padStart(2, "0")}`, index < planCase.focus ? "focus" : "maintenance"),
+        );
+        const originalItems = structuredClone(items);
+        const rows = listSessionsInRange(
+          schedule.start_date,
+          addDaysIso(schedule.start_date, cadence_weeks * 14 - 1),
+          schedule,
+          items,
+        );
+        const sessions = rows.flatMap(({ session }) => session.kind === "training" ? [session] : []);
+        assert.equal(sessions.length, slotCount * 2, context);
+
+        for (let cycle = 0; cycle < 2; cycle++) {
+          const counts = new Map<string, number>();
+          const loads: number[] = [];
+          const cycleSessions = sessions.slice(cycle * slotCount, (cycle + 1) * slotCount);
+          for (const [index, session] of cycleSessions.entries()) {
+            const scheduledItems = [...session.focus, ...session.maintenance];
+            const ids = scheduledItems.map((entry) => entry.skill_id);
+            assert.equal(session.sessionIndex, cycle * slotCount + index, context);
+            assert.equal(new Set(ids).size, ids.length, `duplicati: ${context}`);
+            assert.ok(session.focus.every((entry) => entry.status === "focus"), context);
+            assert.ok(session.maintenance.every((entry) => entry.status === "maintenance"), context);
+            loads.push(ids.length);
+            for (const id of ids) counts.set(id, (counts.get(id) ?? 0) + 1);
+          }
+
+          const expectedTotal = planCase.focus * Math.min(2, slotCount) + planCase.maintenance;
+          assert.equal(loads.reduce((sum, load) => sum + load, 0), expectedTotal, context);
+          assert.ok(Math.max(...loads) - Math.min(...loads) <= 1, `carico sbilanciato ${JSON.stringify(loads)}: ${context}`);
+          for (const entry of items) {
+            assert.equal(counts.get(entry.skill_id), entry.status === "focus" ? Math.min(2, slotCount) : 1, context);
+          }
+        }
+
+        assert.deepEqual(
+          sessions.slice(0, slotCount).map(({ focus, maintenance }) => ({ focus, maintenance })),
+          sessions.slice(slotCount).map(({ focus, maintenance }) => ({ focus, maintenance })),
+          `cicli diversi: ${context}`,
+        );
+        assert.deepEqual(items, originalItems, `input modificato: ${context}`);
+      }
+    });
+  }
+}
+
+test("13 o 14 forme focus in ciclo di quattro settimane quotidiane producono al massimo una forma al giorno", () => {
+  const schedule = makeSchedule({ weekdays: [1, 2, 3, 4, 5, 6, 7], cadence_weeks: 4 });
+  for (const formCount of [13, 14]) {
+    const items = Array.from({ length: formCount }, (_, index) => item(`form-${index}`, "focus"));
+    const rows = listSessionsInRange("2026-04-27", "2026-05-24", schedule, items);
+    const loads = rows.map(({ session }) => {
+      assert.equal(session.kind, "training");
+      return session.kind === "training" ? session.focus.length + session.maintenance.length : -1;
+    });
+    assert.equal(loads.filter((load) => load === 1).length, formCount * 2);
+    assert.equal(loads.filter((load) => load === 0).length, 28 - formCount * 2);
+    assert.equal(Math.max(...loads), 1);
+  }
+});
+
+test("ordine degli input e giorni non ordinati non cambiano la tabella e non vengono modificati", () => {
+  const schedule = makeSchedule({ weekdays: [5, 1, 3], cadence_weeks: 4 });
+  const items = [
+    item("taichi-form", "focus", "taichi", "forme"),
+    item("shaolin-weapon", "maintenance", "shaolin", "armi_forma"),
+    item("shaolin-form-a", "focus", "shaolin", "forme"),
+    item("taichi-kick", "maintenance", "taichi", "tui_fa"),
+    item("shaolin-form-b", "maintenance", "shaolin", "forme"),
+  ];
+  items[2].skill.display_order = 2;
+  items[4].skill.display_order = 1;
+  const originalSchedule = structuredClone(schedule);
+  const originalItems = structuredClone(items);
+  const canonical = listSessionsInRange("2026-04-27", "2026-05-24", schedule, items);
+
+  for (const permutation of [items.toReversed(), [items[2], items[0], items[4], items[1], items[3]]]) {
+    assert.deepEqual(listSessionsInRange("2026-04-27", "2026-05-24", schedule, permutation), canonical);
+  }
+  assert.deepEqual(listSessionsInRange("2026-04-27", "2026-05-24", { ...schedule, weekdays: [1, 3, 5] }, items), canonical);
+  assert.deepEqual(items, originalItems);
+  assert.deepEqual(schedule, originalSchedule);
+});
+
+test("ripetizioni per forma cambiano il lavoro nella sessione senza moltiplicare le date programmate", () => {
+  const schedule = makeSchedule({ weekdays: [1, 3, 5], cadence_weeks: 2 });
+  const items = [item("focus", "focus"), item("maintenance", "maintenance")];
+  const canonical = listSessionsInRange("2026-04-27", "2026-05-10", schedule, items);
+  for (const reps_per_form of [1, 2, 5, 10]) {
+    assert.deepEqual(listSessionsInRange("2026-04-27", "2026-05-10", { ...schedule, reps_per_form }, items), canonical);
+  }
+});
+
+test("confini inclusivi, avvio a settimana iniziata e scadenza non aggiungono sessioni", () => {
+  const schedule = makeSchedule({
+    weekdays: [1, 3, 5],
+    cadence_weeks: 2,
+    start_date: "2026-04-30",
+    end_date: "2026-05-13",
+  });
+  const rows = listSessionsInRange("2026-04-29", "2026-05-14", schedule, [item("focus", "focus")]);
+  assert.deepEqual(rows.flatMap(({ date, session }) => session.kind === "training" ? [date] : []), [
+    "2026-05-01", "2026-05-04", "2026-05-06", "2026-05-08", "2026-05-11", "2026-05-13",
+  ]);
+  assert.deepEqual(rows[0].session, { kind: "rest_day", nextTrainingDate: "2026-05-01" });
+  assert.equal(rows.at(-2)?.session.kind, "training");
+  assert.deepEqual(rows.at(-1)?.session, { kind: "expired", endDate: "2026-05-13" });
+});
+
+test("anno bisestile e cambio ora non saltano giorni o indici di sessione", () => {
+  for (const start_date of ["2028-02-27", "2026-03-27", "2026-10-23", "2026-12-29"]) {
+    const end_date = addDaysIso(start_date, 7);
+    const schedule = makeSchedule({ start_date, end_date, weekdays: [1, 2, 3, 4, 5, 6, 7], cadence_weeks: 1 });
+    const rows = listSessionsInRange(start_date, end_date, schedule, []);
+    assert.equal(rows.length, 8);
+    rows.forEach(({ date, session }, index) => {
+      assert.equal(date, addDaysIso(start_date, index));
+      assert.equal(session.kind, "training");
+      if (session.kind === "training") assert.equal(session.sessionIndex, index);
+    });
+  }
+});
+
+test("scheduler rifiuta cadenze non supportate e giorni duplicati", () => {
+  for (const cadence of [0, -1, 3, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+    const schedule = makeSchedule({ cadence_weeks: cadence as TrainingSchedule["cadence_weeks"] });
+    assert.deepEqual(getScheduledSession("2026-04-27", schedule, [item("focus", "focus")]), { kind: "no_schedule" });
+  }
+  for (const weekdays of [[], [1, 1], [1, 3, 3, 5], [0], [8], [1.5], [Number.NaN]]) {
+    assert.deepEqual(getScheduledSession("2026-04-27", makeSchedule({ weekdays }), []), { kind: "no_schedule" });
+  }
 });

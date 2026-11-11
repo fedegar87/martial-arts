@@ -60,12 +60,20 @@ sono in `tests/browser/` e usano Chromium dal tooling locale `../tools/video/`:
 ```bash
 npm run test:custom-selection
 npm run test:federation-calendar
+npm run test:training-schedule
 ```
 
 Eseguirli dopo la build. Usano azioni e push simulate; non scrivono nel database.
 Gli screenshot sono in `test-results/`, ignorata da Git; le fixture temporanee
 vengono eliminate a fine test. Le procedure di verifica accessi sono in
 [docs/access-control-checks.md](docs/access-control-checks.md).
+
+La matrice dei controlli allenamento e' in
+[docs/training-schedule-checks.md](docs/training-schedule-checks.md), con regole,
+conteggi attesi e limiti. `npm run test:training-plan` verifica anche le RPC
+su PostgreSQL in memoria usando il runtime PGlite locale gia' predisposto.
+La migrazione 0056 per ripristinare le selezioni nascoste e' verificata
+localmente e applicata su Supabase su conferma dell'utente.
 
 `npm run ui:audit` mostra il report UI corrente; con `-- --write-report` lo
 salva in `test-results/ui-audit.json`, senza versionare snapshot di collaudo.

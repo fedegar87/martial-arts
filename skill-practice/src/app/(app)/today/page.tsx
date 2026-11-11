@@ -231,8 +231,8 @@ function buildScopeLabel(
   if (!schedule) return null;
   if (profile.plan_mode !== "exam") return null;
 
-  const hasShaolinGrade = profile.assigned_level_shaolin > 0;
-  const hasTaichiGrade = profile.assigned_level_taichi > 0;
+  const hasShaolinGrade = profile.assigned_level_shaolin !== 0;
+  const hasTaichiGrade = profile.assigned_level_taichi !== 0;
   if (!hasShaolinGrade || !hasTaichiGrade) return null;
 
   const disciplines = schedule.exam_disciplines ?? [];
@@ -250,7 +250,7 @@ function buildGradeSummary(tr: UiTranslator, profile: UserProfile): string {
     )}`,
   ];
 
-  if (profile.assigned_level_taichi > 0) {
+  if (profile.assigned_level_taichi !== 0) {
     parts.push(
       `${disciplineLabel("taichi", tr)} ${gradeLabelForDiscipline(
         "taichi",

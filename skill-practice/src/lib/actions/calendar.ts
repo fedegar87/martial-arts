@@ -43,15 +43,26 @@ export async function setPracticeCompletionForDate(
   );
   if ("error" in scheduleContext) return scheduleContext;
 
+  const { data: existing, error: selectError } = await supabase
+    .from("practice_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("skill_id", skillId)
+    .eq("date", dateKey)
+    .maybeSingle();
+
+  if (selectError) return { error: selectError.message };
+
   if (completed) {
+    const target = (existing as PracticeLog | null)?.reps_target ?? scheduleContext.repsPerForm;
     const { error } = await supabase.from("practice_logs").upsert(
       {
         user_id: userId,
         skill_id: skillId,
         date: dateKey,
         completed: true,
-        reps_target: scheduleContext.repsPerForm,
-        reps_done: scheduleContext.repsPerForm,
+        reps_target: target,
+        reps_done: target,
       },
       { onConflict: "user_id,skill_id,date" },
     );
@@ -60,15 +71,6 @@ export async function setPracticeCompletionForDate(
     const rpcError = await updateLastPracticedAt(supabase, skillId, dateKey);
     if (rpcError) return { error: rpcError };
   } else {
-    const { data: existing, error: selectError } = await supabase
-      .from("practice_logs")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("skill_id", skillId)
-      .eq("date", dateKey)
-      .maybeSingle();
-
-    if (selectError) return { error: selectError.message };
     if (existing) {
       const neutralizeError = await neutralizeOrDeleteLog(
         supabase,
@@ -188,7 +190,7 @@ async function getScheduleContext(
   skillId: string,
   dateKey: string,
 ): Promise<ScheduleContext | { error: string }> {
-  const [{ data: scheduleData }, { data: profileData, error: profileError }] =
+  const [{ data: scheduleData, error: scheduleError }, { data: profileData, error: profileError }] =
     await Promise.all([
       supabase
         .from("training_schedule")
@@ -202,6 +204,7 @@ async function getScheduleContext(
         .maybeSingle(),
     ]);
 
+  if (scheduleError) return { error: scheduleError.message };
   if (profileError) return { error: profileError.message };
 
   const schedule = (scheduleData as TrainingSchedule | null) ?? null;

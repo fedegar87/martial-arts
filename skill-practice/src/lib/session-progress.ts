@@ -193,7 +193,7 @@ function sessionStatus({
   return "not_started";
 }
 
-function isFormCategory(category: SkillCategory): boolean {
+export function isFormCategory(category: SkillCategory): boolean {
   return category === "forme" || category === "armi_forma";
 }
 

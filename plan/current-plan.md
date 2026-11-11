@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Versione brief:** v3
-**Ultimo aggiornamento:** 2026-11-08
+**Ultimo aggiornamento:** 2026-11-11
 
 I piani operativi conclusi sono rimossi dopo aver consolidato le decisioni nei
 documenti correnti; lo storico resta in Git. I test browser ripetibili vivono
@@ -112,6 +112,21 @@ Site URL e redirect callback aggiornati, recovery bilingue salvato, password
 corrente obbligatoria e riautenticazione aggiuntiva disattivata; variabili Vercel
 Production per origine e chiave server presenti. Resta il collaudo del flusso.
 Test SQL ripetibili in `skill-practice/tests/sql/`, test unitari accanto ai sorgenti.
+
+**Verifica tabelle di allenamento (2026-11-11):** controlli su
+giorni, cicli 1/2/4 settimane, ripetizioni 1–10, focus/mantenimento, discipline,
+piano esame/personale, date e storico. Matrice di 15.327 scenari server con
+I/O simulato, test browser del componente reale it/fr e RPC con migrazioni
+su PostgreSQL isolato. Corrette distribuzione sbilanciata, anteprima
+personale/categorie/unico slot/fine inclusiva, conservazione dei target
+giornalieri e riepiloghi ai gradi Chieh. La migrazione
+`0056_restore_selected_custom_items.sql` rende di nuovo visibili gli esercizi
+manuali nascosti esplicitamente riselezionati, preservando lo status e i
+controlli di accesso. Test e procedura in
+`skill-practice/docs/training-schedule-checks.md`. Migrazione 0056 applicata
+su Supabase su conferma dell'utente. Commit e deploy autorizzati, inclusi
+tutti i cambiamenti non committati. Test e procedure ripetibili conservati;
+nessun piano operativo temporaneo da mantenere.
 
 ### 2.2 Decisioni aperte ⚠️
 

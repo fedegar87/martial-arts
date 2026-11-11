@@ -60,6 +60,7 @@ test("catalogs have matching keys and every ICU message formats without errors",
         p3: "test",
         count: 2,
         days: 2,
+        minutes: 3,
       });
       assert.ok(text.trim(), `${locale}.${key}`);
     }

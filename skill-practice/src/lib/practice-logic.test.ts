@@ -74,3 +74,46 @@ test("non distingue piu' review: tutte le non-focus sono maintenance", () => {
   );
   assert.equal("review" in result, false);
 });
+
+test("hidden focus and maintenance never enter the daily practice", () => {
+  const result = getTodayPractice([
+    { ...item("hidden-focus", "focus"), is_hidden: true },
+    { ...item("hidden-maintenance", "maintenance"), is_hidden: true },
+    item("visible-focus", "focus"),
+    item("visible-maintenance", "maintenance"),
+  ]);
+
+  assert.deepEqual(result.focus.map((entry) => entry.id), ["visible-focus"]);
+  assert.deepEqual(result.maintenance.map((entry) => entry.id), ["visible-maintenance"]);
+});
+
+test("daily practice applies the maintenance limit after filtering the discipline", () => {
+  const shaolin = Array.from({ length: 5 }, (_, index) =>
+    item(`shaolin-${index}`, "maintenance"),
+  );
+  const taichi: TestItem[] = Array.from({ length: 5 }, (_, index) => ({
+    ...item(`taichi-${index}`, "maintenance"),
+    skill: { discipline: "taichi" },
+  }));
+
+  const result = getTodayPractice([...shaolin, ...taichi], "taichi");
+
+  assert.deepEqual(result.maintenance.map((entry) => entry.id), [
+    "taichi-0", "taichi-1", "taichi-2", "taichi-3",
+  ]);
+});
+
+test("daily practice keeps every focus item and does not mutate maintenance order", () => {
+  const inputs = [
+    ...Array.from({ length: 6 }, (_, index) => item(`focus-${index}`, "focus")),
+    item("recent", "maintenance", "2026-05-03T00:00:00.000Z"),
+    item("never", "maintenance"),
+    item("old", "maintenance", "2026-05-01T00:00:00.000Z"),
+  ];
+  const before = structuredClone(inputs);
+  const result = getTodayPractice(inputs);
+
+  assert.equal(result.focus.length, 6);
+  assert.deepEqual(result.maintenance.map((entry) => entry.id), ["never", "old", "recent"]);
+  assert.deepEqual(inputs, before);
+});

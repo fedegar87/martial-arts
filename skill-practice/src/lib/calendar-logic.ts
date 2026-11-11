@@ -1,4 +1,4 @@
-import { addDaysToDateKey } from "./date.ts";
+import { addDaysToDateKey, isDateKey } from "./date.ts";
 import type { ScheduledSession, ItemWithSkill } from "./session-scheduler.ts";
 import type {
   FreePracticeItem,
@@ -57,7 +57,7 @@ export function buildCalendarDayView(
   );
   const { scheduledLogs, freePracticeLogs } = categorizeLogsForDay({
     scheduledSkillIds,
-    logs: logs.filter(isMeaningfulLog),
+    logs,
   });
 
   return {
@@ -83,7 +83,7 @@ export function buildCalendarDayView(
         canToggle,
       }),
     ),
-    freePractice: freePracticeLogs
+    freePractice: freePracticeLogs.filter(isMeaningfulLog)
       .map((log) => toFreePracticeItem({ log, skill: skillById.get(log.skill_id), canToggle }))
       .filter((item): item is FreePracticeItem => item !== null),
     events: [],
@@ -95,6 +95,7 @@ export function buildCalendarDayViewsInRange(
   to: string,
   input: BuildCalendarDayViewsInRangeInput,
 ): CalendarDayView[] {
+  if (!isDateKey(from) || !isDateKey(to)) return [];
   const rowsByDate = new Map(input.rows.map((row) => [row.date, row]));
   const logsByDate = groupLogsByDate(input.logs);
   const days: CalendarDayView[] = [];
@@ -108,6 +109,7 @@ export function buildCalendarDayViewsInRange(
         logs: logsByDate.get(current) ?? [],
       }),
     );
+    if (current === to) break;
     current = addDaysToDateKey(current, 1);
   }
 

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updatePlanItemStatus } from "@/lib/actions/plan";
 import { PLAN_STATUS_VISUALS } from "@/lib/marker-visuals";
+import { isFormCategory } from "@/lib/session-progress";
 import type { Discipline, PlanStatus, Skill, UserPlanItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
@@ -15,12 +16,32 @@ const MaintenanceIcon = PLAN_STATUS_VISUALS.maintenance.Icon;
 
 type ItemWithSkill = UserPlanItem & { skill: Skill };
 
+export type PlanCounts = {
+  focus: number;
+  maintenance: number;
+  formFocus: number;
+  formMaintenance: number;
+};
+
+export function countPlanItems(items: ItemWithSkill[]): PlanCounts {
+  return {
+    focus: items.filter((item) => item.status === "focus").length,
+    maintenance: items.filter((item) => item.status === "maintenance").length,
+    formFocus: items.filter(
+      (item) => item.status === "focus" && isFormCategory(item.skill.category),
+    ).length,
+    formMaintenance: items.filter(
+      (item) => item.status === "maintenance" && isFormCategory(item.skill.category),
+    ).length,
+  };
+}
+
 const STATUS_SELECTOR_WIDTH_CLASS = "w-[164px] sm:w-[176px]";
 
 type Props = {
   items: ItemWithSkill[];
   scope: "both" | Discipline;
-  onCountsChange?: (counts: { focus: number; maintenance: number }) => void;
+  onCountsChange?: (counts: PlanCounts) => void;
 };
 
 export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
@@ -38,12 +59,15 @@ export function PlanFormsSection({ items, scope, onCountsChange }: Props) {
   const filtered = optimistic.filter(
     (it) => scope === "both" || it.skill.discipline === scope,
   );
-  const focusCount = filtered.filter((i) => i.status === "focus").length;
-  const maintCount = filtered.filter((i) => i.status === "maintenance").length;
+  const {
+    focus: focusCount, maintenance: maintCount, formFocus, formMaintenance,
+  } = countPlanItems(filtered);
 
   useEffect(() => {
-    onCountsChange?.({ focus: focusCount, maintenance: maintCount });
-  }, [focusCount, maintCount, onCountsChange]);
+    onCountsChange?.({
+      focus: focusCount, maintenance: maintCount, formFocus, formMaintenance,
+    });
+  }, [focusCount, maintCount, formFocus, formMaintenance, onCountsChange]);
 
   const grouped = groupByDisciplineAndCategory(filtered);
 

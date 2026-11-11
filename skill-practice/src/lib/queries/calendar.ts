@@ -54,7 +54,7 @@ export async function getCalendarDataInRange({
   const [schedule, items, logsWithSkill, federation] = await Promise.all([
     getTrainingSchedule(userId),
     getUserPlanItems(userId, undefined, sourceFilter),
-    fetchMeaningfulLogsWithSkill(supabase, userId, from, to),
+    fetchLogsWithSkill(supabase, userId, from, to),
     getFederationCalendarData(userId, from, to),
   ]);
 
@@ -133,7 +133,7 @@ export async function getCalendarSkillOptions(): Promise<CalendarSkill[]> {
   );
 }
 
-async function fetchMeaningfulLogsWithSkill(
+async function fetchLogsWithSkill(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   from: string,
@@ -160,7 +160,7 @@ async function fetchMeaningfulLogsWithSkill(
     .eq("user_id", userId)
     .gte("date", from)
     .lte("date", to)
-    .or("completed.eq.true,reps_done.gt.0,personal_note.not.is.null")
+    .or("completed.eq.true,reps_done.gt.0,personal_note.not.is.null,reps_target.not.is.null")
     .order("date", { ascending: true })
     .order("created_at", { ascending: true });
 

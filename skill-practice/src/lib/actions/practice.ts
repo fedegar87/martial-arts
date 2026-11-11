@@ -164,6 +164,7 @@ export async function incrementRep(
     const { error } = await supabase
       .from("practice_logs")
       .update({
+        reps_target: effectiveTarget,
         reps_done: newDone,
         // Un completamento esplicito (es. "Segna praticato") non va revocato da un incremento parziale.
         completed: row.completed || newDone >= effectiveTarget,
