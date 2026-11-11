@@ -1,6 +1,7 @@
 import { ResetScheduleSection } from "@/components/sessions/ResetScheduleSection";
 import { SetupForm } from "@/components/sessions/SetupForm";
 import { getUserPlanItems } from "@/lib/queries/plan";
+import { getCustomProgram } from "@/lib/queries/custom-programs";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import type { Discipline } from "@/lib/types";
@@ -14,15 +15,18 @@ export default async function SetupPage() {
 
   const sourceFilter =
     profile.plan_mode === "custom" ? "manual" : "exam_program";
-  const [schedule, items] = await Promise.all([
+  const [schedule, items, customProgram] = await Promise.all([
     getTrainingSchedule(profile.id),
     getUserPlanItems(profile.id, undefined, sourceFilter),
+    profile.plan_mode === "custom" && profile.active_custom_program_id
+      ? getCustomProgram(profile.id, profile.active_custom_program_id)
+      : Promise.resolve(null),
   ]);
   const disciplineCounts = countByDiscipline(items);
 
   const programLabel =
     profile.plan_mode === "custom"
-      ? tr("customExerciseCount", { p0: items.length })
+      ? [customProgram?.name, tr("customExerciseCount", { p0: items.length })].filter(Boolean).join(" · ")
       : tr("examExerciseCount", { p0: items.length });
 
   return (

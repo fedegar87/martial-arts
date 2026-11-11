@@ -6,6 +6,7 @@ import { TeacherNote } from "@/components/skill/TeacherNote";
 import { VideoPlayer } from "@/components/skill/VideoPlayer";
 import { gradeLabelForDiscipline, isSkillWithinLevelScope } from "@/lib/grades";
 import { getUserPlanItemsBySkill } from "@/lib/queries/plan";
+import { getCustomProgram } from "@/lib/queries/custom-programs";
 import {
   getPersonalNotesForSkill,
   getTodayLogForSkill,
@@ -27,11 +28,14 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
   if (!profile) redirect("/login");
 
   const { skillId } = await params;
-  const [skill, planItems, personalNotes, todayLog] = await Promise.all([
+  const [skill, planItems, personalNotes, todayLog, personalProgram] = await Promise.all([
     getSkillById(skillId, profile.school_id),
     getUserPlanItemsBySkill(profile.id, skillId),
     getPersonalNotesForSkill(profile.id, skillId),
     getTodayLogForSkill(profile.id, skillId),
+    profile.active_custom_program_id
+      ? getCustomProgram(profile.id, profile.active_custom_program_id)
+      : Promise.resolve(null),
   ]);
   if (!skill) notFound();
   // Access scope: in-plan content (exam or personal selection) is always allowed;
@@ -102,6 +106,7 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
           inPersonalSelection={inPersonalSelection}
           practicedToday={practicedToday}
           todayNote={todayLog?.personal_note ?? ""}
+          personalProgramName={personalProgram?.name}
         />
       </div>
     </div>

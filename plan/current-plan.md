@@ -128,6 +128,26 @@ su Supabase su conferma dell'utente. Commit e deploy autorizzati, inclusi
 tutti i cambiamenti non committati. Test e procedure ripetibili conservati;
 nessun piano operativo temporaneo da mantenere.
 
+**D17 — Programmi personali multipli (2026-11-11):**
+la scheda Programma usa un selettore unico raggruppato Esame/Personali,
+seguito dal filtro Tutte/Shaolin/T'ai Chi. Ogni programma personale ha nome,
+esercizi e stati focus/mantenimento indipendenti; consultazione e modifica
+non lo attivano automaticamente. L'azione esplicita Usa per allenarti sceglie
+l'unico programma attivo. Creazione, rinomina ed eliminazione nella stessa
+area; la selezione personale attuale viene conservata come primo programma.
+Giorni, ciclo, ripetizioni e date restano globali; nessun riavvio del ciclo
+al cambio programma. Pratiche e note restano comuni e non sono eliminate
+con i programmi. Autorizzati tabella `custom_programs`, riferimento al programma
+negli item manuali e nel profilo, RPC con controllo proprietario, componenti
+in `components/programma/`, aggiornamenti delle route esistenti e test.
+Migrazione `0057_named_custom_programs.sql` applicata dall'utente con esito
+positivo e presenza di tabelle/colonne verificata tramite API in sola lettura.
+Test PostgreSQL isolato, azioni server con I/O simulato e browser sulle pagine
+reali in italiano/francese: 66 verifiche SQL, 47 scenari azioni, 24 scenari
+runtime e smoke a 320/390 px. Passano anche 138 test unitari, regressioni
+editor/allenamento, lint, typecheck e build. Commit e deploy richiesti dall'utente.
+Nessuna nuova dipendenza o nuova route.
+
 ### 2.2 Decisioni aperte ⚠️
 
 | # | Decisione | Opzioni | Impatto | Priorità |

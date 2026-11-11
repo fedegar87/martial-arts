@@ -316,6 +316,26 @@ Piano:
 - Dual persistence: manuale ed esame coesistono via `source`, e il profilo
   sceglie `plan_mode`.
 
+Dal 2026-11-11 (`0057_named_custom_programs.sql`) ogni selezione manuale
+appartiene a `custom_programs`: nome e proprietario, FK `custom_program_id`
+negli item, `active_custom_program_id` nel profilo. La selezione precedente
+diventa "Il mio programma" conservando stati, visibilita' e date. Unicita'
+item su utente/skill/source/programma, con NULLS NOT DISTINCT per gli esami.
+Programma usa il selettore unico Esame/Personali prima del filtro disciplina;
+consultare, creare e salvare non attiva il programma. L'attivazione e' esplicita.
+Le RPC verificano proprietario e scope; le query runtime, i progressi e il cron
+selezionano esclusivamente il programma attivo. Aggiungere dalla scheda tecnica
+usa l'ultimo personale attivato (creato al bisogno); esportazione include i nomi.
+Giorni, ciclo, ripetizioni e date restano globali, senza riavvio al cambio.
+I log restano condivisi; il calendario storico continua a derivare le
+assegnazioni dalla configurazione attuale, come prima. Disattivare una
+disciplina nel Profilo preserva gli esercizi dei programmi personali salvati.
+Componenti `ProgramSelector`, `ProgramManagement`, `CustomProgramItemStatus`
+in `components/programma/`; rimosso il vecchio `PlanTabsNav` e relativo CSS.
+Migrazione applicata su conferma utente e schema verificato in sola lettura.
+Regressioni complete: `npm run test:named-programs` dopo la build (tooling locale
+esbuild/Chromium/PGlite gia' presente, nessuna dipendenza nuova nell'app).
+
 Regressione editor personale: dopo `npm run build`, eseguire
 `npm run test:custom-selection` in `skill-practice/`. Usa esbuild e Chromium
 gia' presenti in `tools/video/`, il componente reale e azioni simulate, senza

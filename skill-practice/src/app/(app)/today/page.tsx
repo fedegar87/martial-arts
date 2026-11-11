@@ -13,6 +13,7 @@ import type { UiTranslator } from "@/lib/i18n/config";
 import { timed } from "@/lib/perf";
 import { getUnreadNewsCount } from "@/lib/queries/news";
 import { getUserPlanItems } from "@/lib/queries/plan";
+import { getCustomProgram } from "@/lib/queries/custom-programs";
 import { getThisWeekLogs } from "@/lib/queries/practice-log";
 import { getTrainingReminderSettings } from "@/lib/queries/push-notifications";
 import { getTrainingSchedule } from "@/lib/queries/training-schedule";
@@ -34,7 +35,7 @@ export default async function TodayPage() {
     profile.plan_mode === "custom" ? "manual" : "exam_program";
   const pushVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const pushEnabled = Boolean(pushVapidKey);
-  const [items, logs, unreadNewsCount, schedule, reminderSettings] =
+  const [items, logs, unreadNewsCount, schedule, reminderSettings, customProgram] =
     await Promise.all([
       timed("today.plan_items", () =>
         getUserPlanItems(profile.id, undefined, sourceFilter),
@@ -47,9 +48,13 @@ export default async function TodayPage() {
             getTrainingReminderSettings(profile.id),
           )
         : Promise.resolve(null),
+      profile.plan_mode === "custom" && profile.active_custom_program_id
+        ? getCustomProgram(profile.id, profile.active_custom_program_id)
+        : Promise.resolve(null),
     ]);
 
   const todayStr = localDateKey();
+  const programName = customProgram?.name ?? null;
   const dayName = new Date(`${todayStr}T00:00:00Z`).toLocaleDateString(
     tr("locale"),
     { weekday: "long" },
@@ -64,6 +69,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        programName={programName}
         scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
@@ -81,6 +87,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        programName={programName}
         scopeLabel={null}
         unreadNewsCount={unreadNewsCount}
       >
@@ -100,6 +107,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        programName={programName}
         scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
@@ -116,6 +124,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        programName={programName}
         scopeLabel={null}
         unreadNewsCount={unreadNewsCount}
       >
@@ -130,6 +139,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        programName={programName}
         scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
@@ -144,6 +154,7 @@ export default async function TodayPage() {
         dayName={dayName}
         planMode={profile.plan_mode}
         gradeSummary={gradeSummary}
+        programName={programName}
         scopeLabel={scopeLabel}
         unreadNewsCount={unreadNewsCount}
       >
@@ -168,6 +179,7 @@ export default async function TodayPage() {
       dayName={dayName}
       planMode={profile.plan_mode}
       gradeSummary={gradeSummary}
+        programName={programName}
       scopeLabel={scopeLabel}
       unreadNewsCount={unreadNewsCount}
     >
@@ -197,6 +209,7 @@ export default async function TodayPage() {
 function TodayShell({
   dayName,
   planMode,
+  programName,
   gradeSummary,
   scopeLabel,
   unreadNewsCount,
@@ -204,6 +217,7 @@ function TodayShell({
 }: {
   dayName: string;
   planMode: PlanMode;
+  programName: string | null;
   gradeSummary: string;
   scopeLabel: string | null;
   unreadNewsCount: number;
@@ -215,6 +229,7 @@ function TodayShell({
         dayName={dayName}
         planMode={planMode}
         gradeSummary={gradeSummary}
+        programName={programName}
         scopeLabel={scopeLabel}
       />
       <NewsBanner unreadCount={unreadNewsCount} />

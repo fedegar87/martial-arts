@@ -339,28 +339,6 @@
     max-width: 28rem;
   }
 
-  .program-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-
-  .program-plan-tabs {
-    display: flex;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .program-plan-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .program-plan-tab {
-    border-bottom: 2px solid var(--separator);
-    border-right: 0;
-  }
-
   .surface-inset {
     background: var(--surface-inset);
     border: 0.5px solid var(--separator);
@@ -443,23 +421,6 @@
       var(--material-sheet-background);
     -webkit-backdrop-filter: var(--material-sheet-filter);
     backdrop-filter: var(--material-sheet-filter);
-  }
-}
-
-@media (min-width: 420px) {
-  .program-layout {
-    grid-template-columns: auto 1fr;
-    gap: 1rem;
-  }
-
-  .program-plan-tabs {
-    flex-direction: column;
-    overflow: visible;
-  }
-
-  .program-plan-tab {
-    border-right: 2px solid var(--separator);
-    border-bottom: 0;
   }
 }
 

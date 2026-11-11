@@ -16,7 +16,8 @@
     "test:i18n": "node tests/browser/i18n.smoke.mjs",
     "test:profile": "node tests/browser/profile.smoke.mjs",
     "test:training-schedule": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-isolation=none src/lib/session-scheduler.test.ts src/lib/calendar-logic.test.ts src/lib/practice-logic.test.ts && node tests/server/training-schedule.mjs && node tests/browser/training-schedule.smoke.mjs",
-    "test:training-plan": "node tests/database/training-plan.mjs"
+    "test:training-plan": "node tests/database/training-plan.mjs",
+    "test:named-programs": "node tests/database/named-programs.mjs && node tests/server/named-program-actions.mjs && node tests/server/named-program-runtime.mjs && node tests/browser/named-programs.smoke.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

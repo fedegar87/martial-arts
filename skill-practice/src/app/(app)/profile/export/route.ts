@@ -15,6 +15,7 @@ export async function GET() {
   const [
     profileResult,
     planItemsResult,
+    customProgramsResult,
     practiceLogsResult,
     trainingScheduleResult,
     notificationPreferencesResult,
@@ -34,6 +35,7 @@ export async function GET() {
       .select("*, skill:skills(id, name, name_italian, discipline, category)")
       .eq("user_id", user.id)
       .order("added_at", { ascending: true }),
+    supabase.from("custom_programs").select("*").eq("user_id", user.id).order("created_at"),
     supabase
       .from("practice_logs")
       .select("*")
@@ -80,6 +82,7 @@ export async function GET() {
   const queryError = [
     profileResult,
     planItemsResult,
+    customProgramsResult,
     practiceLogsResult,
     trainingScheduleResult,
     notificationPreferencesResult,
@@ -107,6 +110,7 @@ export async function GET() {
     },
     profile: profileResult.data ?? null,
     plan_items: planItemsResult.data ?? [],
+    custom_programs: customProgramsResult.data ?? [],
     practice_logs: practiceLogsResult.data ?? [],
     training_schedule: trainingScheduleResult.data ?? null,
     notification_preferences: notificationPreferencesResult.data ?? null,

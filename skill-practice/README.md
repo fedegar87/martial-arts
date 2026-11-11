@@ -61,6 +61,7 @@ sono in `tests/browser/` e usano Chromium dal tooling locale `../tools/video/`:
 npm run test:custom-selection
 npm run test:federation-calendar
 npm run test:training-schedule
+npm run test:named-programs
 ```
 
 Eseguirli dopo la build. Usano azioni e push simulate; non scrivono nel database.
@@ -74,6 +75,14 @@ conteggi attesi e limiti. `npm run test:training-plan` verifica anche le RPC
 su PostgreSQL in memoria usando il runtime PGlite locale gia' predisposto.
 La migrazione 0056 per ripristinare le selezioni nascoste e' verificata
 localmente e applicata su Supabase su conferma dell'utente.
+
+Programma supporta piu' programmi personali con nome e selettore unico
+Esame/Personali. Creazione e modifica non cambiano il programma in uso:
+"Usa per allenarti" lo attiva, mantenendo giorni, ciclo e ripetizioni comuni.
+La migrazione 0057 conserva la selezione personale esistente ed e' applicata
+su Supabase su conferma dell'utente, con schema verificato in sola lettura.
+`test:named-programs` copre migrazione/RPC su PostgreSQL in memoria, azioni e
+query con I/O simulato, pagine reali nel browser a 320/390 px in italiano/francese.
 
 `npm run ui:audit` mostra il report UI corrente; con `-- --write-report` lo
 salva in `test-results/ui-audit.json`, senza versionare snapshot di collaudo.

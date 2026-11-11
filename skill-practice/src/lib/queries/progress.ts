@@ -9,9 +9,9 @@ import { buildSessionPeriodProgress } from "@/lib/session-progress";
 import {
   getScheduledPlanItems,
   listSessionsInRange,
-  type ItemWithSkill,
 } from "@/lib/session-scheduler";
 import { createClient } from "@/lib/supabase/server";
+import { getUserPlanItems } from "@/lib/queries/plan";
 import type {
   Discipline,
   PracticeLog,
@@ -121,7 +121,7 @@ export async function getActiveCycleProgress(
     return null;
   }
 
-  const [logsResult, planItemsResult] = await Promise.all([
+  const [logsResult, planItems] = await Promise.all([
     supabase
       .from("practice_logs")
       .select("*")
@@ -130,12 +130,12 @@ export async function getActiveCycleProgress(
       .lte("date", schedule.end_date)
       .order("date", { ascending: true })
       .order("created_at", { ascending: true }),
-    supabase
-      .from("user_plan_items")
-      .select("*, skill:skills(*)")
-      .eq("user_id", userId)
-      .eq("is_hidden", false)
-      .eq("source", profile.plan_mode === "custom" ? "manual" : "exam_program"),
+    getUserPlanItems(
+      userId,
+      undefined,
+      profile.plan_mode === "custom" ? "manual" : "exam_program",
+      profile.active_custom_program_id ?? null,
+    ),
   ]);
 
   if (logsResult.error) {
@@ -143,16 +143,7 @@ export async function getActiveCycleProgress(
       `Errore nel caricamento di practice_logs ciclo: ${logsResult.error.message}`,
     );
   }
-  if (planItemsResult.error) {
-    throw new Error(
-      `Errore nel caricamento di user_plan_items: ${planItemsResult.error.message}`,
-    );
-  }
-
   const logs = (logsResult.data as PracticeLog[] | null) ?? [];
-  const planItems = (
-    (planItemsResult.data as ItemWithSkill[] | null) ?? []
-  ).filter((item) => item.skill);
   const scheduledItems = getScheduledPlanItems(
     planItems,
     schedule,

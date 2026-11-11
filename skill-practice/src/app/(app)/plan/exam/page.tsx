@@ -53,7 +53,7 @@ export default async function PlanExamPage() {
               taichiExams,
               profile.preparing_exam_taichi_id,
             )}
-            showTaichi={profile.assigned_level_taichi > 0}
+            showTaichi={profile.assigned_level_taichi !== 0}
           />
         </CardContent>
       </Card>

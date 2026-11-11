@@ -96,9 +96,7 @@ export async function updateProfileGrade(
       supabase,
       user.id,
       discipline,
-      discipline === "taichi" && assignedLevel === 0
-        ? undefined
-        : "exam_program",
+      "exam_program",
     );
   }
 

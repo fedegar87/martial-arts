@@ -199,7 +199,7 @@ async function getScheduleContext(
         .maybeSingle(),
       supabase
         .from("user_profiles")
-        .select("plan_mode")
+        .select("plan_mode, active_custom_program_id")
         .eq("id", userId)
         .maybeSingle(),
     ]);
@@ -214,14 +214,25 @@ async function getScheduleContext(
     return { schedule, isScheduled: false, repsPerForm };
   }
 
-  const planMode = (profileData as { plan_mode: PlanMode }).plan_mode;
+  const profile = profileData as {
+    plan_mode: PlanMode;
+    active_custom_program_id: string | null;
+  };
+  const planMode = profile.plan_mode;
   const source = planMode === "custom" ? "manual" : "exam_program";
-  const { data: itemsData, error: itemsError } = await supabase
+  if (source === "manual" && !profile.active_custom_program_id) {
+    return { schedule, isScheduled: false, repsPerForm };
+  }
+  let itemsQuery = supabase
     .from("user_plan_items")
     .select("*, skill:skills(*)")
     .eq("user_id", userId)
     .eq("is_hidden", false)
     .eq("source", source);
+  if (source === "manual") {
+    itemsQuery = itemsQuery.eq("custom_program_id", profile.active_custom_program_id);
+  }
+  const { data: itemsData, error: itemsError } = await itemsQuery;
 
   if (itemsError) return { error: itemsError.message };
 

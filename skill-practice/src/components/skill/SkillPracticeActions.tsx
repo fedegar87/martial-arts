@@ -14,6 +14,7 @@ type Props = {
   inPersonalSelection: boolean;
   practicedToday: boolean;
   todayNote?: string;
+  personalProgramName?: string | null;
 };
 
 export function SkillPracticeActions({
@@ -21,6 +22,7 @@ export function SkillPracticeActions({
   inPersonalSelection,
   practicedToday,
   todayNote,
+  personalProgramName,
 }: Props) {
   const tr = useTranslations("ui");
   const [pending, startTransition] = useTransition();
@@ -67,6 +69,7 @@ export function SkillPracticeActions({
         <AddToPlanButton
           skillId={skillId}
           inPersonalSelection={inPersonalSelection}
+          programName={personalProgramName}
         />
         <PracticeNoteButton
           skillId={skillId}

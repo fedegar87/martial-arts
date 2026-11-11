@@ -27,12 +27,14 @@ import { Trash2 } from "lucide-react";
 import { useActionState, useMemo, useState, useTransition } from "react";
 
 type Props = {
+  programId?: string;
   discipline: Discipline;
   groupedSkills: Array<[SkillCategory, SkillOption[]]>;
   selectedSkillIds: string[];
 };
 
 export function CustomSelectionForm({
+  programId,
   discipline,
   groupedSkills,
   selectedSkillIds,
@@ -105,6 +107,7 @@ export function CustomSelectionForm({
       ref={preserveSelectionOnReset}
     >
       <input type="hidden" name="discipline" value={discipline} />
+      {programId && <input type="hidden" name="program_id" value={programId} />}
       {/* Filtered-out checkboxes are absent from FormData. */}
       {[...selected]
         .filter((id) => !visibleSkillIds.has(id))
@@ -148,6 +151,7 @@ export function CustomSelectionForm({
       ))}
 
       <DeleteCustomSelectionSection
+        programId={programId}
         disabled={pending || selected.size === 0}
         onDeleted={() => setSelected(new Set())}
       />
@@ -188,9 +192,11 @@ function preserveSelectionOnReset(form: HTMLFormElement | null) {
 }
 
 function DeleteCustomSelectionSection({
+  programId,
   disabled,
   onDeleted,
 }: {
+  programId?: string;
   disabled: boolean;
   onDeleted: () => void;
 }) {
@@ -202,7 +208,7 @@ function DeleteCustomSelectionSection({
   function handleConfirm() {
     setError(null);
     startTransition(async () => {
-      const result = await deleteCustomSelection();
+      const result = await deleteCustomSelection(programId);
       if (result && "error" in result) {
         setError(result.error);
         return;

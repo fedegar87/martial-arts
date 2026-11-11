@@ -3,7 +3,8 @@ import type { UiTranslator } from "@/lib/i18n/config";
 import { getTranslations } from "next-intl/server";
 
 import { isSelectableExamGrade, nextGradeValue } from "@/lib/grades";
-import { buildManualPlanItem } from "@/lib/plan-manager";
+import { isProgramId } from "@/lib/custom-program-logic";
+import { getActiveCustomProgramId, getCustomProgram } from "@/lib/queries/custom-programs";
 import { createClient } from "@/lib/supabase/server";
 import type { Discipline, PlanStatus, UserProfile } from "@/lib/types";
 import { revalidatePath } from "next/cache";
@@ -22,10 +23,9 @@ export async function addSkillToPlan(
   } = await supabase.auth.getUser();
   if (!user) return { error: tr("sessionExpired") };
 
-  const item = buildManualPlanItem(user.id, skillId, status);
-  const { error } = await supabase
-    .from("user_plan_items")
-    .upsert(item, { onConflict: "user_id,skill_id,source" });
+  const { error } = await supabase.rpc("add_skill_to_custom_program", {
+    p_skill_id: skillId, p_status: status,
+  });
   if (error) return { error: error.message };
 
   revalidatePath("/today");
@@ -33,6 +33,8 @@ export async function addSkillToPlan(
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   return { success: true };
 }
 
@@ -46,12 +48,15 @@ export async function removeSkillFromPlan(
   } = await supabase.auth.getUser();
   if (!user) return { error: tr("sessionExpired") };
 
+  const programId = await getActiveCustomProgramId(user.id);
+  if (!programId) return { error: tr("customProgramNotFound") };
   const { error } = await supabase
     .from("user_plan_items")
     .delete()
     .eq("user_id", user.id)
     .eq("skill_id", skillId)
-    .eq("source", "manual");
+    .eq("source", "manual")
+    .eq("custom_program_id", programId);
   if (error) return { error: error.message };
 
   revalidatePath("/today");
@@ -59,6 +64,8 @@ export async function removeSkillFromPlan(
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   return { success: true };
 }
 
@@ -111,6 +118,8 @@ export async function activateExamModeFromForm(
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   redirect("/programma?t=exam");
 }
 
@@ -126,6 +135,8 @@ export async function switchToCustomMode(): Promise<PlanFormState> {
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   return { success: true };
 }
 
@@ -152,6 +163,8 @@ export async function activateExamFromProfile(): Promise<PlanFormState> {
     revalidatePath("/programma");
     revalidatePath("/library");
     revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
     redirect("/programma?t=exam");
   }
 
@@ -213,6 +226,8 @@ export async function activateExamFromProfile(): Promise<PlanFormState> {
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   redirect("/programma?t=exam");
 }
 
@@ -226,6 +241,8 @@ export async function activateCustomFromProfile(): Promise<PlanFormState> {
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   redirect("/programma?t=custom");
 }
 
@@ -243,16 +260,24 @@ export async function saveCustomSelectionFromForm(
   _prev: PlanFormState,
   formData: FormData,
 ): Promise<PlanFormState> {
+  const tr = await getTranslations("ui");
+  const programId = formData.get("program_id");
+  if (!isProgramId(programId)) return { error: tr("invalidProgramSelection") };
   const disciplineRaw = String(formData.get("discipline") ?? "shaolin");
+  if (!["shaolin", "taichi"].includes(disciplineRaw)) return { error: tr("invalidProgramSelection") };
   const discipline: Discipline =
     disciplineRaw === "taichi" ? "taichi" : "shaolin";
   const skillIds = formData
     .getAll("skillIds")
     .map((value) => String(value))
     .filter(Boolean);
+  if (skillIds.some((id) => !isProgramId(id))) return { error: tr("invalidProgramSelection") };
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("save_custom_selection", {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { error: tr("sessionExpired") };
+  const { error } = await supabase.rpc("save_named_custom_selection", {
+    p_program_id: programId,
     p_skill_ids: skillIds,
     p_discipline: discipline,
   });
@@ -265,10 +290,12 @@ export async function saveCustomSelectionFromForm(
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
-  redirect(`/programma?d=${discipline}&t=custom`);
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
+  redirect(`/programma?d=${discipline}&program=${programId}`);
 }
 
-export async function deleteCustomSelection(): Promise<PlanFormState> {
+export async function deleteCustomSelection(programId?: string): Promise<PlanFormState> {
   const tr = await getTranslations("ui");
   const supabase = await createClient();
   const {
@@ -276,11 +303,16 @@ export async function deleteCustomSelection(): Promise<PlanFormState> {
   } = await supabase.auth.getUser();
   if (!user) return { error: tr("sessionExpired") };
 
+  const id = programId ?? await getActiveCustomProgramId(user.id);
+  if (!isProgramId(id) || !await getCustomProgram(user.id, id)) {
+    return { error: tr("customProgramNotFound") };
+  }
   const { error } = await supabase
     .from("user_plan_items")
     .delete()
     .eq("user_id", user.id)
-    .eq("source", "manual");
+    .eq("source", "manual")
+    .eq("custom_program_id", id);
 
   if (error) return { error: error.message };
 
@@ -290,6 +322,8 @@ export async function deleteCustomSelection(): Promise<PlanFormState> {
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   return { success: true };
 }
 
@@ -310,6 +344,8 @@ export async function updatePlanItemStatus(
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   return { success: true };
 }
 
@@ -326,6 +362,8 @@ export async function hidePlanItem(skillId: string): Promise<PlanFormState> {
   revalidatePath("/programma");
   revalidatePath("/library");
   revalidatePath("/progress");
+  revalidatePath("/calendar");
+  revalidatePath("/sessions/setup");
   return { success: true };
 }
 

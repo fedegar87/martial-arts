@@ -98,9 +98,20 @@ async function sendReminderForUser(
 ): Promise<Pick<ReminderRunResult, "sent" | "skipped" | "failed">> {
   const date = localDateKey(now, normalizeTimeZone(preference.time_zone));
   const userId = preference.user_id;
-  const sourceFilter = await getPlanSourceForUser(supabase, userId);
+  const plan = await getActivePlanForUser(supabase, userId);
 
-  if (!sourceFilter) return { sent: 0, skipped: 1, failed: 0 };
+  if (!plan || (plan.source === "manual" && !plan.customProgramId)) {
+    return { sent: 0, skipped: 1, failed: 0 };
+  }
+  let itemsQuery = supabase
+    .from("user_plan_items")
+    .select("*, skill:skills(*)")
+    .eq("user_id", userId)
+    .eq("source", plan.source)
+    .eq("is_hidden", false);
+  if (plan.source === "manual") {
+    itemsQuery = itemsQuery.eq("custom_program_id", plan.customProgramId);
+  }
 
   const [
     { data: scheduleData },
@@ -113,12 +124,7 @@ async function sendReminderForUser(
       .select("*")
       .eq("user_id", userId)
       .maybeSingle(),
-    supabase
-      .from("user_plan_items")
-      .select("*, skill:skills(*)")
-      .eq("user_id", userId)
-      .eq("source", sourceFilter)
-      .eq("is_hidden", false),
+    itemsQuery,
     supabase
       .from("practice_logs")
       .select("*")
@@ -145,7 +151,7 @@ async function sendReminderForUser(
   const scheduledItems = getScheduledPlanItems(
     items,
     schedule,
-    sourceFilter === "manual" ? "custom" : "exam",
+    plan.source === "manual" ? "custom" : "exam",
   );
   const session = getScheduledSession(date, schedule, scheduledItems);
   if (session.kind !== "training") return { sent: 0, skipped: 1, failed: 0 };
@@ -211,19 +217,29 @@ async function sendReminderForUser(
   return counters;
 }
 
-async function getPlanSourceForUser(
+async function getActivePlanForUser(
   supabase: AdminSupabaseClient,
   userId: string,
-): Promise<"exam_program" | "manual" | null> {
-  const { data } = await supabase
+): Promise<{
+  source: "exam_program" | "manual";
+  customProgramId: string | null;
+} | null> {
+  const { data, error } = await supabase
     .from("user_profiles")
-    .select("plan_mode")
+    .select("plan_mode, active_custom_program_id")
     .eq("id", userId)
     .maybeSingle();
 
-  const profile = data as { plan_mode: PlanMode } | null;
+  if (error) throw new Error(error.message);
+  const profile = data as {
+    plan_mode: PlanMode;
+    active_custom_program_id: string | null;
+  } | null;
   if (!profile) return null;
-  return profile.plan_mode === "custom" ? "manual" : "exam_program";
+  return {
+    source: profile.plan_mode === "custom" ? "manual" : "exam_program",
+    customProgramId: profile.active_custom_program_id,
+  };
 }
 
 export async function claimPendingDelivery(

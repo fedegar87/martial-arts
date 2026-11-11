@@ -101,6 +101,7 @@ export type UserProfile = {
   preparing_exam_id: string | null;
   preparing_exam_taichi_id: string | null;
   plan_mode: PlanMode;
+  active_custom_program_id?: string | null;
   role: UserRole;
   profile_locked: boolean;
   access_group_id: string | null;
@@ -154,9 +155,18 @@ export type UserPlanItem = {
   skill_id: string;
   status: PlanStatus;
   source: PlanItemSource;
+  custom_program_id?: string | null;
   is_hidden: boolean;
   last_practiced_at: string | null;
   added_at: string;
+};
+
+export type CustomProgram = {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export type PracticeLog = {

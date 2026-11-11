@@ -1,259 +1,137 @@
-import { categoryLabel, disciplineLabel } from "@/lib/labels";
-
-import { DisciplineToggle } from "@/components/library/DisciplineToggle";
 import { SkillListItem } from "@/components/library/SkillListItem";
-import { PlanTabsNav } from "@/components/programma/PlanTabsNav";
+import { SegmentedNav } from "@/components/primitives/SegmentedNav";
+import { CustomProgramItemStatus } from "@/components/programma/CustomProgramItemStatus";
+import { ProgramManagement } from "@/components/programma/ProgramManagement";
+import { ProgramSelector } from "@/components/programma/ProgramSelector";
 import { Button } from "@/components/ui/button";
-import {
-  activateCustomFormAction,
-  activateExamFormAction,
-} from "@/lib/actions/plan";
-import { gradeLabelForDiscipline, nextGradeValue } from "@/lib/grades";
-import type { UiTranslator } from "@/lib/i18n/config";
+import { activateCustomProgramFromForm } from "@/lib/actions/custom-programs";
+import { activateExamFormAction } from "@/lib/actions/plan";
+import { nextGradeValue } from "@/lib/grades";
+import { categoryLabel, disciplineLabel } from "@/lib/labels";
+import { listCustomPrograms } from "@/lib/queries/custom-programs";
 import { getExamProgramById } from "@/lib/queries/exam-programs";
 import { getUserPlanItems } from "@/lib/queries/plan";
 import { listSkillsAtGrade, listSkillsForExam } from "@/lib/queries/skills";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
-import type {
-  Discipline,
-  ExamProgram,
-  PlanMode,
-  PlanStatus,
-  Skill,
-  SkillCategory,
-  UserProfile,
-} from "@/lib/types";
-import { Pencil } from "lucide-react";
-import { useTranslations } from "next-intl";
+import type { Discipline, Skill } from "@/lib/types";
+import { CheckCircle2, Pencil } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-type Props = { searchParams: Promise<{ d?: string; t?: string }> };
+type Props = { searchParams: Promise<{ d?: string; t?: string; program?: string }> };
 
 export default async function ProgrammaPage({ searchParams }: Props) {
   const tr = await getTranslations("ui");
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
-
-  const { d, t } = await searchParams;
-  const discipline: Discipline = d === "taichi" ? "taichi" : "shaolin";
-  const activeMode: PlanMode = profile.plan_mode ?? "exam";
-  const tab: PlanMode =
-    t === "custom" ? "custom" : t === "exam" ? "exam" : activeMode;
-
-  const userLevel =
-    discipline === "shaolin"
-      ? profile.assigned_level_shaolin
-      : profile.assigned_level_taichi;
-  const nextGrade = userLevel === 0 ? null : nextGradeValue(userLevel);
-  const selectedExamId =
-    tab === "exam" ? selectedExamIdForDiscipline(profile, discipline) : null;
-
-  const tabSource = tab === "custom" ? "manual" : "exam_program";
-  const [selectedExam, examSkills, tabPlanItems] = await Promise.all([
-    selectedExamId ? getExamProgramById(selectedExamId) : Promise.resolve(null),
-    tab === "exam"
-      ? selectedExamId
-        ? listSkillsForExam(selectedExamId, profile.school_id)
-        : nextGrade !== null
-          ? listSkillsAtGrade(discipline, nextGrade, profile.school_id)
-          : Promise.resolve([])
-      : Promise.resolve([]),
-    getUserPlanItems(profile.id, discipline, tabSource),
+  const [params, programs] = await Promise.all([searchParams, listCustomPrograms(profile.id)]);
+  const active = profile.plan_mode === "custom" ? profile.active_custom_program_id ?? "" : "exam";
+  const current = params.program ?? (params.t === "exam" ? "exam" : params.t === "custom" ? profile.active_custom_program_id ?? programs[0]?.id ?? "exam" : active || programs[0]?.id || "exam");
+  const customProgram = current === "exam" ? null : programs.find((program) => program.id === current);
+  if (current !== "exam" && !customProgram) notFound();
+  const isExam = current === "exam";
+  const discipline = params.d === "shaolin" || params.d === "taichi" ? params.d : "all";
+  const [items, shaolinExam, taichiExam] = await Promise.all([
+    getUserPlanItems(profile.id, undefined, isExam ? "exam_program" : "manual", customProgram?.id),
+    profile.preparing_exam_id ? getExamProgramById(profile.preparing_exam_id) : Promise.resolve(null),
+    profile.preparing_exam_taichi_id ? getExamProgramById(profile.preparing_exam_taichi_id) : Promise.resolve(null),
   ]);
-
-  const selectedExamForDiscipline =
-    selectedExam?.discipline === discipline ? selectedExam : null;
-  const skills =
-    tab === "exam"
-      ? examSkills.filter((skill) => skill.discipline === discipline)
-      : tabPlanItems.map((item) => item.skill);
-
-  const grouped = skills.reduce<Record<SkillCategory, Skill[]>>(
-    (acc, skill) => {
-      (acc[skill.category] ??= []).push(skill);
-      return acc;
-    },
-    {} as Record<SkillCategory, Skill[]>,
-  );
-  // In modalita esame lo stato focus/ripasso e' il default del programma (uguale per
-  // tutte le forme, non una scelta dell'utente): non lo mostriamo. Nella selezione
-  // personale invece riflette una scelta reale, quindi resta visibile.
-  const showStatus = tab === "custom";
-  const planStatusBySkillId = new Map<string, PlanStatus>();
-  for (const item of tabPlanItems) {
-    planStatusBySkillId.set(item.skill_id, item.status);
+  let skills: Skill[] = items.map((item) => item.skill);
+  if (isExam) {
+    const examParts = await Promise.all((["shaolin", "taichi"] as Discipline[]).map((part) => {
+      const exam = part === "shaolin" ? shaolinExam : taichiExam;
+      if (exam?.discipline === part) return listSkillsForExam(exam.id, profile.school_id);
+      const grade = part === "shaolin" ? profile.assigned_level_shaolin : profile.assigned_level_taichi;
+      const next = grade === 0 ? null : nextGradeValue(grade);
+      return next === null ? Promise.resolve([]) : listSkillsAtGrade(part, next, profile.school_id);
+    }));
+    skills = examParts.flat();
   }
-  const planStatusLabelPrefix = tr("inCustomSelection");
-
-  const subtitle = buildSubtitle(
-    tr,
-    tab,
-    discipline,
-    selectedExamForDiscipline,
-    nextGrade,
-  );
-  const showBanner = tab !== activeMode && skills.length > 0;
+  const filtered = skills.filter((skill) => discipline === "all" || skill.discipline === discipline);
+  const groups = new Map<string, Skill[]>();
+  for (const skill of filtered) {
+    const key = `${skill.discipline}:${skill.category}`;
+    groups.set(key, [...(groups.get(key) ?? []), skill]);
+  }
+  const statuses = new Map(items.map((item) => [item.skill_id, item.status]));
+  const activeName = active === "exam" ? tr("examProgram") : programs.find((program) => program.id === active)?.name ?? tr("noActiveTrainingProgram");
+  const examSummary = [shaolinExam, taichiExam].filter((exam) => exam !== null).map((exam) => `${disciplineLabel(exam.discipline, tr)} ${exam.level_name}`).join(" · ");
+  const editableDiscipline = discipline === "taichi" ? "taichi" : "shaolin";
 
   return (
     <div className="space-y-6">
-      <header>
+      <header className="space-y-2">
         <h1 className="text-2xl font-semibold">{tr("program")}</h1>
-        <p className="text-muted-foreground text-sm">{subtitle}</p>
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          {tr("inTrainingProgram")} <span className="text-primary">{activeName}</span>
+        </p>
       </header>
-
-      <DisciplineToggle
-        current={discipline}
-        basePath="/programma"
-        hiddenTaichi={tab === "exam" && profile.assigned_level_taichi === 0}
-        extraParams={{ t: tab }}
-      />
-
-      <div className="program-layout">
-        <PlanTabsNav
-          current={tab}
-          discipline={discipline}
-          activeMode={activeMode}
-        />
-
-        <div className="min-w-0 space-y-4">
-          {showBanner && <ActivateModeBanner tab={tab} />}
-
-          {skills.length === 0 ? (
-            <EmptyState tab={tab} hasNextGrade={nextGrade !== null} />
-          ) : (
-            <>
-              <div className="space-y-6">
-                {(Object.keys(grouped) as SkillCategory[]).map((category) => (
-                  <section key={category} className="space-y-2">
-                    <h2 className="section-label">
-                      {categoryLabel(category, tr)}
-                    </h2>
-                    <div className="space-y-2">
-                      {grouped[category].map((skill) => (
-                        <SkillListItem
-                          key={skill.id}
-                          skill={skill}
-                          planStatus={
-                            showStatus
-                              ? planStatusBySkillId.get(skill.id)
-                              : undefined
-                          }
-                          statusLabelPrefix={planStatusLabelPrefix}
-                          showEmptyStatusDot={false}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-              <ModifyLink tab={tab} discipline={discipline} />
-            </>
-          )}
+      <div className="space-y-2">
+        <ProgramSelector programs={programs} current={current} active={active} discipline={discipline} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground">{isExam ? tr("examProgram") : tr("personalProgram")}</span>
+          <ProgramManagement />
         </div>
       </div>
-    </div>
-  );
-}
-
-function buildSubtitle(
-  tr: UiTranslator,
-  tab: PlanMode,
-  discipline: Discipline,
-  selectedExam: ExamProgram | null,
-  nextGrade: number | null,
-): string {
-  const disciplineName = disciplineLabel(discipline, tr);
-  if (tab === "exam") {
-    if (selectedExam)
-      return tr("selectedProgram", {
-        p0: disciplineName,
-        p1: selectedExam.level_name,
-      });
-    if (nextGrade === null)
-      return tr("noPreparingExamFor", { p0: disciplineName });
-    return tr("nextExamFor", {
-      p0: disciplineName,
-      p1: gradeLabelForDiscipline(discipline, nextGrade, tr),
-    });
-  }
-  return tr("customSelectionFor", { p0: disciplineName });
-}
-
-function selectedExamIdForDiscipline(
-  profile: UserProfile,
-  discipline: Discipline,
-): string | null {
-  return discipline === "shaolin"
-    ? profile.preparing_exam_id
-    : profile.preparing_exam_taichi_id;
-}
-
-function ActivateModeBanner({ tab }: { tab: PlanMode }) {
-  const tr = useTranslations("ui");
-  const action =
-    tab === "exam" ? activateExamFormAction : activateCustomFormAction;
-  const label =
-    tab === "exam" ? tr("examPreviewNotice") : tr("customPreviewNotice");
-
-  return (
-    <form
-      action={action}
-      className="border-border bg-card flex flex-col gap-2 rounded-md border p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
-    >
-      <p className="text-muted-foreground">{label}</p>
-      <Button type="submit" size="sm" variant="outline">
-        {tr("setActivePlan")}
-      </Button>
-    </form>
-  );
-}
-
-function ModifyLink({
-  tab,
-  discipline,
-}: {
-  tab: PlanMode;
-  discipline: Discipline;
-}) {
-  const tr = useTranslations("ui");
-  const href = tab === "exam" ? "/plan/exam" : `/plan/custom?d=${discipline}`;
-  const label = tab === "exam" ? tr("chooseExamProgram") : tr("editSelection");
-  return (
-    <div className="pt-2">
-      <Button asChild variant="ghost" size="sm">
-        <Link href={href}>
-          <Pencil className="mr-2 h-3.5 w-3.5" />
-          {label}
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
-function EmptyState({
-  tab,
-  hasNextGrade,
-}: {
-  tab: PlanMode;
-  hasNextGrade: boolean;
-}) {
-  const tr = useTranslations("ui");
-  if (tab === "exam") {
-    return (
-      <p className="text-muted-foreground text-sm">
-        {hasNextGrade ? tr("emptyProgram") : tr("noDisciplineExam")}
-      </p>
-    );
-  }
-
-  return (
-    <div className="space-y-3 text-sm">
-      <p className="text-muted-foreground">{tr("noCustomSelection")}</p>
-      <Button asChild size="sm" variant="outline">
-        <Link href="/plan/custom">{tr("createCustomSelection")}</Link>
-      </Button>
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <h2 className="wrap-break-word text-xl font-semibold">{customProgram?.name ?? tr("examProgram")}</h2>
+            {isExam && examSummary && <p className="text-sm text-muted-foreground">{examSummary}</p>}
+            <p className="text-xs text-muted-foreground">{tr("namedProgramExerciseCount", { p0: skills.length })}</p>
+          </div>
+          {current === active && (
+            <span className="inline-flex items-center gap-1 text-xs text-primary"><CheckCircle2 className="h-4 w-4" />{tr("active")}</span>
+          )}
+        </div>
+        {current !== active && skills.length > 0 && (
+          <form action={isExam ? activateExamFormAction : activateCustomProgramFromForm}>
+            {!isExam && <input type="hidden" name="program_id" value={current} />}
+            <Button type="submit" className="w-full sm:w-auto">{tr("useForTraining")}</Button>
+          </form>
+        )}
+        <SegmentedNav fullWidth ariaLabel={tr("discipline")} items={[
+          { id: "all", label: tr("allDisciplines") },
+          { id: "shaolin", label: disciplineLabel("shaolin", tr) },
+          { id: "taichi", label: disciplineLabel("taichi", tr) },
+        ].filter((option) => option.id !== "taichi" || profile.assigned_level_taichi !== 0 || profile.content_access_mode === "all_school_content" || skills.some((skill) => skill.discipline === "taichi")).map((option) => ({
+          href: `/programma?${new URLSearchParams({ program: current, d: option.id }).toString()}`,
+          label: option.label,
+          active: discipline === option.id,
+        }))} />
+        {filtered.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{skills.length === 0 && !isExam ? tr("emptyNamedProgram") : tr("emptyProgram")}</p>
+        ) : (
+          <div className="space-y-6">
+            {[...groups.entries()].map(([key, group]) => (
+              <section key={key} className="space-y-2">
+                <h3 className="section-label">{disciplineLabel(group[0].discipline, tr)} · {categoryLabel(group[0].category, tr)}</h3>
+                <div className="space-y-2">
+                  {group.map((skill) => (
+                    <div key={skill.id} className="flex items-center gap-1">
+                      <div className="min-w-0 flex-1">
+                        <SkillListItem skill={skill} planStatus={isExam ? undefined : statuses.get(skill.id)} statusLabelPrefix={tr("inCustomSelection")} showEmptyStatusDot={false} />
+                      </div>
+                      {!isExam && customProgram && statuses.has(skill.id) && (
+                        <CustomProgramItemStatus programId={customProgram.id} skillId={skill.id} skillName={skill.name} status={statuses.get(skill.id)!} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link href={isExam ? "/plan/exam" : `/plan/custom?${new URLSearchParams({ program: current, d: editableDiscipline }).toString()}`}>
+              <Pencil className="mr-2 h-4 w-4" />{isExam ? tr("chooseExamProgram") : tr("editSelection")}
+            </Link>
+          </Button>
+          {customProgram && <ProgramManagement key={`${customProgram.id}:${customProgram.name}`} program={customProgram} isActive={current === active} />}
+        </div>
+      </section>
     </div>
   );
 }

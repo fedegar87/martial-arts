@@ -7,6 +7,7 @@ import Link from "next/link";
 type Props = {
   dayName: string;
   planMode: PlanMode;
+  programName?: string | null;
   gradeSummary: string;
   scopeLabel?: string | null;
 };
@@ -14,12 +15,13 @@ type Props = {
 export function TodaySessionHeader({
   dayName,
   planMode,
+  programName,
   gradeSummary,
   scopeLabel,
 }: Props) {
   const tr = useTranslations("ui");
   const planLabel =
-    planMode === "custom" ? tr("customSelection") : tr("examProgram");
+    planMode === "custom" ? programName ?? tr("customSelection") : tr("examProgram");
 
   const eyebrowParts = [planLabel];
   if (scopeLabel) eyebrowParts.push(scopeLabel);
