@@ -14,7 +14,7 @@ import { getUserPlanItems } from "@/lib/queries/plan";
 import { listSkillsAtGrade, listSkillsForExam } from "@/lib/queries/skills";
 import { getCurrentProfile } from "@/lib/queries/user-profile";
 import type { Discipline, Skill } from "@/lib/types";
-import { CheckCircle2, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -55,7 +55,10 @@ export default async function ProgrammaPage({ searchParams }: Props) {
     groups.set(key, [...(groups.get(key) ?? []), skill]);
   }
   const statuses = new Map(items.map((item) => [item.skill_id, item.status]));
-  const activeName = active === "exam" ? tr("examProgram") : programs.find((program) => program.id === active)?.name ?? tr("noActiveTrainingProgram");
+  const activeCustomProgram = programs.find((program) => program.id === active);
+  const activeName = active === "exam" ? tr("exam") : activeCustomProgram
+    ? tr("customTrainingProgram", { p0: activeCustomProgram.name })
+    : tr("noActiveTrainingProgram");
   const examSummary = [shaolinExam, taichiExam].filter((exam) => exam !== null).map((exam) => `${disciplineLabel(exam.discipline, tr)} ${exam.level_name}`).join(" · ");
   const editableDiscipline = discipline === "taichi" ? "taichi" : "shaolin";
 
@@ -64,26 +67,14 @@ export default async function ProgrammaPage({ searchParams }: Props) {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">{tr("program")}</h1>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-          {tr("inTrainingProgram")} <span className="text-primary">{activeName}</span>
+          {tr("inTrainingProgram")} <span className="max-w-full wrap-break-word text-primary">{activeName}</span>
         </p>
       </header>
-      <div className="space-y-2">
-        <ProgramSelector programs={programs} current={current} active={active} discipline={discipline} />
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">{isExam ? tr("examProgram") : tr("personalProgram")}</span>
-          <ProgramManagement />
-        </div>
-      </div>
+      <ProgramSelector programs={programs} current={current} discipline={discipline} />
       <section className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <h2 className="wrap-break-word text-xl font-semibold">{customProgram?.name ?? tr("examProgram")}</h2>
-            {isExam && examSummary && <p className="text-sm text-muted-foreground">{examSummary}</p>}
-            <p className="text-xs text-muted-foreground">{tr("namedProgramExerciseCount", { p0: skills.length })}</p>
-          </div>
-          {current === active && (
-            <span className="inline-flex items-center gap-1 text-xs text-primary"><CheckCircle2 className="h-4 w-4" />{tr("active")}</span>
-          )}
+        <div className="min-w-0 space-y-1">
+          {isExam && examSummary && <p className="text-sm text-muted-foreground">{examSummary}</p>}
+          <p className="text-xs text-muted-foreground">{tr("namedProgramExerciseCount", { p0: skills.length })}</p>
         </div>
         {current !== active && skills.length > 0 && (
           <form action={isExam ? activateExamFormAction : activateCustomProgramFromForm}>
@@ -106,7 +97,7 @@ export default async function ProgrammaPage({ searchParams }: Props) {
           <div className="space-y-6">
             {[...groups.entries()].map(([key, group]) => (
               <section key={key} className="space-y-2">
-                <h3 className="section-label">{disciplineLabel(group[0].discipline, tr)} · {categoryLabel(group[0].category, tr)}</h3>
+                <h2 className="section-label">{disciplineLabel(group[0].discipline, tr)} · {categoryLabel(group[0].category, tr)}</h2>
                 <div className="space-y-2">
                   {group.map((skill) => (
                     <div key={skill.id} className="flex items-center gap-1">

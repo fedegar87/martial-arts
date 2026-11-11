@@ -129,7 +129,7 @@ tutti i cambiamenti non committati. Test e procedure ripetibili conservati;
 nessun piano operativo temporaneo da mantenere.
 
 **D17 — Programmi personali multipli (2026-11-11):**
-la scheda Programma usa un selettore unico raggruppato Esame/Personali,
+la scheda Programma usa un selettore unico visibile con Esame e i nomi personali,
 seguito dal filtro Tutte/Shaolin/T'ai Chi. Ogni programma personale ha nome,
 esercizi e stati focus/mantenimento indipendenti; consultazione e modifica
 non lo attivano automaticamente. L'azione esplicita Usa per allenarti sceglie
@@ -147,6 +147,13 @@ reali in italiano/francese: 66 verifiche SQL, 47 scenari azioni, 24 scenari
 runtime e smoke a 320/390 px. Passano anche 138 test unitari, regressioni
 editor/allenamento, lint, typecheck e build. Commit e deploy richiesti dall'utente.
 Nessuna nuova dipendenza o nuova route.
+
+Rifinitura dopo verifica utente: rimosso il menu a tendina. Le scelte restano
+visibili e vanno a capo, insieme a Nuovo programma. L'intestazione indica una
+sola volta In allenamento: Esame oppure Personalizzato e nome. Nessun titolo,
+etichetta descrittiva o badge Attivo ripetuto sotto; restano dettagli degli
+esami e conteggio esercizi. La selezione evidenziata identifica il contenuto
+consultato, mentre Usa per allenarti conserva l'attivazione esplicita.
 
 ### 2.2 Decisioni aperte ⚠️
 

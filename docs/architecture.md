@@ -321,7 +321,10 @@ appartiene a `custom_programs`: nome e proprietario, FK `custom_program_id`
 negli item, `active_custom_program_id` nel profilo. La selezione precedente
 diventa "Il mio programma" conservando stati, visibilita' e date. Unicita'
 item su utente/skill/source/programma, con NULLS NOT DISTINCT per gli esami.
-Programma usa il selettore unico Esame/Personali prima del filtro disciplina;
+Programma usa un selettore visibile di link Esame/nomi personali, a capo con
+la creazione, prima del filtro disciplina; nessun menu a tendina o label
+visibile aggiuntiva. Un solo riepilogo in allenamento (Esame o Personalizzato
+con nome), senza titoli e badge attivi duplicati nel contenuto;
 consultare, creare e salvare non attiva il programma. L'attivazione e' esplicita.
 Le RPC verificano proprietario e scope; le query runtime, i progressi e il cron
 selezionano esclusivamente il programma attivo. Aggiungere dalla scheda tecnica

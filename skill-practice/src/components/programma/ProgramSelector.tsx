@@ -1,47 +1,39 @@
-"use client";
-
-import { FormSelect } from "@/components/primitives/FormSelect";
+import { chipClassName } from "@/components/primitives/Chip";
+import { ProgramManagement } from "@/components/programma/ProgramManagement";
 import type { CustomProgram } from "@/lib/types";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import Link from "next/link";
 
 type Props = {
   programs: CustomProgram[];
   current: string;
-  active: string;
   discipline: string;
 };
 
-export function ProgramSelector({ programs, current, active, discipline }: Props) {
+export function ProgramSelector({ programs, current, discipline }: Props) {
   const tr = useTranslations("ui");
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const optionLabel = (name: string, value: string) =>
-    value === active ? `${name} · ${tr("active")}` : name;
+  const options = [
+    { id: "exam", name: tr("exam") },
+    ...programs,
+  ];
 
   return (
-    <FormSelect
-      label={tr("viewedProgram")}
-      value={current}
-      disabled={pending}
-      onChange={(event) => {
-        const params = new URLSearchParams({ program: event.target.value, d: discipline });
-        startTransition(() => router.push(`/programma?${params.toString()}`));
-      }}
-    >
-      <optgroup label={tr("exam")}>
-        <option value="exam">{optionLabel(tr("examProgram"), "exam")}</option>
-      </optgroup>
-      {programs.length > 0 && (
-        <optgroup label={tr("personalPrograms")}>
-          {programs.map((program) => (
-            <option key={program.id} value={program.id}>
-              {optionLabel(program.name, program.id)}
-            </option>
-          ))}
-        </optgroup>
-      )}
-    </FormSelect>
+    <nav aria-label={tr("viewedProgram")} className="flex flex-wrap gap-2">
+      {options.map((option) => (
+        <Link
+          key={option.id}
+          href={`/programma?${new URLSearchParams({ program: option.id, d: discipline }).toString()}`}
+          aria-current={current === option.id ? "page" : undefined}
+          className={chipClassName({
+            active: current === option.id,
+            tone: "neutral",
+            className: "justify-start whitespace-normal text-left",
+          })}
+        >
+          <span className="min-w-0 wrap-break-word">{option.name}</span>
+        </Link>
+      ))}
+      <ProgramManagement />
+    </nav>
   );
 }

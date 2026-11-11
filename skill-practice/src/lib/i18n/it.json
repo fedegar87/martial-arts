@@ -22,6 +22,7 @@
     "removeFromNamedProgram": "Rimuovi da {p0}",
     "addToPersonalProgram": "Aggiungi al programma",
     "inTrainingProgram": "In allenamento:",
+    "customTrainingProgram": "Personalizzato · {p0}",
     "useForTraining": "Usa per allenarti",
     "allDisciplines": "Tutte",
     "namedProgramExerciseCount": "{p0, plural, one {# esercizio} other {# esercizi}}",

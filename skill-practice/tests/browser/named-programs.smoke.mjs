@@ -53,9 +53,9 @@ export const getCurrentProfile=async()=>window.__profile;
 export const listCustomPrograms=async()=>window.__programs;
 export const getUserPlanItems=async(user,discipline,source,programId)=>source==='exam_program'?[]:(window.__items[programId]||[]).filter(i=>!discipline||i.skill.discipline===discipline);
 export const getSelectedSkillIds=async(user,source,programId)=>new Set((window.__items[programId]||[]).map(i=>i.skill_id));
-export const getExamProgramById=async()=>null;
+export const getExamProgramById=async id=>({id,discipline:id==='exam-shaolin'?'shaolin':'taichi',level_name:id==='exam-shaolin'?'2° Chieh':'1° Chieh'});
 export const listSkillsAtGrade=async()=>[];
-export const listSkillsForExam=async()=>[];
+export const listSkillsForExam=async id=>window.__skills.filter(s=>s.discipline===(id==='exam-shaolin'?'shaolin':'taichi'));
 export const listVisibleSkillOptionsForDiscipline=async(discipline)=>window.__skills.filter(s=>s.discipline===discipline);
 export const getTranslations=async()=>createTranslator({locale:window.__locale,messages:window.__catalogs,namespace:'ui',onError:error=>{throw error;}});
 `);
@@ -69,7 +69,7 @@ import ProgrammaPage from '@/app/(app)/programma/page';
 import PlanCustomPage from '@/app/(app)/plan/custom/page';
 window.__locale=new URLSearchParams(location.search).get('locale')||'it';window.__catalogs=${JSON.stringify(catalogs)}[window.__locale];
 window.__calls=[];window.__path='/programma';window.__params={program:'${ids.a}'};
-window.__profile={id:'owner',school_id:'school',plan_mode:'exam',assigned_level_shaolin:1,assigned_level_taichi:1,preparing_exam_id:null,preparing_exam_taichi_id:null,active_custom_program_id:'${ids.a}'};
+window.__profile={id:'owner',school_id:'school',plan_mode:'exam',assigned_level_shaolin:1,assigned_level_taichi:1,preparing_exam_id:'exam-shaolin',preparing_exam_taichi_id:'exam-taichi',active_custom_program_id:'${ids.a}'};
 window.__programs=[{id:'${ids.a}',user_id:'owner',name:'Ripasso generale',created_at:'2026-11-11',updated_at:'2026-11-11'},{id:'${ids.b}',user_id:'owner',name:'Lavoro sulle armi',created_at:'2026-11-11',updated_at:'2026-11-11'}];
 window.__skills=['Forma Shaolin','Forma T’ai Chi','Bastone'].map((name,index)=>({id:'skill-'+index,school_id:'school',name,name_italian:null,category:index===2?'armi_forma':'forme',discipline:index===1?'taichi':'shaolin',practice_mode:'solo',minimum_grade_value:1,is_extra:false,display_order:index,video_url:'',secondary_video_url:null,estimated_duration_seconds:180,created_at:'2026-11-11'}));
 window.__item=skill=>({id:'item-'+skill.id,user_id:'owner',skill_id:skill.id,status:'maintenance',source:'manual',is_hidden:false,last_practiced_at:null,added_at:'2026-11-11',skill});
@@ -110,27 +110,55 @@ window.__render();
   for (const locale of ["it", "fr"]) {
     const tr = catalogs[locale].ui;
     await page.goto(`${origin}/?locale=${locale}`);
-    await page.getByRole("combobox", { name: tr.viewedProgram }).waitFor();
+    const selector = page.getByRole("navigation", { name: tr.viewedProgram, exact: true });
+    const selectedProgram = id => selector.locator('a[aria-current="page"]').evaluate((link, expected) => new URL(link.href).searchParams.get('program') === expected, id);
+    const chooseProgram = async id => {
+      await selector.locator(`a[href*="program=${id}"]`).click();
+      await page.waitForFunction(({ label, expected }) => {
+        const nav = [...document.querySelectorAll('nav')].find(element => element.getAttribute('aria-label') === label);
+        const link = nav?.querySelector('a[aria-current="page"]');
+        return link && new URL(link.href).searchParams.get('program') === expected;
+      }, { label: tr.viewedProgram, expected: id });
+    };
+    const header = page.getByRole("heading", { name: tr.program, exact: true }).locator("..");
+    const assertLeanHeader = async () => {
+      assert.equal(await page.getByRole("combobox").count(), 0);
+      assert.equal(await page.getByText(tr.viewedProgram, { exact: true }).count(), 0, "selector label stays accessible without visible repetition");
+      assert.equal(await page.getByText(tr.active, { exact: true }).count(), 0, "active state is not repeated as a badge");
+      assert.equal(await page.getByText(tr.examProgram, { exact: true }).count(), 0);
+      assert.equal(await page.getByText(tr.personalProgram, { exact: true }).count(), 0);
+      assert.equal(await page.getByRole("heading", { name: tr.examProgram, exact: true }).count(), 0, "exam program has no duplicate heading");
+      for (const name of await page.evaluate(() => window.__programs.map(program => program.name))) {
+        assert.equal(await page.getByRole("heading", { name, exact: true }).count(), 0, "personal program has no duplicate heading");
+      }
+    };
+    await selector.waitFor();
     await page.evaluate(() => document.fonts.ready);
-    const selector = page.getByRole("combobox", { name: tr.viewedProgram });
-    assert.equal(await selector.locator("optgroup").count(), 2);
-    await selector.selectOption(ids.b);
-    await page.getByRole("heading", { name: "Lavoro sulle armi", exact: true }).waitFor();
+    assert.equal(await selector.getByRole("link").count(), 3);
+    assert.equal(await selectedProgram(ids.a), true);
+    assert.ok((await header.innerText()).includes(tr.exam));
+    await assertLeanHeader();
+    await chooseProgram("exam");
+    await page.getByText(/2° Chieh.*1° Chieh/).waitFor();
+    assert.equal(await page.getByText(/2° Chieh.*1° Chieh/).count(), 1, "selected exam details appear once");
+    await assertLeanHeader();
+    await chooseProgram(ids.b);
     assert.equal(await page.evaluate(() => window.__profile.plan_mode), "exam");
     await button(tr.useForTraining).click();
     await page.waitForFunction(id => window.__profile.active_custom_program_id === id && window.__profile.plan_mode === 'custom', ids.b);
-    await selector.selectOption(ids.a);
-    await page.getByRole("heading", { name: "Ripasso generale", exact: true }).waitFor();
+    assert.ok((await header.innerText()).includes("Lavoro sulle armi"));
+    await chooseProgram(ids.a);
+    await assertLeanHeader();
     assert.equal(await page.evaluate(() => window.__profile.active_custom_program_id), ids.b);
     await button(tr.planStatusFor.replace("{p0}", "Forma Shaolin")).click();
     await page.getByRole("dialog").getByRole("button", { name: tr.focus, exact: true }).click();
     await page.getByRole("dialog").waitFor({ state: "hidden" });
     assert.deepEqual(await page.evaluate(() => window.__calls.find(c => c.kind === 'status')), { kind: "status", programId: ids.a, skillId: "skill-0", status: "focus" });
     assert.equal(await page.evaluate(id => window.__items[id][0].status, ids.b), "maintenance");
-    await page.locator('a[href*="d=taichi"]').click();
+    await page.getByRole("navigation", { name: tr.discipline, exact: true }).locator('a[href*="d=taichi"]').click();
     assert.equal(await page.locator('a[href="/skill/skill-0"]').count(), 0);
     assert.equal(await page.locator('a[href="/skill/skill-1"]').count(), 1);
-    assert.equal(await selector.inputValue(), ids.a);
+    assert.equal(await selectedProgram(ids.a), true);
 
     await button(tr.newCustomProgram).click();
     await page.getByRole("dialog").getByLabel(tr.customProgramName).fill("Programma del sabato");
@@ -140,13 +168,13 @@ window.__render();
     assert.equal(await page.evaluate(() => window.__profile.active_custom_program_id), ids.b);
     await page.locator('input[type="checkbox"][value="skill-0"]').check();
     await button(tr.savePlan).click();
-    await page.getByRole("combobox", { name: tr.viewedProgram }).waitFor();
-    assert.equal(await selector.inputValue(), ids.c);
+    await selector.waitFor();
+    assert.equal(await selectedProgram(ids.c), true);
     assert.equal(await page.evaluate(() => window.__profile.active_custom_program_id), ids.b);
     await button(tr.manageNamedProgram).click();
     await page.getByRole("dialog").getByLabel(tr.customProgramName).fill("Ripasso del sabato");
     await page.getByRole("dialog").getByRole("button", { name: tr.renameCustomProgram, exact: true }).click();
-    await page.getByRole("heading", { name: "Ripasso del sabato", exact: true }).waitFor();
+    await selector.getByRole("link", { name: "Ripasso del sabato", exact: true }).waitFor();
     await button(tr.manageNamedProgram).click();
     await page.getByRole("dialog").getByRole("button", { name: tr.deleteNamedProgram, exact: true }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: tr.cancel, exact: true }).click();
@@ -154,7 +182,7 @@ window.__render();
     await page.getByRole("dialog").getByRole("button", { name: tr.deleteNamedProgram, exact: true }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: tr.delete, exact: true }).click();
     await page.waitForFunction(id => !window.__programs.some(p => p.id === id), ids.c);
-    await page.getByRole("heading", { name: "Lavoro sulle armi", exact: true }).waitFor();
+    await selector.locator(`a[href*="program=${ids.b}"][aria-current="page"]`).waitFor();
     await button(tr.manageNamedProgram).click();
     assert.equal(await page.getByRole("dialog").getByRole("button", { name: tr.deleteNamedProgram, exact: true }).isDisabled(), true);
     await page.keyboard.press("Escape");
@@ -165,9 +193,38 @@ window.__render();
       const screenshotDir = path.join(results, "named-programs"); await fs.mkdir(screenshotDir, { recursive: true });
       await page.screenshot({ path: path.join(screenshotDir, `${locale}-${width}.png`), fullPage: true });
     }
+    const longName = "L".repeat(60);
+    await page.evaluate(name => {
+      const names = ["Forme del mattino", "Armi del sabato", "Ripasso settimanale", name];
+      for (const [index, name] of names.entries()) {
+        const id = `44444444-4444-4444-8444-${String(index).padStart(12, "0")}`;
+        window.__programs.push({ id, user_id: "owner", name, created_at: "2026-11-11", updated_at: "2026-11-11" });
+        window.__items[id] = [];
+      }
+      return window.__render();
+    }, longName);
+    const longProgram = selector.getByRole("link", { name: longName, exact: true });
+    await longProgram.waitFor();
+    await page.evaluate(name => {
+      const program = window.__programs.find(program => program.name === name);
+      window.__profile.active_custom_program_id = program.id;
+      return window.__navigate('/programma?program=' + program.id);
+    }, longName);
+    await longProgram.locator('span').waitFor();
+    assert.ok((await header.innerText()).includes(longName));
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${locale}: many programs overflow at ${width}`);
+      assert.equal(await selector.getByRole("link").count(), 7);
+      const tops = await selector.getByRole("link").evaluateAll(links => links.map(link => Math.round(link.getBoundingClientRect().top)));
+      assert.ok(new Set(tops).size > 1, "additional programs wrap onto new rows");
+      assert.ok(await longProgram.evaluate(link => link.scrollWidth <= link.clientWidth), "long program name fits its link");
+      const screenshotDir = path.join(results, "named-programs");
+      await page.screenshot({ path: path.join(screenshotDir, `${locale}-many-${width}.png`), fullPage: true });
+    }
   }
   assert.deepEqual(errors, []);
-  console.log("PASS: actual Programma/custom editor pages, grouped selector, preview vs activation, inactive-program status isolation, discipline filter, named creation, scoped save, rename, delete confirmation/cancellation and active deletion disabled; Italian/French, 320/390px. Mocked I/O; no account or production writes.");
+  console.log("PASS: actual Programma/custom editor pages, visible wrapping program links, concise header without repeated labels/badges, exam details once, preview vs activation, inactive-program status isolation, discipline filter, named creation, scoped save, rename, delete confirmation/cancellation and active deletion disabled; multiple programs and 60-character name; Italian/French, 320/390px. Mocked I/O; no account or production writes.");
 } finally {
   await browser?.close();
   if (server) await new Promise(resolve => server.close(resolve));
